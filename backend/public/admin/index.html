@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizApp Admin Panel</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="auth-container" class="auth-card">
+    <div class="brand">
+      <i class="fa-solid fa-gamepad logo-icon"></i>
+      <h1>QuizApp <span>Admin</span></h1>
+    </div>
+    <p class="subtitle">Please log in to manage your game portal.</p>
+    <form id="login-form">
+      <div class="input-group">
+        <label for="email">Username</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="email" required placeholder="Game Master Admin">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="password">Mobile Number</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-phone"></i>
+          <input type="password" id="password" required placeholder="admin0000">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">
+        Sign In <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </form>
+    <p class="register-hint">Don't have an admin account? Register the very first account on the server to automatically grant Admin privileges.</p>
+    <div class="toggle-auth">
+      <a href="#" id="show-register">Need to register? Click here</a>
+    </div>
+  </div>
+
+  <!-- Register Screen (Hidden initially) -->
+  <div id="register-container" class="auth-card d-none">
+    <div class="brand">
+      <i class="fa-solid fa-gamepad logo-icon"></i>
+      <h1>QuizApp <span>Register</span></h1>
+    </div>
+    <p class="subtitle">Create the initial administrator account.</p>
+    <form id="register-form">
+      <div class="input-group">
+        <label for="reg-name">Full Name</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="reg-name" required placeholder="Administrator">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="reg-email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" id="reg-email" required placeholder="admin@example.com">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="reg-password">Password</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="reg-password" required placeholder="••••••••">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">
+        Register Admin <i class="fa-solid fa-user-plus"></i>
+      </button>
+    </form>
+    <div class="toggle-auth">
+      <a href="#" id="show-login">Back to Login</a>
+    </div>
+  </div>
+
+  <!-- Main Dashboard (Hidden initially) -->
+  <div id="dashboard-container" class="dashboard-wrapper d-none">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fa-solid fa-gamepad brand-icon"></i>
+        <span>QuizApp Admin</span>
+      </div>
+      
+      <div class="admin-profile">
+        <div class="avatar"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="info">
+          <h4 id="admin-name">Loading...</h4>
+          <span class="badge">Game Master</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active" data-tab="tab-overview">
+          <i class="fa-solid fa-chart-pie"></i> Overview
+        </a>
+        <a href="#" class="nav-item" data-tab="tab-questions">
+          <i class="fa-solid fa-clipboard-question"></i> Questions
+        </a>
+        <a href="#" class="nav-item" data-tab="tab-users">
+          <i class="fa-solid fa-users"></i> User Directory
+        </a>
+        <a href="#" class="nav-item" data-tab="tab-livequiz">
+          <i class="fa-solid fa-tower-broadcast"></i> Live Quiz Controller
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn btn-outline-danger btn-block">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="content-header">
+        <h2 id="current-tab-title">Overview</h2>
+        <div class="header-actions">
+          <span class="server-status"><span class="pulse-dot"></span> Server Online</span>
+        </div>
+      </header>
+
+      <!-- TAB: Overview -->
+      <section id="tab-overview" class="tab-pane active">
+        <!-- Stats cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon bg-purple"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-content">
+              <h3>Total Players</h3>
+              <p id="stat-players">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-pink"><i class="fa-solid fa-question"></i></div>
+            <div class="stat-content">
+              <h3>Questions Bank</h3>
+              <p id="stat-questions">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-blue"><i class="fa-solid fa-trophy"></i></div>
+            <div class="stat-content">
+              <h3>Quiz Submissions</h3>
+              <p id="stat-plays">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Leaderboard preview -->
+        <div class="row">
+          <div class="col-8">
+            <div class="card">
+              <div class="card-header">
+                <h3>Today's Daily Winner Calculation</h3>
+                <span class="badge">9:00 PM Trigger</span>
+              </div>
+              <div class="card-body">
+                <p class="description">Every evening at 9:00 PM, the player with the highest score (ties broken by fastest completion time) is selected as the Daily Winner. Here is the current standing calculation for today:</p>
+                <div id="winner-calculation-container">
+                  <div class="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading daily winner standings...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="card bg-gradient-purple text-white">
+              <div class="card-body centered-content">
+                <i class="fa-solid fa-gift mega-icon"></i>
+                <h3>Quick Actions</h3>
+                <button id="btn-seed-db" class="btn btn-light btn-block m-t-10">
+                  <i class="fa-solid fa-database"></i> Re-Seed Sample Questions
+                </button>
+                <p class="small-text m-t-15 text-muted-white">Caution: Re-seeding will clear existing questions and replace them with standard 25 trivia questions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Questions -->
+      <section id="tab-questions" class="tab-pane">
+        <div class="toolbar">
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="question-search" placeholder="Search questions...">
+          </div>
+          <button id="btn-add-question" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Add Question
+          </button>
+        </div>
+
+        <div class="card m-t-20">
+          <div class="table-container">
+            <table class="table" id="questions-table">
+              <thead>
+                <tr>
+                  <th>Question Text</th>
+                  <th>Category</th>
+                  <th>Difficulty</th>
+                  <th>Options (Correct)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="questions-list">
+                <tr>
+                  <td colspan="5" class="text-center">Loading questions...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Users -->
+      <section id="tab-users" class="tab-pane">
+        <div class="card">
+          <div class="table-container">
+            <table class="table" id="users-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Username</th>
+                  <th>Mobile Number</th>
+                  <th>Coins</th>
+                  <th>Daily Score</th>
+                  <th>Total Score</th>
+                  <th>Is Admin</th>
+                </tr>
+              </thead>
+              <tbody id="users-list">
+                <tr>
+                  <td colspan="7" class="text-center">Loading user records...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Live Quiz -->
+      <section id="tab-livequiz" class="tab-pane">
+        <div class="row">
+          <div class="col-6">
+            <div class="card border-highlight">
+              <div class="card-header bg-dark-purple">
+                <h3>Live Event Control Deck</h3>
+                <span class="pulse-dot red"></span>
+              </div>
+              <div class="card-body">
+                <p>The **Daily Live Quiz** allows users to compete simultaneously in real time. Launching a live quiz puts all active app clients into a synced lobby, broadcasting questions, collecting results, and tracking the winner instantly.</p>
+                <div class="live-controls m-t-20">
+                  <button id="btn-start-live" class="btn btn-success btn-lg btn-block">
+                    <i class="fa-solid fa-play"></i> LAUNCH LIVE QUIZ
+                  </button>
+                </div>
+                <div class="alert alert-info m-t-20">
+                  <strong>How to test:</strong> Open the Android App live quiz screen first, then click "Launch Live Quiz" here. The admin panel will trigger a 30s lobby before starting the questions loop.
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-6">
+            <div class="card">
+              <div class="card-header">
+                <h3>Real-Time Sync Monitor</h3>
+              </div>
+              <div class="card-body">
+                <div class="status-panel">
+                  <div class="status-row">
+                    <span>Lobby Status:</span>
+                    <span id="live-lobby-status" class="status-val idle">IDLE</span>
+                  </div>
+                  <div class="status-row">
+                    <span>Active Participants:</span>
+                    <span id="live-lobby-participants" class="status-val text-primary">0</span>
+                  </div>
+                  <div class="status-row">
+                    <span>Current Question:</span>
+                    <span id="live-lobby-question" class="status-val">N/A</span>
+                  </div>
+                  <div class="status-row">
+                    <span>Lobby Timer:</span>
+                    <span id="live-lobby-timer" class="status-val text-warning">0s</span>
+                  </div>
+                </div>
+
+                <div class="live-quiz-monitor-display m-t-15" id="live-monitor-logs">
+                  <div class="log-entry system">System initialized. Awaiting commands...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- QUESTION MODAL (Add/Edit) -->
+  <div id="question-modal" class="modal d-none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Add New Question</h3>
+        <button class="close-modal-btn" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="question-form">
+        <input type="hidden" id="q-id">
+        <div class="input-group">
+          <label for="q-text">Question Text</label>
+          <textarea id="q-text" required placeholder="e.g. What is the capital of France?"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="input-group col-6">
+            <label for="q-category">Category</label>
+            <input type="text" id="q-category" required placeholder="Geography">
+          </div>
+          <div class="input-group col-6">
+            <label for="q-difficulty">Difficulty</label>
+            <select id="q-difficulty" required>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="options-grid">
+          <div class="input-group option-field">
+            <label for="q-optA"><span class="badge badge-a">Option A</span></label>
+            <input type="text" id="q-optA" required placeholder="Option A text">
+          </div>
+          <div class="input-group option-field">
+            <label for="q-optB"><span class="badge badge-b">Option B</span></label>
+            <input type="text" id="q-optB" required placeholder="Option B text">
+          </div>
+          <div class="input-group option-field">
+            <label for="q-optC"><span class="badge badge-c">Option C</span></label>
+            <input type="text" id="q-optC" required placeholder="Option C text">
+          </div>
+          <div class="input-group option-field">
+            <label for="q-optD"><span class="badge badge-d">Option D</span></label>
+            <input type="text" id="q-optD" required placeholder="Option D text">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="q-correct">Correct Answer</label>
+          <select id="q-correct" required>
+            <option value="A">Option A</option>
+            <option value="B">Option B</option>
+            <option value="C">Option C</option>
+            <option value="D">Option D</option>
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

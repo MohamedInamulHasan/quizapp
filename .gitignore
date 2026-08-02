@@ -1,0 +1,22 @@
+# Node
+backend/node_modules/
+backend/.env
+backend/uploads/
+
+# Android Gradle / Builds
+frontend/.gradle/
+frontend/local.properties
+frontend/.idea/workspace.xml
+frontend/.idea/libraries/
+frontend/.idea/modules.xml
+frontend/.idea/deploymentTargetSelector.xml
+frontend/app/build/
+frontend/build/
+*.bak
+*.class
+*.apk
+*.aab
+
+# OS
+.DS_Store
+Thumbs.db

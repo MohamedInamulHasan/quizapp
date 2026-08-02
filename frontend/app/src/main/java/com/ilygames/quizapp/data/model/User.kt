@@ -1,0 +1,42 @@
+package com.ilygames.quizapp.data.model
+
+data class User(
+    val id: String?,
+    val name: String?,
+    val mobileNumber: String? = null,
+    val coins: Int? = 0,
+    val totalScore: Int? = 0,
+    val todayScore: Int? = 0,
+    val highScore: Int? = 0,
+    val isAdmin: Boolean? = false,
+    val profileImageUrl: String? = null
+)
+
+data class AuthResponse(
+    val token: String,
+    val user: User
+)
+
+data class RegisterRequest(
+    val name: String,
+    val mobileNumber: String
+)
+
+data class LoginRequest(
+    val name: String,
+    val mobileNumber: String
+)
+
+data class CoinsRewardRequest(
+    val coinsToAdd: Int
+)
+
+data class CoinsRewardResponse(
+    val coins: Int,
+    val msg: String
+)
+
+data class UpdateProfileRequest(
+    val name: String? = null,
+    val profileImageUrl: String? = null
+)
