@@ -7,9 +7,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // 127.0.0.1 works on both physical phones (via adb reverse) and emulators
-    const val BASE_URL = "http://127.0.0.1:3000/api/"
-    const val WS_URL   = "ws://127.0.0.1:3000"
+    // Live production server on Render
+    const val BASE_URL = "https://quizapp-8jh3.onrender.com/api/"
+    const val WS_URL   = "wss://quizapp-8jh3.onrender.com"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

@@ -124,4 +124,26 @@ interface ApiService {
         @Header("x-auth-token") token: String,
         @Part image: MultipartBody.Part
     ): Response<ImageUploadResponse>
+
+    // ── Infinite Quiz ──────────────────────────────────────────────────
+    @GET("quiz/categories")
+    suspend fun getCategories(
+        @Header("x-auth-token") token: String
+    ): Response<List<QuizCategory>>
+
+    @GET("quiz/trivia")
+    suspend fun getTriviaQuestions(
+        @Header("x-auth-token") token: String,
+        @Query("category") category: Int,
+        @Query("amount") amount: Int = 10,
+        @Query("difficulty") difficulty: String = "medium"
+    ): Response<List<TriviaQuestion>>
+
+    @GET("quiz/generate")
+    suspend fun generateAIQuestions(
+        @Header("x-auth-token") token: String,
+        @Query("topic") topic: String,
+        @Query("amount") amount: Int = 10,
+        @Query("difficulty") difficulty: String = "medium"
+    ): Response<List<TriviaQuestion>>
 }

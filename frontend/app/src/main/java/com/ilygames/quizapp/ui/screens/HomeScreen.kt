@@ -74,6 +74,7 @@ fun HomeScreen(
     onStartReadingQuiz: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
     onNavigateToAdmin: () -> Unit = {},
+    onExploreQuiz: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val user by authViewModel.user.collectAsState()
@@ -594,7 +595,7 @@ fun HomeScreen(
                         letterSpacing = 1.sp
                     )
 
-                    // Row 1: Passage Study & Leaderboard
+                    // Row 1: Passage Study, Leaderboard & Explore Quiz
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -621,6 +622,18 @@ fun HomeScreen(
                             }
                         )
                     }
+
+                    // Explore Quiz — full width banner
+                    UnifiedEmeraldCard(
+                        title = "🌍 Explore Quiz",
+                        description = "History, Football, Movies, AI Custom & more!",
+                        icon = Icons.Default.Explore,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            SoundManager.playClickSound()
+                            onExploreQuiz()
+                        }
+                    )
 
                     // Row 2: Today's Reward & Extra Chance
                     Row(

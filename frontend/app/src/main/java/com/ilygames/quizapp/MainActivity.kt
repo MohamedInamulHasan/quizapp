@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ilygames.quizapp.ui.screens.*
 import com.ilygames.quizapp.ui.theme.QuizAppTheme
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
+import com.ilygames.quizapp.ui.viewmodel.InfiniteQuizViewModel
 import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import com.ilygames.quizapp.utils.SoundManager
 
@@ -40,6 +41,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
+    val infiniteQuizViewModel: InfiniteQuizViewModel = viewModel()
     val context = LocalContext.current
 
     val token by authViewModel.token.collectAsState()
@@ -121,12 +123,49 @@ fun AppNavigation() {
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
+                onExploreQuiz = {
+                    navController.navigate("explore_quiz")
+                },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
                 }
             )
+        }
+
+        composable("explore_quiz") {
+            token?.let { currentToken ->
+                CategorySelectionScreen(
+                    token = currentToken,
+                    onCategorySelected = { catId, catName, difficulty ->
+                        navController.navigate("infinite_quiz/$catId/$catName/ /$difficulty")
+                    },
+                    onAiTopicSelected = { topic, difficulty ->
+                        navController.navigate("infinite_quiz/0/AI Topic/$topic/$difficulty")
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+        }
+
+        composable("infinite_quiz/{catId}/{catName}/{aiTopic}/{difficulty}") { backStack ->
+            token?.let { currentToken ->
+                val catId = backStack.arguments?.getString("catId")?.toIntOrNull() ?: 9
+                val catName = backStack.arguments?.getString("catName") ?: "Quiz"
+                val aiTopic = backStack.arguments?.getString("aiTopic")?.trim() ?: ""
+                val difficulty = backStack.arguments?.getString("difficulty") ?: "medium"
+                InfiniteQuizScreen(
+                    token = currentToken,
+                    categoryId = catId,
+                    categoryName = catName,
+                    aiTopic = aiTopic,
+                    difficulty = difficulty,
+                    viewModel = infiniteQuizViewModel,
+                    onFinished = { _, _ -> navController.popBackStack() },
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable("quiz") {

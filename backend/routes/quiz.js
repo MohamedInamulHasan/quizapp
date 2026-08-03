@@ -178,4 +178,130 @@ router.get('/winner', auth, async (req, res) => {
   }
 });
 
+// @route    GET api/quiz/categories
+// @desc     Get all available quiz categories
+// @access   Private
+router.get('/categories', auth, (req, res) => {
+  const categories = [
+    { id: 9,  name: 'General Knowledge', emoji: '🌍', color: '#6C63FF' },
+    { id: 23, name: 'History',           emoji: '🏛️', color: '#FF6B6B' },
+    { id: 21, name: 'Sports',            emoji: '⚽', color: '#4ECDC4' },
+    { id: 11, name: 'Movies',            emoji: '🎬', color: '#FF8E53' },
+    { id: 32, name: 'Cartoons',          emoji: '🎨', color: '#A8E6CF' },
+    { id: 12, name: 'Music',             emoji: '🎵', color: '#FF6B9D' },
+    { id: 17, name: 'Science',           emoji: '🔬', color: '#45B7D1' },
+    { id: 22, name: 'Geography',         emoji: '🗺️', color: '#96CEB4' },
+    { id: 15, name: 'Video Games',       emoji: '🎮', color: '#FFEAA7' },
+    { id: 18, name: 'Technology',        emoji: '💻', color: '#DDA0DD' },
+    { id: 14, name: 'Television',        emoji: '📺', color: '#98FB98' },
+    { id: 26, name: 'Celebrities',       emoji: '⭐', color: '#FFD700' },
+    { id: 0,  name: 'AI Custom Topic',   emoji: '🤖', color: '#FF4757' }
+  ];
+  res.json(categories);
+});
+
+// @route    GET api/quiz/trivia?category=23&amount=10&difficulty=medium
+// @desc     Fetch free questions from Open Trivia Database
+// @access   Private
+router.get('/trivia', auth, async (req, res) => {
+  try {
+    const { category = 9, amount = 10, difficulty = 'medium' } = req.query;
+
+    let url = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
+    if (category != 0) url += `&category=${category}`;
+    if (difficulty !== 'any') url += `&difficulty=${difficulty}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.response_code !== 0 || !data.results || data.results.length === 0) {
+      return res.status(404).json({ msg: 'No questions found. Try a different category or difficulty.' });
+    }
+
+    const questions = data.results.map(q => {
+      const allOptions = [...q.incorrect_answers, q.correct_answer];
+      // shuffle options
+      for (let i = allOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+      }
+      // Decode HTML entities
+      const decode = str => str
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&ldquo;/g, '"')
+        .replace(/&rdquo;/g, '"').replace(/&lsquo;/g, "'").replace(/&rsquo;/g, "'");
+
+      return {
+        _id: Math.random().toString(36).substr(2, 9),
+        question: decode(q.question),
+        options: allOptions.map(decode),
+        answer: decode(q.correct_answer),
+        difficulty: q.difficulty,
+        category: q.category
+      };
+    });
+
+    res.json(questions);
+  } catch (err) {
+    console.error('Trivia fetch error:', err.message);
+    res.status(500).json({ msg: 'Failed to fetch questions. Please try again.' });
+  }
+});
+
+// @route    GET api/quiz/generate?topic=football&amount=10&difficulty=medium
+// @desc     Generate infinite unique questions using Google Gemini AI
+// @access   Private
+router.get('/generate', auth, async (req, res) => {
+  try {
+    const { topic = 'general knowledge', amount = 10, difficulty = 'medium' } = req.query;
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY) {
+      return res.status(503).json({ msg: 'AI question generation not configured yet.' });
+    }
+
+    const prompt = `Generate ${amount} multiple choice quiz questions about "${topic}". Difficulty level: ${difficulty}.
+Return ONLY a valid JSON array, no markdown, no explanation. Format:
+[{"question":"...","options":["A","B","C","D"],"answer":"A","explanation":"..."}]
+Make sure "answer" is one of the exact strings in "options". Questions should be fun, accurate, and varied.`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.candidates || !data.candidates[0]) {
+      return res.status(500).json({ msg: 'AI failed to generate questions. Try again.' });
+    }
+
+    const rawText = data.candidates[0].content.parts[0].text;
+    const jsonStr = rawText.replace(/```json|```/g, '').trim();
+    const questions = JSON.parse(jsonStr);
+
+    const formatted = questions.map(q => ({
+      _id: Math.random().toString(36).substr(2, 9),
+      question: q.question,
+      options: q.options,
+      answer: q.answer,
+      explanation: q.explanation || '',
+      difficulty,
+      category: topic
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error('Gemini AI error:', err.message);
+    res.status(500).json({ msg: 'AI generation failed. Please try again.' });
+  }
+});
+
 module.exports = router;
