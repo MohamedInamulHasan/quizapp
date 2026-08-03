@@ -16,10 +16,13 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
+import androidx.compose.foundation.BorderStroke
 import com.ilygames.quizapp.data.model.TriviaQuestion
 import com.ilygames.quizapp.ui.viewmodel.InfiniteQuizViewModel
 import kotlinx.coroutines.delay
 
+@Suppress("OPT_IN_IS_NOT_ENABLED")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfiniteQuizScreen(
     token: String,

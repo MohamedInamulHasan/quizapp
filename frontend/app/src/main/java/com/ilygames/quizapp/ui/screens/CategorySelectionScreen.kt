@@ -316,7 +316,10 @@ fun AiTopicDialog(
                             colors = SuggestionChipDefaults.suggestionChipColors(
                                 containerColor = Color(0xFF6C63FF).copy(alpha = 0.15f)
                             ),
-                            border = BorderStroke(1.dp, Color(0xFF6C63FF).copy(0.4f))
+                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                enabled = true,
+                                borderColor = Color(0xFF6C63FF).copy(alpha = 0.4f)
+                            )
                         )
                     }
                 }
