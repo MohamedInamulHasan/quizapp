@@ -11,7 +11,25 @@ import kotlinx.coroutines.launch
 
 class InfiniteQuizViewModel : ViewModel() {
 
-    private val _categories = MutableStateFlow<List<QuizCategory>>(emptyList())
+    companion object {
+        val DEFAULT_CATEGORIES = listOf(
+            QuizCategory(9,  "General Knowledge", "🌍", "#6C63FF"),
+            QuizCategory(23, "History",           "🏛️", "#FF6B6B"),
+            QuizCategory(21, "Sports",            "⚽", "#4ECDC4"),
+            QuizCategory(11, "Movies",            "🎬", "#FF8E53"),
+            QuizCategory(32, "Cartoons",          "🎨", "#A8E6CF"),
+            QuizCategory(12, "Music",             "🎵", "#FF6B9D"),
+            QuizCategory(17, "Science",           "🔬", "#45B7D1"),
+            QuizCategory(22, "Geography",         "🗺️", "#96CEB4"),
+            QuizCategory(15, "Video Games",       "🎮", "#FFEAA7"),
+            QuizCategory(18, "Technology",        "💻", "#DDA0DD"),
+            QuizCategory(14, "Television",        "📺", "#98FB98"),
+            QuizCategory(26, "Celebrities",       "⭐", "#FFD700"),
+            QuizCategory(0,  "AI Custom Topic",   "🤖", "#FF4757")
+        )
+    }
+
+    private val _categories = MutableStateFlow<List<QuizCategory>>(DEFAULT_CATEGORIES)
     val categories: StateFlow<List<QuizCategory>> = _categories
 
     private val _questions = MutableStateFlow<List<TriviaQuestion>>(emptyList())
@@ -27,11 +45,11 @@ class InfiniteQuizViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.getCategories(token)
-                if (response.isSuccessful) {
-                    _categories.value = response.body() ?: emptyList()
+                if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+                    _categories.value = response.body()!!
                 }
             } catch (e: Exception) {
-                // silently fail — categories will just stay empty
+                // Keep default categories if network fails
             }
         }
     }
