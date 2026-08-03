@@ -140,7 +140,7 @@ fun InfiniteQuizScreen(
 
                     // Progress bar
                     LinearProgressIndicator(
-                        progress = { (currentIndex + 1).toFloat() / questions.size },
+                        progress = (currentIndex + 1).toFloat() / questions.size,
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                         color = Color(0xFF6C63FF),
                         trackColor = Color.White.copy(0.1f)
@@ -170,8 +170,7 @@ fun InfiniteQuizScreen(
                     AnimatedContent(
                         targetState = currentIndex,
                         transitionSpec = {
-                            slideInHorizontally { it } + fadeIn() togetherWith
-                            slideOutHorizontally { -it } + fadeOut()
+                            (slideInHorizontally { it } + fadeIn()).with(slideOutHorizontally { -it } + fadeOut())
                         }, label = "question_anim"
                     ) { idx ->
                         Card(
@@ -202,6 +201,7 @@ fun InfiniteQuizScreen(
                             }
                         }
                     }
+
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -307,9 +307,8 @@ fun TimerCircle(timeLeft: Int, totalTime: Int) {
     }
     Box(contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-            progress = { progress },
+            progress = progress,
             color = color,
-            trackColor = Color.White.copy(0.1f),
             strokeWidth = 4.dp,
             modifier = Modifier.size(44.dp)
         )
@@ -424,7 +423,7 @@ fun InfiniteQuizResultScreen(
                     Text("Correct Answers", color = Color.White.copy(0.6f), fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     LinearProgressIndicator(
-                        progress = { percent / 100f },
+                        progress = percent / 100f,
                         modifier = Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)),
                         color = if (percent >= 60) Color(0xFF00C853) else Color(0xFFFFD600),
                         trackColor = Color.White.copy(0.1f)
