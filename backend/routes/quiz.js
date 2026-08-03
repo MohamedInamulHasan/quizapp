@@ -252,56 +252,86 @@ router.get('/trivia', auth, async (req, res) => {
 // @desc     Generate infinite unique questions using Google Gemini AI
 // @access   Private
 router.get('/generate', auth, async (req, res) => {
-  try {
-    const { topic = 'general knowledge', amount = 10, difficulty = 'medium' } = req.query;
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const { topic = 'general knowledge', amount = 10, difficulty = 'medium' } = req.query;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-    if (!GEMINI_API_KEY) {
-      return res.status(503).json({ msg: 'AI question generation not configured yet.' });
-    }
-
-    const prompt = `Generate ${amount} multiple choice quiz questions about "${topic}". Difficulty level: ${difficulty}.
+  if (GEMINI_API_KEY) {
+    try {
+      const prompt = `Generate ${amount} multiple choice quiz questions about "${topic}". Difficulty level: ${difficulty}.
 Return ONLY a valid JSON array, no markdown, no explanation. Format:
 [{"question":"...","options":["A","B","C","D"],"answer":"A","explanation":"..."}]
 Make sure "answer" is one of the exact strings in "options". Questions should be fun, accurate, and varied.`;
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
-        })
-      }
-    );
+      // Try gemini-1.5-flash first
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+          })
+        }
+      );
 
+      const data = await response.json();
+
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const rawText = data.candidates[0].content.parts[0].text;
+        const jsonStr = rawText.replace(/```json|```/g, '').trim();
+        const questions = JSON.parse(jsonStr);
+
+        const formatted = questions.map(q => ({
+          _id: Math.random().toString(36).substr(2, 9),
+          question: q.question,
+          options: q.options,
+          answer: q.answer,
+          explanation: q.explanation || '',
+          difficulty,
+          category: topic
+        }));
+
+        return res.json(formatted);
+      }
+    } catch (err) {
+      console.error('Gemini AI error, falling back to trivia DB:', err.message);
+    }
+  }
+
+  // Fallback: Fetch from Open Trivia DB if Gemini key missing or failed
+  try {
+    const response = await fetch(`https://opentdb.com/api.php?amount=${amount}&type=multiple`);
     const data = await response.json();
 
-    if (!data.candidates || !data.candidates[0]) {
-      return res.status(500).json({ msg: 'AI failed to generate questions. Try again.' });
+    if (data.results && data.results.length > 0) {
+      const questions = data.results.map(q => {
+        const allOptions = [...q.incorrect_answers, q.correct_answer];
+        for (let i = allOptions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+        }
+        const decode = str => str
+          .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&ldquo;/g, '"')
+          .replace(/&rdquo;/g, '"').replace(/&lsquo;/g, "'").replace(/&rsquo;/g, "'");
+
+        return {
+          _id: Math.random().toString(36).substr(2, 9),
+          question: decode(q.question),
+          options: allOptions.map(decode),
+          answer: decode(q.correct_answer),
+          difficulty: q.difficulty,
+          category: topic
+        };
+      });
+      return res.json(questions);
     }
-
-    const rawText = data.candidates[0].content.parts[0].text;
-    const jsonStr = rawText.replace(/```json|```/g, '').trim();
-    const questions = JSON.parse(jsonStr);
-
-    const formatted = questions.map(q => ({
-      _id: Math.random().toString(36).substr(2, 9),
-      question: q.question,
-      options: q.options,
-      answer: q.answer,
-      explanation: q.explanation || '',
-      difficulty,
-      category: topic
-    }));
-
-    res.json(formatted);
-  } catch (err) {
-    console.error('Gemini AI error:', err.message);
-    res.status(500).json({ msg: 'AI generation failed. Please try again.' });
+  } catch (fallbackErr) {
+    console.error('Fallback error:', fallbackErr.message);
   }
+
+  res.status(500).json({ msg: 'Could not load questions. Please try again.' });
 });
 
 module.exports = router;
