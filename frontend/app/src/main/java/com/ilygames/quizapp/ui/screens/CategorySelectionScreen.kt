@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
 package com.ilygames.quizapp.ui.screens
 
 import androidx.compose.animation.*
@@ -21,7 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ilygames.quizapp.data.model.QuizCategory
 import com.ilygames.quizapp.ui.viewmodel.InfiniteQuizViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun CategorySelectionScreen(
     token: String,
@@ -317,7 +318,6 @@ fun AiTopicDialog(
                                 containerColor = Color(0xFF6C63FF).copy(alpha = 0.15f)
                             ),
                             border = SuggestionChipDefaults.suggestionChipBorder(
-                                enabled = true,
                                 borderColor = Color(0xFF6C63FF).copy(alpha = 0.4f)
                             )
                         )

@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
 package com.ilygames.quizapp.ui.screens
 
 import androidx.compose.animation.*
@@ -21,8 +22,6 @@ import com.ilygames.quizapp.data.model.TriviaQuestion
 import com.ilygames.quizapp.ui.viewmodel.InfiniteQuizViewModel
 import kotlinx.coroutines.delay
 
-@Suppress("OPT_IN_IS_NOT_ENABLED")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfiniteQuizScreen(
     token: String,
