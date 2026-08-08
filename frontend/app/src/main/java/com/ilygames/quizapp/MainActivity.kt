@@ -139,10 +139,12 @@ fun AppNavigation() {
                 CategorySelectionScreen(
                     token = currentToken,
                     onCategorySelected = { catId, catName, difficulty ->
-                        navController.navigate("infinite_quiz/$catId/$catName/ /$difficulty")
+                        val encodedName = java.net.URLEncoder.encode(catName, "UTF-8")
+                        navController.navigate("infinite_quiz/$catId/$encodedName/none/$difficulty")
                     },
                     onAiTopicSelected = { topic, difficulty ->
-                        navController.navigate("infinite_quiz/0/AI Topic/$topic/$difficulty")
+                        val encodedTopic = java.net.URLEncoder.encode(topic, "UTF-8")
+                        navController.navigate("infinite_quiz/0/AI_Topic/$encodedTopic/$difficulty")
                     },
                     onBack = { navController.popBackStack() }
                 )
@@ -152,8 +154,12 @@ fun AppNavigation() {
         composable("infinite_quiz/{catId}/{catName}/{aiTopic}/{difficulty}") { backStack ->
             token?.let { currentToken ->
                 val catId = backStack.arguments?.getString("catId")?.toIntOrNull() ?: 9
-                val catName = backStack.arguments?.getString("catName") ?: "Quiz"
-                val aiTopic = backStack.arguments?.getString("aiTopic")?.trim() ?: ""
+                val catNameRaw = backStack.arguments?.getString("catName") ?: "Quiz"
+                val catName = try { java.net.URLDecoder.decode(catNameRaw, "UTF-8") } catch (e: Exception) { catNameRaw }
+                val aiTopicRaw = backStack.arguments?.getString("aiTopic")?.trim() ?: "none"
+                val aiTopic = if (aiTopicRaw == "none" || aiTopicRaw.isBlank()) "" else {
+                    try { java.net.URLDecoder.decode(aiTopicRaw, "UTF-8") } catch (e: Exception) { aiTopicRaw }
+                }
                 val difficulty = backStack.arguments?.getString("difficulty") ?: "medium"
                 InfiniteQuizScreen(
                     token = currentToken,

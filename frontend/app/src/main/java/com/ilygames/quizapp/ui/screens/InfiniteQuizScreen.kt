@@ -45,8 +45,10 @@ fun InfiniteQuizScreen(
     var showResult by remember { mutableStateOf(false) }
     var answers by remember { mutableStateOf(listOf<Boolean>()) }
 
+    val isAi = aiTopic.isNotBlank() && aiTopic != "none"
+
     LaunchedEffect(Unit) {
-        if (aiTopic.isNotBlank()) {
+        if (isAi) {
             viewModel.generateAIQuestions(token, aiTopic, difficulty)
         } else {
             viewModel.loadTriviaQuestions(token, categoryId, difficulty)
@@ -87,20 +89,20 @@ fun InfiniteQuizScreen(
             )
     ) {
         when {
-            isLoading -> LoadingQuizState(categoryName = if (aiTopic.isNotBlank()) "🤖 $aiTopic" else categoryName)
+            isLoading -> LoadingQuizState(categoryName = if (isAi) "🤖 $aiTopic" else categoryName)
             error != null -> ErrorQuizState(error = error!!, onRetry = {
-                if (aiTopic.isNotBlank()) viewModel.generateAIQuestions(token, aiTopic, difficulty)
+                if (isAi) viewModel.generateAIQuestions(token, aiTopic, difficulty)
                 else viewModel.loadTriviaQuestions(token, categoryId, difficulty)
             }, onBack = onBack)
             showResult -> InfiniteQuizResultScreen(
                 score = score,
                 total = questions.size,
                 answers = answers,
-                categoryName = if (aiTopic.isNotBlank()) aiTopic else categoryName,
+                categoryName = if (isAi) aiTopic else categoryName,
                 onPlayAgain = {
                     currentIndex = 0; score = 0; selectedOption = null
                     showAnswer = false; showResult = false; answers = listOf()
-                    if (aiTopic.isNotBlank()) viewModel.generateAIQuestions(token, aiTopic, difficulty)
+                    if (isAi) viewModel.generateAIQuestions(token, aiTopic, difficulty)
                     else viewModel.loadTriviaQuestions(token, categoryId, difficulty)
                 },
                 onBack = onBack
@@ -124,7 +126,7 @@ fun InfiniteQuizScreen(
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                if (aiTopic.isNotBlank()) "🤖 $aiTopic" else categoryName,
+                                if (isAi) "🤖 $aiTopic" else categoryName,
                                 color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold
                             )
                             Text(
