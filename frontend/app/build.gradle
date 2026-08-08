@@ -15,6 +15,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
         vectorDrawables {
             useSupportLibrary true
         }
@@ -76,4 +77,7 @@ dependencies {
 
     // Coil Image Loading
     implementation 'io.coil-kt:coil-compose:2.6.0'
+
+    // MultiDex
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
