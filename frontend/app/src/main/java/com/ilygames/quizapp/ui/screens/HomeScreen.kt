@@ -534,18 +534,9 @@ fun HomeScreen(
                             .padding(20.dp)
                     ) {
                         Column {
-                            Text(
-                                text = "🌅 Daily Quiz Challenge",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontSize = 22.sp,
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color(0xFFFF512F),
-                                            Color(0xFFF09819),
-                                            Color(0xFFFFD700)
-                                        )
-                                    )
-                                ),
+                            com.ilygames.quizapp.ui.components.SunriseRisingText(
+                                text = "Daily Quiz Challenge 🌅",
+                                fontSize = 21.sp,
                                 fontWeight = FontWeight.Black
                             )
 

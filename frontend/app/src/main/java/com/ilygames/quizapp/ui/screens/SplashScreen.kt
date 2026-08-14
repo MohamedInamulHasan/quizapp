@@ -75,18 +75,9 @@ fun SplashScreen(
                 )
             }
 
-            Text(
+            com.ilygames.quizapp.ui.components.SunriseRisingText(
                 text = "QuizApp 🌅",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 36.sp,
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            androidx.compose.ui.graphics.Color(0xFFFF512F),
-                            androidx.compose.ui.graphics.Color(0xFFF09819),
-                            androidx.compose.ui.graphics.Color(0xFFFFD700)
-                        )
-                    )
-                ),
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Black
             )
 
