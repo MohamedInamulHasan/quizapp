@@ -41,7 +41,6 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
-    val infiniteQuizViewModel: InfiniteQuizViewModel = viewModel()
     val context = LocalContext.current
 
     val token by authViewModel.token.collectAsState()
@@ -123,55 +122,12 @@ fun AppNavigation() {
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
-                onExploreQuiz = {
-                    navController.navigate("explore_quiz")
-                },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
                 }
             )
-        }
-
-        composable("explore_quiz") {
-            token?.let { currentToken ->
-                CategorySelectionScreen(
-                    token = currentToken,
-                    onCategorySelected = { catId, catName, difficulty ->
-                        val encodedName = java.net.URLEncoder.encode(catName, "UTF-8")
-                        navController.navigate("infinite_quiz/$catId/$encodedName/none/$difficulty")
-                    },
-                    onAiTopicSelected = { topic, difficulty ->
-                        val encodedTopic = java.net.URLEncoder.encode(topic, "UTF-8")
-                        navController.navigate("infinite_quiz/0/AI_Topic/$encodedTopic/$difficulty")
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-        }
-
-        composable("infinite_quiz/{catId}/{catName}/{aiTopic}/{difficulty}") { backStack ->
-            token?.let { currentToken ->
-                val catId = backStack.arguments?.getString("catId")?.toIntOrNull() ?: 9
-                val catNameRaw = backStack.arguments?.getString("catName") ?: "Quiz"
-                val catName = try { java.net.URLDecoder.decode(catNameRaw, "UTF-8") } catch (e: Exception) { catNameRaw }
-                val aiTopicRaw = backStack.arguments?.getString("aiTopic")?.trim() ?: "none"
-                val aiTopic = if (aiTopicRaw == "none" || aiTopicRaw.isBlank()) "" else {
-                    try { java.net.URLDecoder.decode(aiTopicRaw, "UTF-8") } catch (e: Exception) { aiTopicRaw }
-                }
-                val difficulty = backStack.arguments?.getString("difficulty") ?: "medium"
-                InfiniteQuizScreen(
-                    token = currentToken,
-                    categoryId = catId,
-                    categoryName = catName,
-                    aiTopic = aiTopic,
-                    difficulty = difficulty,
-                    viewModel = infiniteQuizViewModel,
-                    onFinished = { _, _ -> navController.popBackStack() },
-                    onBack = { navController.popBackStack() }
-                )
-            }
         }
 
         composable("quiz") {
