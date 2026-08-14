@@ -75,10 +75,11 @@ fun SplashScreen(
                 )
             }
 
-            com.ilygames.quizapp.ui.components.SunriseRisingText(
-                text = "QuizApp 🌅",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Black
+            Text(
+                text = "QuizApp",
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
         }

@@ -534,10 +534,11 @@ fun HomeScreen(
                             .padding(20.dp)
                     ) {
                         Column {
-                            com.ilygames.quizapp.ui.components.SunriseRisingText(
-                                text = "Daily Quiz Challenge 🌅",
-                                fontSize = 21.sp,
-                                fontWeight = FontWeight.Black
+                            Text(
+                                text = "Daily Quiz Challenge",
+                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
                             )
 
                             Spacer(modifier = Modifier.height(6.dp))
