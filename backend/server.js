@@ -42,6 +42,11 @@ app.use('/api/quiz', (req, res, next) => { req.broadcast = broadcast; next(); },
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Ping / Health check route
+app.get('/api/ping', (req, res) => {
+  res.json({ status: 'ok', message: 'QuizApp Server Active 🚀', timestamp: Date.now() });
+});
+
 // Redirect root to Admin panel for convenience
 app.get('/', (req, res) => {
   res.redirect('/admin');

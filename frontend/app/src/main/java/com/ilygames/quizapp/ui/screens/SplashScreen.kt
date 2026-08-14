@@ -76,19 +76,20 @@ fun SplashScreen(
             }
 
             Text(
-                text = "QuizApp",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurface
+                text = "QuizApp 🌅",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 36.sp,
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            androidx.compose.ui.graphics.Color(0xFFFF512F),
+                            androidx.compose.ui.graphics.Color(0xFFF09819),
+                            androidx.compose.ui.graphics.Color(0xFFFFD700)
+                        )
+                    )
+                ),
+                fontWeight = FontWeight.Black
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            CircularProgressIndicator(
-                color = PrimaryGreen,
-                strokeWidth = 3.dp,
-                modifier = Modifier.size(24.dp)
-            )
         }
     }
 }

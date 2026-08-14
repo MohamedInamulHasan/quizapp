@@ -535,10 +535,18 @@ fun HomeScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Daily Quiz Challenge",
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
+                                text = "🌅 Daily Quiz Challenge",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = 22.sp,
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color(0xFFFF512F),
+                                            Color(0xFFF09819),
+                                            Color(0xFFFFD700)
+                                        )
+                                    )
+                                ),
+                                fontWeight = FontWeight.Black
                             )
 
                             Spacer(modifier = Modifier.height(6.dp))
