@@ -16,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import com.ilygames.quizapp.ui.screens.*
 import com.ilygames.quizapp.ui.theme.QuizAppTheme
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
-import com.ilygames.quizapp.ui.viewmodel.InfiniteQuizViewModel
 import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import com.ilygames.quizapp.utils.SoundManager
 
