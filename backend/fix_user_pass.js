@@ -10,29 +10,24 @@ async function run() {
   await mongoose.connect(process.env.MONGODB_URI);
   console.log('Connected to Atlas.');
 
-  // 1. Delete all existing Hasan / mohamedinamulhasan0@gmail.com accounts to prevent duplicate key error
-  await User.deleteMany({
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash('000000', salt);
+
+  const users = await User.find({
     $or: [
       { email: 'mohamedinamulhasan0@gmail.com' },
-      { name: 'Hasan' },
-      { name: 'Hasan28' }
+      { name: 'Hasan' }
     ]
   });
-  console.log('Cleared duplicates.');
 
-  // 2. Create the exact user requested by user
-  const salt = await bcrypt.genSalt(10);
-  const hash000 = await bcrypt.hash('000000', salt);
+  for (let u of users) {
+    u.password = hash;
+    u.mobileNumber = hash;
+    u.isAdmin = true;
+    await u.save();
+    console.log(`✅ SYNCED DOCUMENT FOR USER "${u.name}" (${u.email})!`);
+  }
 
-  const newHasan = new User({
-    name: 'Hasan',
-    email: 'mohamedinamulhasan0@gmail.com',
-    password: hash000,
-    isAdmin: true
-  });
-
-  await newHasan.save();
-  console.log('🎉 CREATED HASAN ACCOUNT WITH EMAIL mohamedinamulhasan0@gmail.com AND PASSWORD 000000!');
   process.exit(0);
 }
 

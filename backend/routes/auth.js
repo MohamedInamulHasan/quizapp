@@ -123,8 +123,13 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    // Verify Password
-    const isMatch = await bcrypt.compare(pass, user.password);
+    // Verify Password safely
+    const userHash = user.password || user.mobileNumber || '';
+    if (!userHash) {
+      return res.status(400).json({ msg: 'Incorrect password' });
+    }
+
+    const isMatch = await bcrypt.compare(pass, userHash);
     if (!isMatch) {
       return res.status(400).json({ msg: 'Incorrect password' });
     }
@@ -139,7 +144,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Login Error:', err);
-    return res.status(500).json({ msg: 'Server error during login' });
+    return res.status(500).json({ msg: err.message || 'Server error during login' });
   }
 });
 
