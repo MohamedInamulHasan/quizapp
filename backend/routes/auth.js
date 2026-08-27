@@ -7,10 +7,12 @@ const User = require('../models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
-const ADMIN_EMAIL = 'mohamedinamulhasan0@gmail.com';
+const ADMIN_EMAILS = ['mohamedinamulhasan0@gmail.com', 'mohmaedinamulhasan0@gmail.com'];
 
 function isUserAdmin(email) {
-  return !!(email && email.trim().toLowerCase() === ADMIN_EMAIL);
+  if (!email) return false;
+  const lower = email.trim().toLowerCase();
+  return ADMIN_EMAILS.includes(lower);
 }
 
 // Helper helper to generate user response object

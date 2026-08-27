@@ -380,8 +380,8 @@ fun HomeScreen(
 
                                             Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
 
-                                            // Admin Studio Option (Visible exclusively for mohamedinamulhasan0@gmail.com)
-                                            if (user?.isAdmin == true || user?.email?.equals("mohamedinamulhasan0@gmail.com", ignoreCase = true) == true) {
+                                            // Admin Studio Option (Visible exclusively for mohamedinamulhasan0@gmail.com / mohmaedinamulhasan0@gmail.com)
+                                            if (user?.isAdmin == true || user?.email?.equals("mohamedinamulhasan0@gmail.com", ignoreCase = true) == true || user?.email?.equals("mohmaedinamulhasan0@gmail.com", ignoreCase = true) == true) {
                                                 Row(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
