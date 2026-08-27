@@ -159,35 +159,48 @@ fun LeaderboardScreen(
                         currentUserName = currentUserName
                     )
                     Spacer(modifier = Modifier.height(12.dp))
+                // Unified Table Card for All Rankings
+                item {
                     if (leaderboard.size > 3) {
                         Text("ALL RANKINGS", fontSize = 11.sp, fontWeight = FontWeight.Black,
-                            color = TextMuted, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
+                            color = TextMuted, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
 
-                        // Table Header Bar
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = PrimaryGreen.copy(alpha = 0.12f),
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("RANK", fontWeight = FontWeight.Black, fontSize = 11.sp, color = PrimaryGreen, modifier = Modifier.width(42.dp))
-                                Text("PLAYER", fontWeight = FontWeight.Black, fontSize = 11.sp, color = PrimaryGreen, modifier = Modifier.weight(1f))
-                                Text("SCORE", fontWeight = FontWeight.Black, fontSize = 11.sp, color = PrimaryGreen, textAlign = TextAlign.End)
+                            Column {
+                                // Integrated Header Bar
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(PrimaryGreen.copy(alpha = 0.10f))
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("RANK", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.width(52.dp))
+                                        Text("PLAYER DETAILS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.weight(1f))
+                                        Text("SCORE", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, textAlign = TextAlign.End)
+                                    }
+                                }
+
+                                Divider(color = PrimaryGreen.copy(alpha = 0.2f), thickness = 1.dp)
+
+                                leaderboard.forEachIndexed { index, player ->
+                                    LeaderboardRow(player = player, currentUserId = currentUserId, currentUserName = currentUserName)
+                                    if (index < leaderboard.size - 1) {
+                                        Divider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), thickness = 1.dp)
+                                    }
+                                }
                             }
                         }
                     }
-                }
-
-                // Full rank list
-                itemsIndexed(leaderboard) { index, player ->
-                    LeaderboardRow(player = player, currentUserId = currentUserId, currentUserName = currentUserName)
                 }
             }
         }
@@ -363,135 +376,123 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     val isMe = if (currentUserId.isNotBlank()) player.id == currentUserId else currentUserName.isNotBlank() && player.name.equals(currentUserName, ignoreCase = true)
     val medal = when (player.rank) { 1 -> "🥇"; 2 -> "🥈"; 3 -> "🥉"; else -> null }
 
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = if (isMe) PrimaryGreen.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface,
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = if (isMe) 1.5.dp else 1.dp,
-                color = if (isMe) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(16.dp)
-            )
+            .background(if (isMe) PrimaryGreen.copy(alpha = 0.08f) else Color.Transparent)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f)
+            // Rank Pill Badge
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = when (player.rank) {
+                    1 -> Color(0xFFFFF8E1)
+                    2 -> Color(0xFFF1F3F5)
+                    3 -> Color(0xFFFFF3E0)
+                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                },
+                modifier = Modifier.widthIn(min = 44.dp)
             ) {
-                // Rank Pill Badge
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = when (player.rank) {
-                        1 -> Color(0xFFFFF8E1)
-                        2 -> Color(0xFFF1F3F5)
-                        3 -> Color(0xFFFFF3E0)
-                        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                    },
-                    modifier = Modifier.widthIn(min = 44.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
-                    ) {
-                        if (medal != null) {
-                            Text(medal, fontSize = 14.sp)
-                            Spacer(modifier = Modifier.width(2.dp))
-                        }
-                        Text(
-                            text = "#${player.rank}",
-                            fontWeight = FontWeight.Black,
-                            fontSize = 12.sp,
-                            color = when (player.rank) {
-                                1 -> Color(0xFFB8860B)
-                                2 -> Color(0xFF495057)
-                                3 -> Color(0xFFCD7F32)
-                                else -> TextMuted
-                            }
-                        )
-                    }
-                }
-
-                // Avatar Circle
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            if (isMe) PrimaryGreen.copy(alpha = 0.15f) else Color(0xFFE8F5E9),
-                            CircleShape
-                        )
-                        .border(1.dp, if (isMe) PrimaryGreen else Color(0xFFA5D6A7), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
-                        coil.compose.AsyncImage(
-                            model = globalProfileImageUri.value,
-                            contentDescription = "Profile",
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().clip(CircleShape)
-                        )
-                    } else {
-                        Text(
-                            text = getPlayerInitials(player.name),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 13.sp,
-                            color = PrimaryGreen
-                        )
-                    }
-                }
-
-                // Name & You Badge
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 3.dp)
                 ) {
-                    Text(
-                        text = player.name,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    if (isMe) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = PrimaryGreen.copy(alpha = 0.15f)
-                        ) {
-                            Text(
-                                text = "YOU",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                color = PrimaryGreen,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
+                    if (medal != null) {
+                        Text(medal, fontSize = 13.sp)
+                        Spacer(modifier = Modifier.width(2.dp))
                     }
+                    Text(
+                        text = "#${player.rank}",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 11.sp,
+                        color = when (player.rank) {
+                            1 -> Color(0xFFB8860B)
+                            2 -> Color(0xFF495057)
+                            3 -> Color(0xFFCD7F32)
+                            else -> TextMuted
+                        }
+                    )
                 }
             }
 
-            // Score Pill Badge
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (isMe) PrimaryGreen else Color(0xFFF1F5F9),
-                modifier = Modifier.padding(start = 8.dp)
+            // Avatar Circle
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .background(
+                        if (isMe) PrimaryGreen.copy(alpha = 0.15f) else Color(0xFFE8F5E9),
+                        CircleShape
+                    )
+                    .border(1.dp, if (isMe) PrimaryGreen else Color(0xFFA5D6A7), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
+                    coil.compose.AsyncImage(
+                        model = globalProfileImageUri.value,
+                        contentDescription = "Profile",
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    )
+                } else {
+                    Text(
+                        text = getPlayerInitials(player.name),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                        color = PrimaryGreen
+                    )
+                }
+            }
+
+            // Name & (YOU) badge
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "${player.score} pts",
+                    text = player.name,
                     fontWeight = FontWeight.Black,
-                    fontSize = 12.sp,
-                    color = if (isMe) Color.White else Color(0xFF1E293B),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+                if (isMe) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = PrimaryGreen.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = "YOU",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            color = PrimaryGreen,
+                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                        )
+                    }
+                }
             }
+        }
+
+        // Score Pill Badge
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = if (isMe) PrimaryGreen else Color(0xFFF1F5F9)
+        ) {
+            Text(
+                text = "${player.score} pts",
+                fontWeight = FontWeight.Black,
+                fontSize = 12.sp,
+                color = if (isMe) Color.White else Color(0xFF1E293B),
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+            )
         }
     }
 }
