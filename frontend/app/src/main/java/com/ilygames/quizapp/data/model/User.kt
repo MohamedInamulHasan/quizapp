@@ -3,6 +3,7 @@ package com.ilygames.quizapp.data.model
 data class User(
     val id: String?,
     val name: String?,
+    val email: String? = null,
     val mobileNumber: String? = null,
     val coins: Int? = 0,
     val totalScore: Int? = 0,

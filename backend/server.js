@@ -69,30 +69,12 @@ mongoose
     }
 
     try {
-      let admin = await User.findOne({ name: 'Game Master Admin' });
-      if (!admin) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedMobile = await bcrypt.hash('admin0000', salt);
-        admin = new User({
-          name: 'Game Master Admin',
-          mobileNumber: hashedMobile,
-          isAdmin: true
-        });
-        await admin.save();
-        console.log('🔑 Default Admin Account Created: Name="Game Master Admin" / Mobile="admin0000"');
-      } else if (!admin.isAdmin) {
-        admin.isAdmin = true;
-        await admin.save();
-      }
-
-      // Ensure user 9500171980 has full Admin privileges
-      const targetUsers = await User.find({ mobileDisplay: '9500171980' });
-      for (const u of targetUsers) {
-        if (!u.isAdmin) {
-          u.isAdmin = true;
-          await u.save();
-          console.log(`👑 Granted admin rights to user ${u.name} (9500171980)`);
-        }
+      // Grant Admin status ONLY to email mohamedinamulhasan0@gmail.com
+      const targetAdmin = await User.findOne({ email: 'mohamedinamulhasan0@gmail.com' });
+      if (targetAdmin && !targetAdmin.isAdmin) {
+        targetAdmin.isAdmin = true;
+        await targetAdmin.save();
+        console.log('👑 Admin status granted to mohamedinamulhasan0@gmail.com');
       }
     } catch (e) {
       console.error('Error seeding admin account:', e);

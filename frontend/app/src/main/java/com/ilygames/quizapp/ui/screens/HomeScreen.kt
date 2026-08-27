@@ -380,38 +380,40 @@ fun HomeScreen(
 
                                             Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
 
-                                            // Admin Studio Option
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(12.dp))
-                                                    .clickable(
-                                                        interactionSource = remember { MutableInteractionSource() },
-                                                        indication = null
-                                                    ) {
-                                                        showSettingsMenu = false
-                                                        onNavigateToAdmin()
-                                                    }
-                                                    .padding(vertical = 8.dp, horizontal = 4.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.AdminPanelSettings,
-                                                    contentDescription = "Admin",
-                                                    tint = MaterialTheme.colorScheme.onSurface,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    text = "Admin Studio",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSurface,
-                                                    fontSize = 13.sp
-                                                )
-                                            }
+                                            // Admin Studio Option (Visible exclusively for mohamedinamulhasan0@gmail.com)
+                                            if (user?.isAdmin == true || user?.email?.equals("mohamedinamulhasan0@gmail.com", ignoreCase = true) == true) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clip(RoundedCornerShape(12.dp))
+                                                        .clickable(
+                                                            interactionSource = remember { MutableInteractionSource() },
+                                                            indication = null
+                                                        ) {
+                                                            showSettingsMenu = false
+                                                            onNavigateToAdmin()
+                                                        }
+                                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.AdminPanelSettings,
+                                                        contentDescription = "Admin",
+                                                        tint = MaterialTheme.colorScheme.onSurface,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = "Admin Studio",
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        fontSize = 13.sp
+                                                    )
+                                                }
 
-                                            Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
+                                                Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
+                                            }
 
                                             // Sign Out Option
                                             Row(

@@ -7,209 +7,189 @@ const User = require('../models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
+const ADMIN_EMAIL = 'mohamedinamulhasan0@gmail.com';
+
+function isUserAdmin(email) {
+  return !!(email && email.trim().toLowerCase() === ADMIN_EMAIL);
+}
+
+// Helper helper to generate user response object
+function formatUserResponse(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    coins: user.coins,
+    totalScore: user.totalScore,
+    todayScore: user.todayScore,
+    highScore: user.highScore || 0,
+    isAdmin: user.isAdmin || false,
+    profileImageUrl: user.profileImageUrl
+  };
+}
+
 // @route    POST api/auth/authenticate
-// @desc     Authenticate user (login if existing username & matching mobile, register if new username, error if existing username & wrong mobile)
+// @desc     Authenticate user (unified login/register)
 // @access   Public
 router.post('/authenticate', async (req, res) => {
-  const { name, mobileNumber } = req.body;
+  const { name, email, password, mobileNumber } = req.body;
+  const credential = (name || email || '').trim();
+  const pass = (password || mobileNumber || '').trim();
+  const userEmail = (email || (credential.includes('@') ? credential : '')).trim().toLowerCase();
 
-  if (!name || name.trim().length < 3) {
-    return res.status(400).json({ msg: 'Invalid username' });
+  if (!credential || credential.length < 3) {
+    return res.status(400).json({ msg: 'Username or Email must be at least 3 characters' });
   }
 
   try {
-    let user = await User.findOne({ name });
+    let user = await User.findOne({
+      $or: [
+        { name: credential },
+        ...(userEmail ? [{ email: userEmail }] : [])
+      ]
+    });
 
     if (user) {
-      // Existing username: verify mobile number
-      const isMatch = await bcrypt.compare(mobileNumber, user.mobileNumber);
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'Username is already in use' });
+      if (pass && user.mobileNumber) {
+        const isMatch = await bcrypt.compare(pass, user.mobileNumber);
+        if (!isMatch) {
+          return res.status(400).json({ msg: 'Invalid password or credentials' });
+        }
       }
 
-      // Auto grant admin privileges for mobile number 9500171980
-      if (mobileNumber === '9500171980' || user.mobileDisplay === '9500171980') {
-        user.isAdmin = true;
-        await user.save();
-      }
+      // Enforce strict admin access exclusively for ADMIN_EMAIL
+      user.isAdmin = isUserAdmin(user.email);
+      await user.save();
 
       const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
       jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
         if (err) throw err;
-        return res.json({
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            coins: user.coins,
-            totalScore: user.totalScore,
-            todayScore: user.todayScore,
-            highScore: user.highScore || 0,
-            isAdmin: user.isAdmin,
-            profileImageUrl: user.profileImageUrl
-          }
-        });
+        return res.json({ token, user: formatUserResponse(user) });
       });
     } else {
-      // New username: register
-      user = new User({ name, mobileNumber, mobileDisplay: mobileNumber });
-
+      // Create new user
       const salt = await bcrypt.genSalt(10);
-      user.mobileNumber = await bcrypt.hash(mobileNumber, salt);
+      const hashedPassword = await bcrypt.hash(pass || 'default123', salt);
 
-      const userCount = await User.countDocuments({});
-      if (userCount === 0 || mobileNumber === '9500171980') user.isAdmin = true;
+      user = new User({
+        name: credential,
+        email: userEmail || null,
+        mobileNumber: hashedPassword,
+        mobileDisplay: pass,
+        isAdmin: isUserAdmin(userEmail)
+      });
 
       await user.save();
 
       const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
       jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
         if (err) throw err;
-        return res.json({
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            coins: user.coins,
-            totalScore: user.totalScore,
-            todayScore: user.todayScore,
-            highScore: user.highScore || 0,
-            isAdmin: user.isAdmin,
-            profileImageUrl: user.profileImageUrl
-          }
-        });
+        return res.json({ token, user: formatUserResponse(user) });
       });
     }
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Authenticate Error:', err);
+    res.status(500).json({ msg: 'Server error during authentication' });
   }
 });
 
 // @route    POST api/auth/register
-// @desc     Register user
+// @desc     Register new user with Username, Email, Password
 // @access   Public
 router.post('/register', async (req, res) => {
-  const { name, mobileNumber } = req.body;
+  const { name, email, password, mobileNumber } = req.body;
+  const username = (name || '').trim();
+  const userEmail = (email || '').trim().toLowerCase();
+  const pass = (password || mobileNumber || '').trim();
+
+  if (!username || username.length < 3) {
+    return res.status(400).json({ msg: 'Username must be at least 3 characters' });
+  }
+  if (!pass) {
+    return res.status(400).json({ msg: 'Password is required' });
+  }
 
   try {
-    let userByName = await User.findOne({ name });
-    if (userByName) {
-      return res.status(400).json({ msg: 'Username already in use' });
+    const existingName = await User.findOne({ name: username });
+    if (existingName) {
+      return res.status(400).json({ msg: 'Username is already in use. Please try another.' });
     }
 
-    // Check if mobile number is already used by another user
-    const allUsers = await User.find({});
-    for (let u of allUsers) {
-      if (u.mobileNumber) {
-        const isMatch = await bcrypt.compare(mobileNumber, u.mobileNumber);
-        if (isMatch) {
-          return res.status(400).json({ msg: 'Mobile number already in use' });
-        }
+    if (userEmail) {
+      const existingEmail = await User.findOne({ email: userEmail });
+      if (existingEmail) {
+        return res.status(400).json({ msg: 'Email is already registered. Please sign in instead.' });
       }
     }
 
-    let user = new User({
-      name,
-      mobileNumber,
-      mobileDisplay: mobileNumber
-    });
-
     const salt = await bcrypt.genSalt(10);
-    user.mobileNumber = await bcrypt.hash(mobileNumber, salt);
+    const hashedPassword = await bcrypt.hash(pass, salt);
 
-    // Make the first user an admin for easy testing of the admin panel
-    const userCount = await User.countDocuments({});
-    if (userCount === 0) {
-      user.isAdmin = true;
-    }
+    const user = new User({
+      name: username,
+      email: userEmail || null,
+      mobileNumber: hashedPassword,
+      mobileDisplay: pass,
+      isAdmin: isUserAdmin(userEmail)
+    });
 
     await user.save();
 
-    const payload = {
-      user: {
-        id: user.id,
-        isAdmin: user.isAdmin
-      }
-    };
-
-    jwt.sign(
-      payload,
-      JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            coins: user.coins,
-            totalScore: user.totalScore,
-            todayScore: user.todayScore,
-            highScore: user.highScore || 0,
-            isAdmin: user.isAdmin,
-            profileImageUrl: user.profileImageUrl
-          }
-        });
-      }
-    );
+    const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
+    jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
+      if (err) throw err;
+      return res.json({ token, user: formatUserResponse(user) });
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Register Error:', err);
+    res.status(500).json({ msg: 'Server error during registration' });
   }
 });
 
 // @route    POST api/auth/login
-// @desc     Authenticate user & get token
+// @desc     Login user with Username/Email & Password
 // @access   Public
 router.post('/login', async (req, res) => {
-  const { name, mobileNumber } = req.body;
+  const { name, email, password, mobileNumber } = req.body;
+  const credential = (name || email || '').trim();
+  const pass = (password || mobileNumber || '').trim();
+
+  if (!credential) {
+    return res.status(400).json({ msg: 'Username or Email is required' });
+  }
+  if (!pass) {
+    return res.status(400).json({ msg: 'Password is required' });
+  }
 
   try {
-    let user = await User.findOne({ name });
+    const user = await User.findOne({
+      $or: [
+        { name: credential },
+        { email: credential.toLowerCase() }
+      ]
+    });
 
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid username' });
+      return res.status(400).json({ msg: 'Invalid username or email' });
     }
 
-    const isMatch = await bcrypt.compare(mobileNumber, user.mobileNumber);
-
+    const isMatch = await bcrypt.compare(pass, user.mobileNumber);
     if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid mobile number' });
+      return res.status(400).json({ msg: 'Incorrect password' });
     }
 
-    const payload = {
-      user: {
-        id: user.id,
-        isAdmin: user.isAdmin
-      }
-    };
+    // Enforce strict admin access exclusively for ADMIN_EMAIL
+    user.isAdmin = isUserAdmin(user.email);
+    await user.save();
 
-    jwt.sign(
-      payload,
-      JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            coins: user.coins,
-            totalScore: user.totalScore,
-            todayScore: user.todayScore,
-            highScore: user.highScore || 0,
-            isAdmin: user.isAdmin,
-            profileImageUrl: user.profileImageUrl
-          }
-        });
-      }
-    );
+    const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
+    jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
+      if (err) throw err;
+      return res.json({ token, user: formatUserResponse(user) });
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Login Error:', err);
+    res.status(500).json({ msg: 'Server error during login' });
   }
 });
 
@@ -218,35 +198,27 @@ router.post('/login', async (req, res) => {
 // @access   Private
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'User not found' });
-    res.json({
-      id: user.id,
-      name: user.name,
-      coins: user.coins,
-      totalScore: user.totalScore,
-      todayScore: user.todayScore,
-      highScore: user.highScore || 0,
-      isAdmin: user.isAdmin,
-      profileImageUrl: user.profileImageUrl
-    });
+    
+    user.isAdmin = isUserAdmin(user.email);
+    await user.save();
+
+    res.json(formatUserResponse(user));
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Get Me Error:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
 // @route    POST api/auth/rewards
-// @desc     Update user coins (daily check-in, rewards, rewarded ads)
+// @desc     Update user coins
 // @access   Private
 router.post('/rewards', auth, async (req, res) => {
   const { coinsToAdd } = req.body;
-
   try {
     const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ msg: 'User not found' });
 
     user.coins += parseInt(coinsToAdd) || 0;
     await user.save();
@@ -256,8 +228,8 @@ router.post('/rewards', auth, async (req, res) => {
       msg: `Added ${coinsToAdd} coins. New balance: ${user.coins}`
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Rewards Error:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
@@ -271,7 +243,6 @@ router.put('/profile', auth, async (req, res) => {
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
     if (name && name.trim()) {
-      // Check if name is taken by another user
       const existingUser = await User.findOne({ name: name.trim() });
       if (existingUser && existingUser.id !== user.id) {
         return res.status(400).json({ msg: 'Username is already in use. Please choose a different one.' });
@@ -281,19 +252,10 @@ router.put('/profile', auth, async (req, res) => {
     if (profileImageUrl !== undefined) user.profileImageUrl = profileImageUrl;
 
     await user.save();
-    res.json({
-      id: user.id,
-      name: user.name,
-      coins: user.coins,
-      totalScore: user.totalScore,
-      todayScore: user.todayScore,
-      highScore: user.highScore || 0,
-      isAdmin: user.isAdmin,
-      profileImageUrl: user.profileImageUrl
-    });
+    res.json(formatUserResponse(user));
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Update Profile Error:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
