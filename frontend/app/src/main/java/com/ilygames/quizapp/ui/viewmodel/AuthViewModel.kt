@@ -28,7 +28,7 @@ class AuthViewModel : ViewModel() {
         profileImageUrl = null
     )
 
-    private val _user = MutableStateFlow<User>(defaultAdminUser)
+    private val _user = MutableStateFlow<User?>(defaultAdminUser)
     val user: StateFlow<User?> = _user.asStateFlow()
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Success(defaultAdminUser))
@@ -38,32 +38,32 @@ class AuthViewModel : ViewModel() {
     val token: StateFlow<String?> = _token.asStateFlow()
 
     fun resetAuthState() {
-        _authState.value = AuthState.Success(_user.value)
+        _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
     }
 
     fun tryAutoLogin(context: Context? = null) {
-        _authState.value = AuthState.Success(_user.value)
+        _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
     }
 
     fun refreshProfile(context: Context? = null) {
-        _authState.value = AuthState.Success(_user.value)
+        _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
     }
 
     fun updateProfileState(name: String? = null, profileImageUrl: String? = null) {
-        val currentUser = _user.value
-        val updatedUser = currentUser.copy(
-            name = name ?: currentUser.name,
-            profileImageUrl = profileImageUrl ?: currentUser.profileImageUrl
+        val current = _user.value ?: defaultAdminUser
+        val updated = current.copy(
+            name = name ?: current.name,
+            profileImageUrl = profileImageUrl ?: current.profileImageUrl
         )
-        _user.value = updatedUser
-        _authState.value = AuthState.Success(updatedUser)
+        _user.value = updated
+        _authState.value = AuthState.Success(updated)
     }
 
     fun addAdReward(context: Context? = null, coinsToAdd: Int = 10) {
-        val currentUser = _user.value
-        val updatedUser = currentUser.copy(coins = currentUser.coins + coinsToAdd)
-        _user.value = updatedUser
-        _authState.value = AuthState.Success(updatedUser)
+        val current = _user.value ?: defaultAdminUser
+        val updated = current.copy(coins = current.coins + coinsToAdd)
+        _user.value = updated
+        _authState.value = AuthState.Success(updated)
     }
 
     fun logout(context: Context? = null) {
