@@ -46,24 +46,24 @@ fun AppNavigation() {
 
     val token by authViewModel.token.collectAsState()
     val userState by authViewModel.user.collectAsState()
-    val activeToken = token ?: "bypass_auth_token_123"
 
-    // Load admin preferences & initialize audio sound pool
+    // Check for auto-login on startup
     LaunchedEffect(Unit) {
         com.ilygames.quizapp.ui.screens.loadPersistedAdminData(context)
         SoundManager.init(context)
         authViewModel.tryAutoLogin(context)
     }
 
-    // Connect realtime socket
-    LaunchedEffect(activeToken) {
-        quizViewModel.onScoreUpdated = { authViewModel.refreshProfile() }
-        quizViewModel.connectRealtime(activeToken)
+    // Connect realtime socket whenever we have a token
+    LaunchedEffect(token) {
+        val t = token ?: return@LaunchedEffect
+        quizViewModel.onScoreUpdated = { authViewModel.refreshProfile(context) }
+        quizViewModel.connectRealtime(t)
     }
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "splash"
     ) {
         composable("splash") {
             SplashScreen(
@@ -71,6 +71,37 @@ fun AppNavigation() {
                 onNavigateToHome = {
                     navController.navigate("home") {
                         popUpTo("splash") { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate("login") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable("login") {
+            LoginScreen(
+                authViewModel = authViewModel,
+                onNavigateToRegister = { navController.navigate("register") },
+                onLoginSuccess = {
+                    authViewModel.refreshProfile(context)
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable("register") {
+            RegisterScreen(
+                authViewModel = authViewModel,
+                onNavigateToLogin = { navController.navigate("login") },
+                onRegisterSuccess = {
+                    authViewModel.refreshProfile(context)
+                    navController.navigate("home") {
+                        popUpTo("register") { inclusive = true }
                     }
                 }
             )
@@ -80,8 +111,10 @@ fun AppNavigation() {
             HomeScreen(
                 authViewModel = authViewModel,
                 onStartQuiz = {
-                    quizViewModel.startQuiz(activeToken)
-                    navController.navigate("quiz")
+                    token?.let { currentToken ->
+                        quizViewModel.startQuiz(currentToken)
+                        navController.navigate("quiz")
+                    } ?: navController.navigate("login")
                 },
                 onStartReadingQuiz = {
                     navController.navigate("reading_quiz")
@@ -94,23 +127,28 @@ fun AppNavigation() {
                 },
                 onLogout = {
                     authViewModel.logout(context)
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
                 }
             )
         }
 
         composable("quiz") {
-            QuizScreen(
-                token = activeToken,
-                quizViewModel = quizViewModel,
-                onQuizFinished = {
-                    navController.navigate("result") {
-                        popUpTo("quiz") { inclusive = true }
+            token?.let { currentToken ->
+                QuizScreen(
+                    token = currentToken,
+                    quizViewModel = quizViewModel,
+                    onQuizFinished = {
+                        navController.navigate("result") {
+                            popUpTo("quiz") { inclusive = true }
+                        }
+                    },
+                    onExitQuiz = {
+                        navController.popBackStack()
                     }
-                },
-                onExitQuiz = {
-                    navController.popBackStack()
-                }
-            )
+                )
+            }
         }
 
         composable("reading_quiz") {
@@ -133,17 +171,17 @@ fun AppNavigation() {
 
         composable("leaderboard") {
             LeaderboardScreen(
-                token = activeToken,
+                token = token ?: "guest_token",
                 quizViewModel = quizViewModel,
-                currentUserId = userState?.id ?: "admin_user_001",
-                currentUserName = userState?.name ?: "Hasan",
+                currentUserId = userState?.id ?: "",
+                currentUserName = userState?.name ?: "",
                 onBack = { navController.popBackStack() }
             )
         }
 
         composable("admin_panel") {
             NativeAdminScreen(
-                token = activeToken,
+                token = token,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -1,5 +1,6 @@
 package com.ilygames.quizapp.ui.screens
 
+import android.content.Context
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +28,7 @@ fun SplashScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToLogin: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     var progressTarget by remember { mutableStateOf(0.1f) }
     val progress by animateFloatAsState(
         targetValue = progressTarget,
@@ -34,10 +37,19 @@ fun SplashScreen(
     )
 
     LaunchedEffect(Unit) {
-        authViewModel?.tryAutoLogin()
-        progressTarget = 1.0f
+        progressTarget = 0.85f
+        authViewModel?.tryAutoLogin(context)
         delay(400)
-        onNavigateToHome()
+        progressTarget = 1.0f
+
+        val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        val hasToken = !sharedPrefs.getString("auth_token", null).isNullOrBlank() || authViewModel?.token?.value != null
+
+        if (!hasToken && onNavigateToLogin != null) {
+            onNavigateToLogin()
+        } else {
+            onNavigateToHome()
+        }
     }
 
     Box(

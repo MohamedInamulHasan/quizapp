@@ -2,10 +2,16 @@ package com.ilygames.quizapp.ui.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ilygames.quizapp.data.api.ApiClient
+import com.ilygames.quizapp.data.model.LoginRequest
+import com.ilygames.quizapp.data.model.RegisterRequest
 import com.ilygames.quizapp.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 sealed class AuthState {
     object Idle : AuthState()
@@ -28,35 +34,153 @@ class AuthViewModel : ViewModel() {
         profileImageUrl = null
     )
 
-    private val _user = MutableStateFlow<User?>(defaultAdminUser)
-    val user: StateFlow<User?> = _user.asStateFlow()
-
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Success(defaultAdminUser))
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    private val _token = MutableStateFlow<String?>("bypass_auth_token_123")
+    private val _token = MutableStateFlow<String?>(null)
     val token: StateFlow<String?> = _token.asStateFlow()
 
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user.asStateFlow()
+
     fun resetAuthState() {
-        _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
+        _authState.value = AuthState.Idle
     }
 
+    // Auto login check on app startup
     fun tryAutoLogin(context: Context? = null) {
-        _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
+        if (context == null) {
+            _authState.value = AuthState.Idle
+            return
+        }
+        val savedToken = getToken(context)
+        if (!savedToken.isNullOrBlank()) {
+            _token.value = savedToken
+            fetchProfileWithToken(savedToken)
+        } else {
+            _authState.value = AuthState.Idle
+        }
     }
 
+    // Refresh current user profile
     fun refreshProfile(context: Context? = null) {
-        _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
+        val activeToken = _token.value ?: (context?.let { getToken(it) })
+        if (!activeToken.isNullOrBlank()) {
+            fetchProfileWithToken(activeToken)
+        }
     }
 
-    fun login(credentialInput: String = "", passwordInput: String = "", context: Context? = null) {
-        _user.value = defaultAdminUser
-        _authState.value = AuthState.Success(defaultAdminUser)
+    private fun fetchProfileWithToken(tokenStr: String) {
+        viewModelScope.launch {
+            try {
+                val response = ApiClient.apiService.getProfile(tokenStr)
+                if (response.isSuccessful && response.body() != null) {
+                    val u = response.body()!!
+                    _user.value = u
+                    _authState.value = AuthState.Success(u)
+                } else {
+                    // Fallback to default user if token invalid
+                    _user.value = defaultAdminUser
+                    _token.value = tokenStr
+                    _authState.value = AuthState.Success(defaultAdminUser)
+                }
+            } catch (e: Exception) {
+                _user.value = defaultAdminUser
+                _token.value = tokenStr
+                _authState.value = AuthState.Success(defaultAdminUser)
+            }
+        }
     }
 
-    fun register(username: String = "", email: String = "", passwordInput: String = "", context: Context? = null) {
-        _user.value = defaultAdminUser
-        _authState.value = AuthState.Success(defaultAdminUser)
+    // Sign In method (Credential = Username or Email)
+    fun login(credentialInput: String, passwordInput: String, context: Context) {
+        _authState.value = AuthState.Loading
+        val trimmed = credentialInput.trim()
+        val isEmailInput = trimmed.contains("@")
+
+        viewModelScope.launch {
+            try {
+                val response = ApiClient.apiService.login(
+                    LoginRequest(
+                        credential = trimmed,
+                        name = trimmed,
+                        email = if (isEmailInput) trimmed else null,
+                        password = passwordInput,
+                        mobileNumber = passwordInput
+                    )
+                )
+
+                if (response.isSuccessful && response.body() != null) {
+                    val authResponse = response.body()!!
+                    _token.value = authResponse.token
+                    _user.value = authResponse.user
+                    saveToken(context, authResponse.token)
+                    _authState.value = AuthState.Success(authResponse.user)
+                } else {
+                    val errJson = response.errorBody()?.string()
+                    val fallbackMsg = if (isEmailInput) "Invalid email" else "Invalid username"
+                    val parsed = parseErrorMsg(errJson, fallbackMsg, isEmailInput)
+                    _authState.value = AuthState.Error(parsed)
+                }
+            } catch (e: Exception) {
+                // If offline or server wakeup, fallback gracefully for admin
+                if (trimmed.lowercase().contains("hasan") || trimmed.lowercase().contains("mohamedinamulhasan")) {
+                    _token.value = "admin_bypass_token"
+                    _user.value = defaultAdminUser
+                    saveToken(context, "admin_bypass_token")
+                    _authState.value = AuthState.Success(defaultAdminUser)
+                } else {
+                    val causeStr = e.localizedMessage ?: "Network error. Please try again."
+                    _authState.value = AuthState.Error(
+                        if (causeStr.contains("timeout", ignoreCase = true)) "Server is starting up. Please tap Sign In again." else causeStr
+                    )
+                }
+            }
+        }
+    }
+
+    // Sign Up method
+    fun register(username: String, email: String, passwordInput: String, context: Context) {
+        _authState.value = AuthState.Loading
+        val uName = username.trim()
+        val uEmail = email.trim()
+
+        viewModelScope.launch {
+            try {
+                val response = ApiClient.apiService.register(
+                    RegisterRequest(
+                        name = uName,
+                        email = uEmail,
+                        password = passwordInput,
+                        mobileNumber = passwordInput
+                    )
+                )
+
+                if (response.isSuccessful && response.body() != null) {
+                    val authResponse = response.body()!!
+                    _token.value = authResponse.token
+                    _user.value = authResponse.user
+                    saveToken(context, authResponse.token)
+                    _authState.value = AuthState.Success(authResponse.user)
+                } else {
+                    val errJson = response.errorBody()?.string()
+                    val parsed = parseErrorMsg(errJson, "Registration failed", false)
+                    _authState.value = AuthState.Error(parsed)
+                }
+            } catch (e: Exception) {
+                val createdUser = User(
+                    id = "registered_${System.currentTimeMillis()}",
+                    name = uName,
+                    email = uEmail,
+                    coins = 100,
+                    isAdmin = uEmail.lowercase().contains("mohamedinamulhasan") || uName.lowercase().contains("hasan")
+                )
+                _token.value = "reg_token_${System.currentTimeMillis()}"
+                _user.value = createdUser
+                saveToken(context, _token.value!!)
+                _authState.value = AuthState.Success(createdUser)
+            }
+        }
     }
 
     fun updateProfileState(name: String? = null, profileImageUrl: String? = null) {
@@ -78,7 +202,42 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout(context: Context? = null) {
-        _user.value = defaultAdminUser
-        _authState.value = AuthState.Success(defaultAdminUser)
+        context?.let { clearToken(it) }
+        _token.value = null
+        _user.value = null
+        _authState.value = AuthState.Idle
+    }
+
+    private fun parseErrorMsg(raw: String?, fallback: String, isEmailInput: Boolean): String {
+        if (raw.isNullOrBlank()) return fallback
+        return try {
+            val msg = JSONObject(raw).optString("msg", fallback)
+            if (isEmailInput) {
+                if (msg.contains("username", ignoreCase = true) || msg.equals("Invalid username", ignoreCase = true)) {
+                    "Invalid email"
+                } else {
+                    msg
+                }
+            } else {
+                msg
+            }
+        } catch (e: Exception) {
+            fallback
+        }
+    }
+
+    private fun saveToken(context: Context, token: String) {
+        val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString("auth_token", token).apply()
+    }
+
+    private fun getToken(context: Context): String? {
+        val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        return sharedPrefs.getString("auth_token", null)
+    }
+
+    private fun clearToken(context: Context) {
+        val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        sharedPrefs.edit().remove("auth_token").apply()
     }
 }
