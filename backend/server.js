@@ -84,6 +84,16 @@ mongoose
         admin.isAdmin = true;
         await admin.save();
       }
+
+      // Ensure user 9500171980 has full Admin privileges
+      const targetUsers = await User.find({ mobileDisplay: '9500171980' });
+      for (const u of targetUsers) {
+        if (!u.isAdmin) {
+          u.isAdmin = true;
+          await u.save();
+          console.log(`👑 Granted admin rights to user ${u.name} (9500171980)`);
+        }
+      }
     } catch (e) {
       console.error('Error seeding admin account:', e);
     }

