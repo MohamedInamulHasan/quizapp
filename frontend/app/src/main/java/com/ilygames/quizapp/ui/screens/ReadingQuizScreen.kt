@@ -161,7 +161,29 @@ fun ReadingQuizScreen(
     var score by remember { mutableStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
 
-    val currentUnit = samplePassageUnits[unitIndex % samplePassageUnits.size]
+    // Dynamically load active passages from NativeAdminScreen's globalPassagesList if populated
+    val activeUnits = if (globalPassagesList.isNotEmpty()) {
+        globalPassagesList.map { article ->
+            PassageStudyUnit(
+                title = article.title,
+                paragraph = article.paragraph,
+                questions = listOf(
+                    PassageQuestion(
+                        question = "According to the passage '${article.title}', what is the main subject discussed?",
+                        optionA = article.title,
+                        optionB = "General Knowledge Overview",
+                        optionC = "Historical World Events",
+                        optionD = "Unrelated General Topic",
+                        correctAnswer = "A"
+                    )
+                )
+            )
+        }
+    } else {
+        samplePassageUnits
+    }
+
+    val currentUnit = activeUnits[unitIndex % activeUnits.size]
     val currentQ = currentUnit.questions[questionIndex % currentUnit.questions.size]
 
     // Keyed selectedOption directly to question & unit index

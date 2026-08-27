@@ -76,6 +76,7 @@ fun AppNavigation() {
                 onNavigateToLogin = {
                     navController.navigate("login") {
                         popUpTo("splash") { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
@@ -84,11 +85,17 @@ fun AppNavigation() {
         composable("login") {
             LoginScreen(
                 authViewModel = authViewModel,
-                onNavigateToRegister = { navController.navigate("register") },
+                onNavigateToRegister = {
+                    navController.navigate("register") {
+                        popUpTo("login") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onLoginSuccess = {
                     authViewModel.refreshProfile(context)
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
@@ -97,11 +104,17 @@ fun AppNavigation() {
         composable("register") {
             RegisterScreen(
                 authViewModel = authViewModel,
-                onNavigateToLogin = { navController.navigate("login") },
+                onNavigateToLogin = {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onRegisterSuccess = {
                     authViewModel.refreshProfile(context)
                     navController.navigate("home") {
                         popUpTo("register") { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
@@ -129,6 +142,7 @@ fun AppNavigation() {
                     authViewModel.logout(context)
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
