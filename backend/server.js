@@ -1,5 +1,9 @@
-const dns = require('dns');
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+if (process.env.NODE_ENV !== 'production' && !process.env.RENDER) {
+  try {
+    const dns = require('dns');
+    dns.setServers(['8.8.8.8', '8.8.4.4']);
+  } catch (e) {}
+}
 
 const express = require('express');
 const http = require('http');
