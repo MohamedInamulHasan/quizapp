@@ -76,14 +76,19 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
+    const userIdStr = (user._id || user.id || '').toString();
+    const payload = { user: { id: userIdStr, isAdmin: Boolean(user.isAdmin) } };
+
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
-      if (err) throw err;
+      if (err || !token) {
+        console.error('JWT Sign Error:', err);
+        return res.status(500).json({ msg: 'Registration authentication error' });
+      }
       return res.json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
-    console.error('Register Error:', err);
-    return res.status(500).json({ msg: 'Server error during registration' });
+    console.error('Register Route Exception:', err);
+    return res.status(400).json({ msg: err.message || 'Registration failed' });
   }
 });
 
@@ -137,14 +142,19 @@ router.post('/login', async (req, res) => {
     user.isAdmin = isUserAdmin(user.email);
     await user.save();
 
-    const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
+    const userIdStr = (user._id || user.id || '').toString();
+    const payload = { user: { id: userIdStr, isAdmin: Boolean(user.isAdmin) } };
+
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
-      if (err) throw err;
+      if (err || !token) {
+        console.error('JWT Sign Error:', err);
+        return res.status(500).json({ msg: 'Authentication error' });
+      }
       return res.json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
-    console.error('Login Error:', err);
-    return res.status(500).json({ msg: err.message || 'Server error during login' });
+    console.error('Login Route Exception:', err);
+    return res.status(400).json({ msg: err.message || 'Login request failed' });
   }
 });
 
