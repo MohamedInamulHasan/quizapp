@@ -33,11 +33,11 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 
-    fun authenticate(name: String, mobileNumber: String, context: Context) {
+    fun authenticate(name: String, email: String? = null, mobileNumber: String, context: Context) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.authenticate(LoginRequest(name, mobileNumber))
+                val response = ApiClient.apiService.authenticate(LoginRequest(name, email, mobileNumber))
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
