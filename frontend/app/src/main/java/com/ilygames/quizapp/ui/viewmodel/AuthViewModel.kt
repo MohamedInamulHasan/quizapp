@@ -2,13 +2,10 @@ package com.ilygames.quizapp.ui.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.ilygames.quizapp.data.api.ApiClient
 import com.ilygames.quizapp.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 sealed class AuthState {
     object Idle : AuthState()

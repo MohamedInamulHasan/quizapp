@@ -45,6 +45,7 @@ fun AppNavigation() {
     val context = LocalContext.current
 
     val token by authViewModel.token.collectAsState()
+    val userState by authViewModel.user.collectAsState()
     val activeToken = token ?: "bypass_auth_token_123"
 
     // Load admin preferences & initialize audio sound pool
@@ -132,12 +133,17 @@ fun AppNavigation() {
 
         composable("leaderboard") {
             LeaderboardScreen(
+                token = activeToken,
+                quizViewModel = quizViewModel,
+                currentUserId = userState?.id ?: "admin_user_001",
+                currentUserName = userState?.name ?: "Hasan",
                 onBack = { navController.popBackStack() }
             )
         }
 
         composable("admin_panel") {
             NativeAdminScreen(
+                token = activeToken,
                 onBack = { navController.popBackStack() }
             )
         }
