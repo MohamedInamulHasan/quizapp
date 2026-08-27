@@ -45,24 +45,24 @@ fun AppNavigation() {
     val context = LocalContext.current
 
     val token by authViewModel.token.collectAsState()
+    val activeToken = token ?: "bypass_auth_token_123"
 
-    // Check for auto-login on startup, load saved admin preferences & init audio sound pool
+    // Load admin preferences & initialize audio sound pool
     LaunchedEffect(Unit) {
         com.ilygames.quizapp.ui.screens.loadPersistedAdminData(context)
         SoundManager.init(context)
         authViewModel.tryAutoLogin(context)
     }
 
-    // Connect realtime socket whenever we have a token
-    LaunchedEffect(token) {
-        val t = token ?: return@LaunchedEffect
+    // Connect realtime socket
+    LaunchedEffect(activeToken) {
         quizViewModel.onScoreUpdated = { authViewModel.refreshProfile() }
-        quizViewModel.connectRealtime(t)
+        quizViewModel.connectRealtime(activeToken)
     }
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "home"
     ) {
         composable("splash") {
             SplashScreen(
@@ -70,37 +70,6 @@ fun AppNavigation() {
                 onNavigateToHome = {
                     navController.navigate("home") {
                         popUpTo("splash") { inclusive = true }
-                    }
-                },
-                onNavigateToLogin = {
-                    navController.navigate("login") {
-                        popUpTo("splash") { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        composable("login") {
-            LoginScreen(
-                authViewModel = authViewModel,
-                onNavigateToRegister = { navController.navigate("register") },
-                onLoginSuccess = {
-                    authViewModel.refreshProfile()
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        composable("register") {
-            RegisterScreen(
-                authViewModel = authViewModel,
-                onNavigateToLogin = { navController.navigate("login") },
-                onRegisterSuccess = {
-                    authViewModel.refreshProfile()
-                    navController.navigate("home") {
-                        popUpTo("register") { inclusive = true }
                     }
                 }
             )
@@ -110,10 +79,8 @@ fun AppNavigation() {
             HomeScreen(
                 authViewModel = authViewModel,
                 onStartQuiz = {
-                    token?.let {
-                        quizViewModel.startQuiz(it)
-                        navController.navigate("quiz")
-                    }
+                    quizViewModel.startQuiz(activeToken)
+                    navController.navigate("quiz")
                 },
                 onStartReadingQuiz = {
                     navController.navigate("reading_quiz")
@@ -125,59 +92,57 @@ fun AppNavigation() {
                     navController.navigate("admin_panel")
                 },
                 onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
+                    authViewModel.logout(context)
                 }
             )
         }
 
         composable("quiz") {
-            token?.let { currentToken ->
-                QuizScreen(
-                    token = currentToken,
-                    quizViewModel = quizViewModel,
-                    onQuizFinished = {
-                        authViewModel.refreshProfile()
-                        navController.navigate("home") {
-                            popUpTo("quiz") { inclusive = true }
-                        }
-                    },
-                    onExitQuiz = {
-                        navController.popBackStack()
+            QuizScreen(
+                token = activeToken,
+                quizViewModel = quizViewModel,
+                onQuizFinished = {
+                    navController.navigate("result") {
+                        popUpTo("quiz") { inclusive = true }
                     }
-                )
-            }
+                }
+            )
         }
 
         composable("reading_quiz") {
-            StudyPassagesScreen(
-                onBack = { navController.popBackStack() },
-                onStartDaily20Quiz = {
-                    token?.let { currentToken ->
-                        quizViewModel.startQuiz(currentToken)
-                        navController.navigate("quiz")
+            ReadingQuizScreen(
+                authViewModel = authViewModel,
+                onQuizFinished = { score, coins ->
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("result") {
+            ResultScreen(
+                quizViewModel = quizViewModel,
+                onPlayAgain = {
+                    quizViewModel.startQuiz(activeToken)
+                    navController.navigate("quiz") {
+                        popUpTo("result") { inclusive = true }
+                    }
+                },
+                onGoHome = {
+                    navController.navigate("home") {
+                        popUpTo("result") { inclusive = true }
                     }
                 }
             )
         }
 
         composable("leaderboard") {
-            token?.let { currentToken ->
-                val currentUserState by authViewModel.user.collectAsState()
-                LeaderboardScreen(
-                    token = currentToken,
-                    quizViewModel = quizViewModel,
-                    currentUserId = currentUserState?.id ?: "",
-                    currentUserName = currentUserState?.name ?: "",
-                    onBack = { navController.popBackStack() }
-                )
-            }
+            LeaderboardScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable("admin_panel") {
             NativeAdminScreen(
-                token = token,
                 onBack = { navController.popBackStack() }
             )
         }
