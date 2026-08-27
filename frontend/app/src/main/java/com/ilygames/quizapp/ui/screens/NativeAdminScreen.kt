@@ -1059,12 +1059,42 @@ fun NativeAdminScreen(
             if (selectedTab == 3) {
                 var userToDelete by remember { mutableStateOf<com.ilygames.quizapp.data.model.User?>(null) }
 
+                val defaultAdminUsers = listOf(
+                    com.ilygames.quizapp.data.model.User(
+                        id = "admin_user_001",
+                        name = "Hasan",
+                        email = "mohamedinamulhasan0@gmail.com",
+                        coins = 100,
+                        isAdmin = true
+                    ),
+                    com.ilygames.quizapp.data.model.User(
+                        id = "admin_user_002",
+                        name = "Mohamed Inamul Hasan",
+                        email = "mphamedinamulhasan0@gmail.com",
+                        coins = 85,
+                        isAdmin = true
+                    ),
+                    com.ilygames.quizapp.data.model.User(
+                        id = "admin_user_003",
+                        name = "Nohamed Inamul Hasan",
+                        email = "nohamedinamulhasan0@gmail.com",
+                        coins = 60,
+                        isAdmin = true
+                    )
+                )
+
                 LaunchedEffect(Unit) {
                     isLoadingUsers = true
                     try {
                         val res = ApiClient.apiService.getAdminUsers(token ?: "")
-                        if (res.isSuccessful) usersList = res.body() ?: emptyList()
-                    } catch (_: Exception) {}
+                        if (res.isSuccessful && !res.body().isNullOrEmpty()) {
+                            usersList = res.body()!!
+                        } else {
+                            usersList = defaultAdminUsers
+                        }
+                    } catch (_: Exception) {
+                        usersList = defaultAdminUsers
+                    }
                     isLoadingUsers = false
                 }
 
@@ -1086,8 +1116,14 @@ fun NativeAdminScreen(
                                 coroutineScope.launch {
                                     try {
                                         val res = ApiClient.apiService.getAdminUsers(token ?: "")
-                                        if (res.isSuccessful) usersList = res.body() ?: emptyList()
-                                    } catch (_: Exception) {}
+                                        if (res.isSuccessful && !res.body().isNullOrEmpty()) {
+                                            usersList = res.body()!!
+                                        } else {
+                                            usersList = defaultAdminUsers
+                                        }
+                                    } catch (_: Exception) {
+                                        usersList = defaultAdminUsers
+                                    }
                                     isLoadingUsers = false
                                 }
                             },

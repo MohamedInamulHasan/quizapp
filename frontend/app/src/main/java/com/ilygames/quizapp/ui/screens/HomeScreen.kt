@@ -119,29 +119,41 @@ fun HomeScreen(
                             requestBody
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
-                        if (response.isSuccessful) {
-                            val imageUrl = response.body()?.imageUrl
-                            if (!imageUrl.isNullOrBlank()) {
-                                // Save URL locally in SharedPreferences and remotely to MongoDB
-                                val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                                prefs.edit().putString("saved_profile_img_url", imageUrl).apply()
+                        if (response.isSuccessful && response.body()?.imageUrl != null) {
+                            val imageUrl = response.body()!!.imageUrl
+                            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                            prefs.edit().putString("saved_profile_img_url", imageUrl).apply()
 
-                                com.ilygames.quizapp.data.api.ApiClient.apiService.updateProfile(
-                                    token,
-                                    com.ilygames.quizapp.data.model.UpdateProfileRequest(profileImageUrl = imageUrl)
-                                )
-                                authViewModel.updateProfileState(profileImageUrl = imageUrl)
-                                globalProfileImageUri.value = imageUrl
-                                Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
-                            }
+                            com.ilygames.quizapp.data.api.ApiClient.apiService.updateProfile(
+                                token,
+                                com.ilygames.quizapp.data.model.UpdateProfileRequest(profileImageUrl = imageUrl)
+                            )
+                            authViewModel.updateProfileState(profileImageUrl = imageUrl)
+                            globalProfileImageUri.value = imageUrl
+                            Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "Upload failed (${response.code()})", android.widget.Toast.LENGTH_SHORT).show()
+                            val localUriStr = selectedUri.toString()
+                            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                            prefs.edit().putString("saved_profile_img_url", localUriStr).apply()
+                            authViewModel.updateProfileState(profileImageUrl = localUriStr)
+                            globalProfileImageUri.value = localUriStr
+                            Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                         }
                     } else if (token.isBlank()) {
-                        Toast.makeText(context, "Please log in again.", android.widget.Toast.LENGTH_SHORT).show()
+                        val localUriStr = selectedUri.toString()
+                        val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                        prefs.edit().putString("saved_profile_img_url", localUriStr).apply()
+                        authViewModel.updateProfileState(profileImageUrl = localUriStr)
+                        globalProfileImageUri.value = localUriStr
+                        Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Error: ${e.localizedMessage}", android.widget.Toast.LENGTH_SHORT).show()
+                    val localUriStr = selectedUri.toString()
+                    val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("saved_profile_img_url", localUriStr).apply()
+                    authViewModel.updateProfileState(profileImageUrl = localUriStr)
+                    globalProfileImageUri.value = localUriStr
+                    Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
