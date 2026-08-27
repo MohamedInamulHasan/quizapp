@@ -15,8 +15,8 @@ router.get('/questions', auth, async (req, res) => {
       return res.status(400).json({ msg: 'No questions in the database' });
     }
 
-    // Retrieve up to 20 random questions
-    const limit = 20;
+    // Retrieve requested limit or up to 100 random questions
+    const limit = parseInt(req.query.limit) || 100;
     const questions = await Question.aggregate([{ $sample: { size: limit } }]);
     res.json(questions);
   } catch (err) {

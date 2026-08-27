@@ -42,7 +42,8 @@ interface ApiService {
 
     @GET("quiz/questions")
     suspend fun getQuestions(
-        @Header("x-auth-token") token: String
+        @Header("x-auth-token") token: String,
+        @Query("limit") limit: Int = 100
     ): Response<List<Question>>
 
     @GET("quiz/daily-challenge")

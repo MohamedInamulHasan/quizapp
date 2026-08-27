@@ -42,30 +42,17 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         progressTarget = 0.85f
-    }
-
-    LaunchedEffect(authState) {
         val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
         val hasToken = !sharedPrefs.getString("auth_token", null).isNullOrBlank()
 
         if (!hasToken) {
             progressTarget = 1.0f
-            delay(300)
+            delay(350)
             onNavigateToLogin()
         } else {
-            when (authState) {
-                is AuthState.Success -> {
-                    progressTarget = 1.0f
-                    delay(250)
-                    onNavigateToHome()
-                }
-                is AuthState.Error -> {
-                    progressTarget = 1.0f
-                    delay(300)
-                    onNavigateToLogin()
-                }
-                else -> {} // Idle or Loading: keep waiting
-            }
+            progressTarget = 1.0f
+            delay(350)
+            onNavigateToHome()
         }
     }
 

@@ -103,10 +103,10 @@ class QuizViewModel : ViewModel() {
         _quizState.value = QuizState.Loading
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.getQuestions(token)
+                val limit = com.ilygames.quizapp.ui.screens.globalQuizQuestionLimit.value
+                val response = ApiClient.apiService.getQuestions(token, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
-                    val limit = com.ilygames.quizapp.ui.screens.globalQuizQuestionLimit.value
                     val randomizedQuestions = if (limit > 0) {
                         allQuestions.shuffled().take(limit)
                     } else {
@@ -133,10 +133,10 @@ class QuizViewModel : ViewModel() {
         _quizState.value = QuizState.Loading
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.getQuestions(token)
+                val limit = com.ilygames.quizapp.ui.screens.globalQuizQuestionLimit.value
+                val response = ApiClient.apiService.getQuestions(token, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
-                    val limit = com.ilygames.quizapp.ui.screens.globalQuizQuestionLimit.value
                     val randomizedQuestions = if (limit > 0) {
                         allQuestions.shuffled().take(limit)
                     } else {
