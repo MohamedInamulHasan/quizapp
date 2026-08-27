@@ -56,6 +56,7 @@ class AuthViewModel : ViewModel() {
 
     fun login(name: String, email: String? = null, mobileNumber: String, context: Context) {
         _authState.value = AuthState.Loading
+        val isEmailInput = name.contains("@") || (email?.contains("@") == true)
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.login(LoginRequest(name, email, mobileNumber))
@@ -67,7 +68,7 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
                     val errJson = response.errorBody()?.string()
-                    _authState.value = AuthState.Error(parseErrorMsg(errJson, "Invalid credentials"))
+                    _authState.value = AuthState.Error(parseErrorMsg(errJson, if (isEmailInput) "Invalid email" else "Invalid username", isEmailInput))
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Network error. Please try again.")
@@ -164,10 +165,17 @@ class AuthViewModel : ViewModel() {
     }
 
     // Parses {"msg":"..."} response body and returns clean message string
-    private fun parseErrorMsg(raw: String?, fallback: String): String {
+    private fun parseErrorMsg(raw: String?, fallback: String, isEmailInput: Boolean = false): String {
         if (raw.isNullOrBlank()) return fallback
         return try {
-            JSONObject(raw).optString("msg", fallback)
+            val msg = JSONObject(raw).optString("msg", fallback)
+            if (isEmailInput && msg.equals("Invalid username", ignoreCase = true)) {
+                "Invalid email"
+            } else if (msg.contains("mobile", ignoreCase = true)) {
+                "Invalid credentials"
+            } else {
+                msg
+            }
         } catch (e: Exception) {
             fallback
         }
