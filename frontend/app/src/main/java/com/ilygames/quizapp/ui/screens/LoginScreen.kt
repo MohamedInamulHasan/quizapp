@@ -5,10 +5,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,16 +64,14 @@ fun AuthScreen(
     val authState by authViewModel.authState.collectAsState()
 
     var isSignUp by remember { mutableStateOf(startOnRegister) }
-    var name by remember { mutableStateOf("") }
-    var mobileNumber by remember { mutableStateOf("") }
-    var usernameError by remember { mutableStateOf("") }
-    var mobileError by remember { mutableStateOf("") }
+    var usernameInput by remember { mutableStateOf("") }
+    var emailInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
 
     LaunchedEffect(isSignUp) {
-        name = ""
-        mobileNumber = ""
-        usernameError = ""
-        mobileError = ""
+        usernameInput = ""
+        emailInput = ""
+        passwordInput = ""
         authViewModel.resetAuthState()
     }
 
@@ -82,7 +81,7 @@ fun AuthScreen(
 
     val inputTextStyle = TextStyle(
         color = MaterialTheme.colorScheme.onSurface,
-        fontSize = 16.sp,
+        fontSize = 15.sp,
         fontWeight = FontWeight.Normal
     )
 
@@ -107,19 +106,19 @@ fun AuthScreen(
                     .fillMaxWidth()
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Official Quizzy Green Squircle Q Logo
                 Box(
                     modifier = Modifier
-                        .size(76.dp)
+                        .size(72.dp)
                         .shadow(8.dp, RoundedCornerShape(22.dp), spotColor = PrimaryGreen.copy(alpha = 0.35f))
                         .background(PrimaryGreen, RoundedCornerShape(22.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Q",
-                        fontSize = 44.sp,
+                        fontSize = 42.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White
                     )
@@ -127,36 +126,27 @@ fun AuthScreen(
 
                 Text(
                     text = "Quizzy",
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 28.sp),
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
 
                 Text(
-                    text = if (isSignUp) "Create an Account" else "Sign In to Play",
+                    text = if (isSignUp) "Create Your Account" else "Sign In to Play",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextMuted,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(2.dp))
 
-                // Username field (max 12 chars)
+                // Field 1: Username / Email
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { input ->
-                        val filtered = input.filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(12)
-                        name = filtered
-                        usernameError = if (filtered.isNotBlank() && filtered.length < 3)
-                            "Invalid username" else ""
-                    },
-                    label = { Text("Username", color = TextMuted) },
-                    leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
-                    isError = usernameError.isNotBlank(),
-                    supportingText = if (usernameError.isNotBlank()) {
-                        { Text(usernameError, color = IncorrectRed) }
-                    } else null,
+                    value = usernameInput,
+                    onValueChange = { usernameInput = it },
+                    label = { Text(if (isSignUp) "Username" else "Username or Email", color = TextMuted) },
+                    leadingIcon = { Icon(if (isSignUp) Icons.Default.Person else Icons.Default.Person, null, tint = PrimaryGreen) },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = inputTextStyle,
@@ -176,22 +166,42 @@ fun AuthScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Mobile field (max 10 digits)
+                // Field 2: Email (ONLY in Sign Up mode)
+                if (isSignUp) {
+                    OutlinedTextField(
+                        value = emailInput,
+                        onValueChange = { emailInput = it },
+                        label = { Text("Email", color = TextMuted) },
+                        leadingIcon = { Icon(Icons.Default.Email, null, tint = PrimaryGreen) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        textStyle = inputTextStyle,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryGreen,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                            errorBorderColor = IncorrectRed,
+                            focusedLabelColor = PrimaryGreen,
+                            unfocusedLabelColor = TextMuted,
+                            cursorColor = PrimaryGreen,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            errorContainerColor = Color.Transparent,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Field 3: Password (in both Sign In & Sign Up modes)
                 OutlinedTextField(
-                    value = mobileNumber,
-                    onValueChange = { input ->
-                        val filtered = input.filter { it.isDigit() }.take(10)
-                        mobileNumber = filtered
-                        mobileError = if (filtered.isNotBlank() && filtered.length < 10)
-                            "Must be 10 digits" else ""
-                    },
-                    label = { Text("Mobile Number", color = TextMuted) },
-                    leadingIcon = { Icon(Icons.Default.Phone, null, tint = PrimaryGreen) },
-                    isError = mobileError.isNotBlank(),
-                    supportingText = if (mobileError.isNotBlank()) {
-                        { Text(mobileError, color = IncorrectRed) }
-                    } else null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    value = passwordInput,
+                    onValueChange = { passwordInput = it },
+                    label = { Text("Password", color = TextMuted) },
+                    leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = inputTextStyle,
@@ -223,20 +233,20 @@ fun AuthScreen(
                     )
                 }
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(2.dp))
 
                 // Primary Button (Sign In or Sign Up)
                 Button(
                     onClick = {
                         SoundManager.playClickSound()
                         if (isSignUp) {
-                            authViewModel.register(name, mobileNumber, context)
+                            authViewModel.register(usernameInput, passwordInput, context)
                         } else {
-                            authViewModel.login(name, mobileNumber, context)
+                            authViewModel.login(usernameInput, passwordInput, context)
                         }
                     },
-                    enabled = name.length >= 3 && mobileNumber.length == 10
-                            && usernameError.isBlank() && mobileError.isBlank()
+                    enabled = usernameInput.isNotBlank() && passwordInput.isNotBlank()
+                            && (!isSignUp || emailInput.isNotBlank())
                             && authState !is AuthState.Loading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryGreen,
@@ -246,7 +256,7 @@ fun AuthScreen(
                     elevation = ButtonDefaults.buttonElevation(0.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp)
+                        .height(50.dp)
                 ) {
                     if (authState is AuthState.Loading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
