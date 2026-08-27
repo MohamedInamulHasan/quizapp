@@ -100,7 +100,10 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error("Network error. Please check connection.")
+                val causeStr = e.localizedMessage ?: "Network error. Please try again."
+                _authState.value = AuthState.Error(
+                    if (causeStr.contains("timeout", ignoreCase = true)) "Server is starting up. Please tap Sign In again." else causeStr
+                )
             }
         }
     }
@@ -131,7 +134,10 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error("Network error. Please check connection.")
+                val causeStr = e.localizedMessage ?: "Network error. Please try again."
+                _authState.value = AuthState.Error(
+                    if (causeStr.contains("timeout", ignoreCase = true)) "Server is starting up. Please try again." else causeStr
+                )
             }
         }
     }
