@@ -167,6 +167,7 @@ class AuthViewModel : ViewModel() {
 
     // -------------------------------------------------------------
     // SIGN UP (register) - Backend Code Based Error Handling
+    // EMAIL_EXISTS -> "Email already in use"
     // USERNAME_EXISTS / HTTP 409 -> "Username already in use"
     // INVALID_EMAIL -> "Invalid email"
     // INVALID_PASSWORD_FORMAT -> "Password must be at least 6 characters"
@@ -218,7 +219,10 @@ class AuthViewModel : ViewModel() {
         }
 
         return when {
-            httpCode == 409 || errCode == "USERNAME_EXISTS" || errCode == "USER_ALREADY_EXISTS" -> "Username already in use"
+            errCode == "EMAIL_EXISTS" -> "Email already in use"
+            errCode == "USERNAME_EXISTS" || errCode == "USER_ALREADY_EXISTS" -> "Username already in use"
+            httpCode == 409 && msg.contains("email", ignoreCase = true) -> "Email already in use"
+            httpCode == 409 && msg.contains("username", ignoreCase = true) -> "Username already in use"
             errCode == "INVALID_EMAIL" || msg.contains("email", ignoreCase = true) -> "Invalid email"
             errCode == "INVALID_PASSWORD_FORMAT" -> "Password must be at least 6 characters"
             msg.isNotBlank() -> msg

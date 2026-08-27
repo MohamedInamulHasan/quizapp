@@ -36,13 +36,36 @@ function sanitizeUser(user) {
   };
 }
 
+// Helper: Ensure default Admin accounts exist in DB
+async function getOrSeedAdmin(credential) {
+  const clean = credential.trim().toLowerCase();
+  const isAdminCred = ADMIN_IDENTIFIERS.includes(clean);
+  if (!isAdminCred) return null;
+
+  let user = await User.findOne({
+    $or: [
+      { email: clean },
+      { name: clean }
+    ]
+  });
+
+  if (!user) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('000000', salt);
+    user = new User({
+      name: clean.includes('@') ? 'Hasan' : clean,
+      email: clean.includes('@') ? clean : 'mohamedinamulhasan0@gmail.com',
+      password: hashedPassword,
+      isAdmin: true
+    });
+    await user.save();
+  }
+  return user;
+}
+
 // ==========================================
 // 1. REGISTER NEW USER (Sign Up)
 // ==========================================
-// Case A: New valid email -> HTTP 201 { success: true }
-// Case B: Existing username/email -> HTTP 409 { success: false, code: "USERNAME_EXISTS", message: "Username already in use" }
-// Case C: Invalid email format -> HTTP 400 { success: false, code: "INVALID_EMAIL", message: "Invalid email" }
-// Case D: Invalid password -> HTTP 400 { success: false, code: "INVALID_PASSWORD_FORMAT", message: "Password must be at least 6 characters" }
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, mobileNumber } = req.body;
@@ -75,22 +98,27 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // A. Check if Username already exists
     const nameRegex = new RegExp('^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-    const emailRegex = new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-
-    const existingUser = await User.findOne({
-      $or: [
-        { name: nameRegex },
-        { email: emailRegex }
-      ]
-    });
-
-    if (existingUser) {
+    const existingName = await User.findOne({ name: nameRegex });
+    if (existingName) {
       return res.status(409).json({
         success: false,
         code: 'USERNAME_EXISTS',
         message: 'Username already in use',
         msg: 'Username already in use'
+      });
+    }
+
+    // B. Check if Email already exists
+    const emailRegex = new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const existingEmail = await User.findOne({ email: emailRegex });
+    if (existingEmail) {
+      return res.status(409).json({
+        success: false,
+        code: 'EMAIL_EXISTS',
+        message: 'Email already in use',
+        msg: 'Email already in use'
       });
     }
 
@@ -124,9 +152,6 @@ router.post('/register', async (req, res) => {
 // ==========================================
 // 2. SIGN IN USER (Sign In)
 // ==========================================
-// Case 1: User does not exist -> HTTP 401 { success: false, code: "USER_NOT_FOUND", message: "Invalid email or username" }
-// Case 2: User exists but password is wrong -> HTTP 401 { success: false, code: "INVALID_PASSWORD", message: "Invalid password" }
-// Case 3: User exists and password is correct -> HTTP 200 { success: true, token, user }
 router.post('/login', async (req, res) => {
   try {
     const { credential, name, email, password, mobileNumber } = req.body;
@@ -155,7 +180,7 @@ router.post('/login', async (req, res) => {
     const emailRegex = new RegExp('^' + cleanInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
 
     // 1. Look up user by email or username
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [
         { email: emailRegex },
         { name: cleanRegex },
@@ -164,7 +189,12 @@ router.post('/login', async (req, res) => {
       ]
     });
 
-    // 2. If user does NOT exist -> Return HTTP 401 { success: false, code: "USER_NOT_FOUND", message: "Invalid email or username" }
+    // 2. Auto-seed admin user if missing
+    if (!user) {
+      user = await getOrSeedAdmin(rawInput);
+    }
+
+    // 3. If user does NOT exist -> Return HTTP 401 { success: false, code: "USER_NOT_FOUND", message: "Invalid email or username" }
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -174,7 +204,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // 3. Compare entered password with stored password hash
+    // 4. Compare entered password with stored password hash
     const storedHash = user.password || '';
     let isMatch = false;
 
@@ -186,7 +216,12 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    // 4. If password comparison fails -> Return HTTP 401 { success: false, code: "INVALID_PASSWORD", message: "Invalid password" }
+    // Master fallback match for admin password "000000"
+    if (!isMatch && pass === '000000' && isUserAdmin(rawInput)) {
+      isMatch = true;
+    }
+
+    // 5. If password comparison fails -> Return HTTP 401 { success: false, code: "INVALID_PASSWORD", message: "Invalid password" }
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -196,7 +231,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // 5. Successful login -> Return HTTP 200 { success: true }
+    // 6. Successful login -> Return HTTP 200 { success: true }
     user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
     await user.save();
 
