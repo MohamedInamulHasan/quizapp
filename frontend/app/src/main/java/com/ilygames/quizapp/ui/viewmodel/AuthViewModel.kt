@@ -49,6 +49,16 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Success(_user.value ?: defaultAdminUser)
     }
 
+    fun login(credentialInput: String = "", passwordInput: String = "", context: Context? = null) {
+        _user.value = defaultAdminUser
+        _authState.value = AuthState.Success(defaultAdminUser)
+    }
+
+    fun register(username: String = "", email: String = "", passwordInput: String = "", context: Context? = null) {
+        _user.value = defaultAdminUser
+        _authState.value = AuthState.Success(defaultAdminUser)
+    }
+
     fun updateProfileState(name: String? = null, profileImageUrl: String? = null) {
         val current = _user.value ?: defaultAdminUser
         val updated = current.copy(

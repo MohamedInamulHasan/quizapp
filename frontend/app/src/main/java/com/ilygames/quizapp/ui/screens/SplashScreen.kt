@@ -22,9 +22,9 @@ private val OffWhiteBg = Color(0xFFF5F5F0)
 
 @Composable
 fun SplashScreen(
-    authViewModel: AuthViewModel,
+    authViewModel: AuthViewModel? = null,
     onNavigateToHome: () -> Unit,
-    onNavigateToLogin: () -> Unit = {}
+    onNavigateToLogin: (() -> Unit)? = null
 ) {
     var progressTarget by remember { mutableStateOf(0.1f) }
     val progress by animateFloatAsState(
@@ -34,6 +34,7 @@ fun SplashScreen(
     )
 
     LaunchedEffect(Unit) {
+        authViewModel?.tryAutoLogin()
         progressTarget = 1.0f
         delay(400)
         onNavigateToHome()
