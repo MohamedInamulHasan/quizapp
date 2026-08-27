@@ -120,7 +120,10 @@ fun HomeScreen(
                         if (response.isSuccessful) {
                             val imageUrl = response.body()?.imageUrl
                             if (!imageUrl.isNullOrBlank()) {
-                                // Save URL to MongoDB
+                                // Save URL locally in SharedPreferences and remotely to MongoDB
+                                val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                                prefs.edit().putString("saved_profile_img_url", imageUrl).apply()
+
                                 com.ilygames.quizapp.data.api.ApiClient.apiService.updateProfile(
                                     token,
                                     com.ilygames.quizapp.data.model.UpdateProfileRequest(profileImageUrl = imageUrl)
@@ -147,6 +150,11 @@ fun HomeScreen(
 
     // Refresh profile every time the screen is entered or user changes
     LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        val localProfileImg = prefs.getString("saved_profile_img_url", null)
+        if (!localProfileImg.isNullOrBlank()) {
+            globalProfileImageUri.value = localProfileImg
+        }
         loadPersistedAdminData(context)
         authViewModel.refreshProfile()
     }
@@ -154,7 +162,11 @@ fun HomeScreen(
     LaunchedEffect(user) {
         // Load profile image URL from user object (saved in MongoDB)
         user?.profileImageUrl?.let {
-            if (it.isNotBlank()) globalProfileImageUri.value = it
+            if (it.isNotBlank()) {
+                globalProfileImageUri.value = it
+                val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putString("saved_profile_img_url", it).apply()
+            }
         }
         val savedName = user?.name ?: "Player"
         customUserNameState.value = savedName

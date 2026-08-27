@@ -107,8 +107,12 @@ class QuizViewModel : ViewModel() {
                 val response = ApiClient.apiService.getQuestions(token, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
-                    val randomizedQuestions = if (limit > 0) {
-                        allQuestions.shuffled().take(limit)
+                    val randomizedQuestions = if (limit > 0 && allQuestions.isNotEmpty()) {
+                        val pool = mutableListOf<Question>()
+                        while (pool.size < limit) {
+                            pool.addAll(allQuestions.shuffled())
+                        }
+                        pool.take(limit)
                     } else {
                         allQuestions.shuffled()
                     }
@@ -137,8 +141,12 @@ class QuizViewModel : ViewModel() {
                 val response = ApiClient.apiService.getQuestions(token, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
-                    val randomizedQuestions = if (limit > 0) {
-                        allQuestions.shuffled().take(limit)
+                    val randomizedQuestions = if (limit > 0 && allQuestions.isNotEmpty()) {
+                        val pool = mutableListOf<Question>()
+                        while (pool.size < limit) {
+                            pool.addAll(allQuestions.shuffled())
+                        }
+                        pool.take(limit)
                     } else {
                         allQuestions.shuffled()
                     }
