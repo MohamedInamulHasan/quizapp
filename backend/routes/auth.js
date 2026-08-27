@@ -154,9 +154,9 @@ router.post('/register', async (req, res) => {
 // @access   Public
 router.post('/login', async (req, res) => {
   const { name, email, password, mobileNumber } = req.body;
-  const credential = (name || email || '').trim();
+  const credential = ((email && email.trim()) || (name && name.trim()) || '').trim();
   const pass = (password || mobileNumber || '').trim();
-  const isEmailFormat = credential.includes('@');
+  const isEmailFormat = credential.includes('@') || (email && email.includes('@'));
 
   if (!credential) {
     return res.status(400).json({ msg: 'Username or Email is required' });

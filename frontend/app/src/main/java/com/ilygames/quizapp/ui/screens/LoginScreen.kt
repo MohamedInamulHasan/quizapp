@@ -276,7 +276,7 @@ fun AuthScreen(
                         } else {
                             val trimmedInput = usernameInput.trim()
                             if (trimmedInput.contains("@")) {
-                                authViewModel.login("", trimmedInput, passwordInput, context)
+                                authViewModel.login(trimmedInput, trimmedInput, passwordInput, context)
                             } else {
                                 authViewModel.login(trimmedInput, null, passwordInput, context)
                             }
