@@ -52,6 +52,10 @@ fun RegisterScreen(
     var confirmPasswordInput by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        authViewModel.resetAuthState()
+    }
+
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
             onRegisterSuccess()

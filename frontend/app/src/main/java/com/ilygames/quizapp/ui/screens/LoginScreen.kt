@@ -62,6 +62,10 @@ fun LoginScreen(
     var passwordInput by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        authViewModel.resetAuthState()
+    }
+
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
             onLoginSuccess()

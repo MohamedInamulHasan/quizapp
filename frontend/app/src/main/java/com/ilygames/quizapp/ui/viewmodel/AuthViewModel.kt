@@ -222,21 +222,23 @@ class AuthViewModel : ViewModel() {
             val rawMsg = JSONObject(raw).optString("msg", fallback)
             val lower = rawMsg.lowercase()
 
+            // 1. Password Errors
             if (lower.contains("password")) {
                 return "Incorrect password"
             }
-            if (lower.contains("email") && lower.contains("use")) {
-                return "Email already in use"
-            }
+            // 2. Username Already In Use Error
             if (lower.contains("username") && lower.contains("use")) {
                 return "Username already in use"
             }
-            if (lower.contains("mobile") && lower.contains("use")) {
+            // 3. Email / Mobile Already In Use Error
+            if ((lower.contains("email") || lower.contains("mobile")) && lower.contains("use")) {
                 return "Email already in use"
             }
+            // 4. Invalid Email Error
             if (lower.contains("invalid email") || (isEmailInput && lower.contains("invalid") && !lower.contains("username"))) {
                 return "Invalid email"
             }
+            // 5. Invalid Username Error
             if (lower.contains("invalid username")) {
                 return "Invalid username"
             }
