@@ -108,15 +108,7 @@ class QuizViewModel : ViewModel() {
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
                     val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }
-                    val randomizedQuestions = if (limit > 0 && uniqueQuestions.isNotEmpty()) {
-                        val pool = mutableListOf<Question>()
-                        while (pool.size < limit) {
-                            pool.addAll(uniqueQuestions.shuffled())
-                        }
-                        pool.take(limit)
-                    } else {
-                        uniqueQuestions.shuffled()
-                    }
+                    val randomizedQuestions = uniqueQuestions.shuffled().take(limit)
 
                     _quizState.value = QuizState.Active(
                         questions = randomizedQuestions,
@@ -144,15 +136,7 @@ class QuizViewModel : ViewModel() {
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
                     val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }
-                    val randomizedQuestions = if (limit > 0 && uniqueQuestions.isNotEmpty()) {
-                        val pool = mutableListOf<Question>()
-                        while (pool.size < limit) {
-                            pool.addAll(uniqueQuestions.shuffled())
-                        }
-                        pool.take(limit)
-                    } else {
-                        uniqueQuestions.shuffled()
-                    }
+                    val randomizedQuestions = uniqueQuestions.shuffled().take(limit)
                     _quizState.value = QuizState.Active(
                         questions = randomizedQuestions,
                         currentQuestionIndex = 0,

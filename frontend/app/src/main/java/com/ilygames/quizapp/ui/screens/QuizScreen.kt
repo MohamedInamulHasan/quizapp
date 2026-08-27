@@ -259,17 +259,26 @@ fun QuizScreen(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         if (!question.imageUrl.isNullOrBlank()) {
-                                            // Full-stretch edge-to-edge image
-                                            coil.compose.AsyncImage(
-                                                model = question.imageUrl,
-                                                contentDescription = "Question Image",
-                                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                            // Preserved aspect ratio container (no zoom, no crop)
+                                            Box(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .height(220.dp)
-                                                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                                            )
-                                            Spacer(modifier = Modifier.height(16.dp))
+                                                    .padding(12.dp)
+                                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f), RoundedCornerShape(20.dp))
+                                                    .clip(RoundedCornerShape(20.dp)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                coil.compose.AsyncImage(
+                                                    model = question.imageUrl,
+                                                    contentDescription = "Question Image",
+                                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .heightIn(max = 280.dp)
+                                                        .clip(RoundedCornerShape(20.dp))
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(12.dp))
                                             Text(
                                                 text = question.question,
                                                 style = MaterialTheme.typography.titleLarge.copy(lineHeight = 32.sp, fontSize = 20.sp),
