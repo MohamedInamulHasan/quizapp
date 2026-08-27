@@ -173,8 +173,12 @@ class AuthViewModel : ViewModel() {
         if (raw.isNullOrBlank()) return fallback
         return try {
             val msg = JSONObject(raw).optString("msg", fallback)
-            if (isEmailInput && (msg.equals("Invalid username", ignoreCase = true) || msg.contains("username", ignoreCase = true))) {
-                "Invalid email"
+            if (isEmailInput) {
+                if (msg.contains("username", ignoreCase = true) || msg.equals("Invalid username", ignoreCase = true)) {
+                    "Invalid email"
+                } else {
+                    msg
+                }
             } else {
                 msg
             }
