@@ -1273,7 +1273,7 @@ fun NativeAdminScreen(
                                     onClick = {
                                         coroutineScope.launch {
                                             try {
-                                                val res = ApiClient.apiService.deleteUser(token ?: "", targetUser.id)
+                                                val res = ApiClient.apiService.deleteUser(token ?: "", targetUser.id ?: "")
                                                 if (res.isSuccessful) {
                                                     usersList = usersList.filter { it.id != targetUser.id }
                                                     Toast.makeText(context, "🗑️ User \"${targetUser.name}\" deleted!", Toast.LENGTH_SHORT).show()
