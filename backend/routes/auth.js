@@ -86,7 +86,9 @@ router.post('/register', async (req, res) => {
         msg: 'Username must be at least 3 characters'
       });
     }
-    if (!userEmail || !userEmail.endsWith('@gmail.com') || userEmail.length < 11) {
+
+    const emailRegexFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!userEmail || !emailRegexFormat.test(userEmail)) {
       return res.status(400).json({
         success: false,
         code: 'INVALID_EMAIL',
@@ -94,6 +96,7 @@ router.post('/register', async (req, res) => {
         msg: 'Invalid email'
       });
     }
+
     if (!pass || pass.length < 6) {
       return res.status(400).json({
         success: false,
@@ -138,6 +141,8 @@ router.post('/register', async (req, res) => {
     });
 
     await user.save();
+
+    console.log(`[REGISTER_SUCCESS] User created in MongoDB Atlas: ID=${user._id}, Email=${userEmail}, Name=${username}`);
 
     const userIdStr = (user._id || user.id || '').toString();
     const payload = { user: { id: userIdStr, isAdmin: Boolean(user.isAdmin) } };
