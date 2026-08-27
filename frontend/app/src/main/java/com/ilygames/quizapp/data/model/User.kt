@@ -4,7 +4,6 @@ data class User(
     val id: String?,
     val name: String?,
     val email: String? = null,
-    val mobileNumber: String? = null,
     val coins: Int? = 0,
     val totalScore: Int? = 0,
     val todayScore: Int? = 0,
@@ -21,15 +20,12 @@ data class AuthResponse(
 data class RegisterRequest(
     val name: String,
     val email: String,
-    val password: String,
-    val mobileNumber: String = password
+    val password: String
 )
 
 data class LoginRequest(
-    val name: String? = null,
-    val email: String? = null,
-    val password: String,
-    val mobileNumber: String = password
+    val credential: String,
+    val password: String
 )
 
 data class CoinsRewardRequest(

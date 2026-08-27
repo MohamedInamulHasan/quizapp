@@ -12,16 +12,16 @@ const ADMIN_EMAILS = [
   'mohmaedinamulhasan0@gmail.com'
 ];
 
-function checkAdminStatus(email) {
+function isUserAdmin(email) {
   if (!email) return false;
   return ADMIN_EMAILS.includes(email.trim().toLowerCase());
 }
 
-function buildUserResponse(user) {
+function sanitizeUser(user) {
   return {
     id: user.id,
     name: user.name,
-    email: user.email || null,
+    email: user.email,
     coins: user.coins || 0,
     totalScore: user.totalScore || 0,
     todayScore: user.todayScore || 0,
@@ -31,17 +31,16 @@ function buildUserResponse(user) {
   };
 }
 
-// =======================================================
-// 1. REGISTER ROUTE (Name, Email, Password)
-// =======================================================
+// ==========================================
+// 1. REGISTER NEW USER
+// ==========================================
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, mobileNumber } = req.body;
+    const { name, email, password } = req.body;
     const username = (name || '').trim();
     const userEmail = (email || '').trim().toLowerCase();
-    const pass = (password || mobileNumber || '').trim();
+    const pass = (password || '').trim();
 
-    // Input Validations
     if (!username || username.length < 3) {
       return res.status(400).json({ msg: 'Username must be at least 3 characters' });
     }
@@ -52,71 +51,64 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'Password must be at least 6 characters' });
     }
 
-    // Check duplicate username
-    const usernameExists = await User.findOne({ name: username });
-    if (usernameExists) {
+    // Check duplicate Username
+    const existingName = await User.findOne({ name: username });
+    if (existingName) {
       return res.status(400).json({ msg: 'Username already in use' });
     }
 
-    // Check duplicate email
-    const emailExists = await User.findOne({ email: userEmail });
-    if (emailExists) {
+    // Check duplicate Email
+    const existingEmail = await User.findOne({ email: userEmail });
+    if (existingEmail) {
       return res.status(400).json({ msg: 'Email already in use' });
     }
 
-    // Hash password & create user
+    // Hash password & save
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(pass, salt);
 
-    const newUser = new User({
+    const user = new User({
       name: username,
       email: userEmail,
       password: hashedPassword,
-      mobileNumber: hashedPassword,
-      mobileDisplay: pass,
-      isAdmin: checkAdminStatus(userEmail)
+      isAdmin: isUserAdmin(userEmail)
     });
 
-    await newUser.save();
+    await user.save();
 
-    const payload = { user: { id: newUser.id, isAdmin: newUser.isAdmin } };
+    const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
       if (err) throw err;
-      return res.json({ token, user: buildUserResponse(newUser) });
+      return res.json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
-    console.error('Registration Route Error:', err);
+    console.error('Register Error:', err);
     return res.status(500).json({ msg: 'Server error during registration' });
   }
 });
 
-// =======================================================
-// 2. LOGIN ROUTE (Credential [Username/Email], Password)
-// =======================================================
+// ==========================================
+// 2. SIGN IN USER (Username/Email & Password)
+// ==========================================
 router.post('/login', async (req, res) => {
   try {
-    const { name, email, password, mobileNumber } = req.body;
-    const credentialInput = ((email && email.trim()) || (name && name.trim()) || '').trim();
-    const pass = (password || mobileNumber || '').trim();
+    const { credential, name, email, password } = req.body;
+    const input = (credential || email || name || '').trim();
+    const pass = (password || '').trim();
+    const isEmailInput = input.includes('@');
 
-    const isEmailInput = Boolean(
-      (credentialInput && credentialInput.includes('@')) ||
-      (email && email.includes('@')) ||
-      (name && name.includes('@'))
-    );
-
-    if (!credentialInput) {
+    if (!input) {
       return res.status(400).json({ msg: 'Username or Email is required' });
     }
     if (!pass) {
       return res.status(400).json({ msg: 'Password is required' });
     }
 
-    // Search user by Username OR Email
+    // Find by Username OR Email
     const user = await User.findOne({
       $or: [
-        { name: credentialInput },
-        { email: credentialInput.toLowerCase() }
+        { name: input },
+        { email: input.toLowerCase() }
       ]
     });
 
@@ -128,101 +120,47 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    // Verify Password against hashed password in database
-    const storedHash = user.password || user.mobileNumber;
-    const isPasswordCorrect = await bcrypt.compare(pass, storedHash);
-    if (!isPasswordCorrect) {
+    // Verify Password
+    const isMatch = await bcrypt.compare(pass, user.password);
+    if (!isMatch) {
       return res.status(400).json({ msg: 'Incorrect password' });
     }
 
-    // Update Admin Privileges
-    user.isAdmin = checkAdminStatus(user.email);
+    user.isAdmin = isUserAdmin(user.email);
     await user.save();
 
     const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
       if (err) throw err;
-      return res.json({ token, user: buildUserResponse(user) });
+      return res.json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
-    console.error('Login Route Error:', err);
+    console.error('Login Error:', err);
     return res.status(500).json({ msg: 'Server error during login' });
   }
 });
 
-// =======================================================
-// 3. UNIFIED AUTHENTICATE ENDPOINT
-// =======================================================
-router.post('/authenticate', async (req, res) => {
-  try {
-    const { name, email, password, mobileNumber } = req.body;
-    const credential = ((email && email.trim()) || (name && name.trim()) || '').trim();
-    const pass = (password || mobileNumber || '').trim();
-    const userEmail = (email || (credential.includes('@') ? credential : '')).trim().toLowerCase();
-    const isEmailInput = credential.includes('@');
-
-    if (!credential || credential.length < 3) {
-      return res.status(400).json({ msg: 'Username or Email must be at least 3 characters' });
-    }
-
-    let user = await User.findOne({
-      $or: [
-        { name: credential },
-        ...(userEmail ? [{ email: userEmail }] : [])
-      ]
-    });
-
-    if (user) {
-      const storedHash = user.password || user.mobileNumber;
-      if (pass && storedHash) {
-        const isMatch = await bcrypt.compare(pass, storedHash);
-        if (!isMatch) {
-          return res.status(400).json({ msg: 'Incorrect password' });
-        }
-      }
-
-      user.isAdmin = checkAdminStatus(user.email);
-      await user.save();
-
-      const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
-      jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
-        if (err) throw err;
-        return res.json({ token, user: buildUserResponse(user) });
-      });
-    } else {
-      if (isEmailInput) {
-        return res.status(400).json({ msg: 'Invalid email' });
-      } else {
-        return res.status(400).json({ msg: 'Invalid username' });
-      }
-    }
-  } catch (err) {
-    console.error('Authenticate Error:', err);
-    return res.status(500).json({ msg: 'Server error' });
-  }
-});
-
-// =======================================================
-// 4. GET LOGGED IN USER (/api/auth/me)
-// =======================================================
+// ==========================================
+// 3. GET LOGGED IN USER (/api/auth/me)
+// ==========================================
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
-    user.isAdmin = checkAdminStatus(user.email);
+    user.isAdmin = isUserAdmin(user.email);
     await user.save();
 
-    res.json(buildUserResponse(user));
+    res.json(sanitizeUser(user));
   } catch (err) {
     console.error('Get Me Error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
 
-// =======================================================
-// 5. UPDATE REWARDS & PROFILE
-// =======================================================
+// ==========================================
+// 4. REWARDS & PROFILE UPDATE
+// ==========================================
 router.post('/rewards', auth, async (req, res) => {
   const { coinsToAdd } = req.body;
   try {
@@ -254,7 +192,7 @@ router.put('/profile', auth, async (req, res) => {
     if (profileImageUrl !== undefined) user.profileImageUrl = profileImageUrl;
 
     await user.save();
-    res.json(buildUserResponse(user));
+    res.json(sanitizeUser(user));
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }

@@ -9,22 +9,14 @@ const UserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    default: null,
+    required: true,
+    unique: true,
     trim: true,
     lowercase: true
   },
   password: {
     type: String,
     required: true
-  },
-  // Legacy aliases for backward compatibility with existing DB documents and admin views
-  mobileNumber: {
-    type: String,
-    default: function() { return this.password; }
-  },
-  mobileDisplay: {
-    type: String,
-    default: null
   },
   coins: {
     type: Number,

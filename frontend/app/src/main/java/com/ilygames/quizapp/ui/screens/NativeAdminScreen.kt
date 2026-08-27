@@ -1116,7 +1116,7 @@ fun NativeAdminScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            val validUsers = usersList.filter { !it.mobileNumber.isNullOrBlank() }.sortedBy { it.name ?: "" }
+                            val validUsers = usersList.filter { !it.name.isNullOrBlank() }.sortedBy { it.name ?: "" }
                             items(validUsers) { user ->
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
@@ -1183,7 +1183,7 @@ fun NativeAdminScreen(
                                                     }
                                                 }
                                                 Text(
-                                                    text = user.mobileNumber ?: "",
+                                                    text = user.email ?: "",
                                                     fontSize = 12.sp,
                                                     color = TextMuted
                                                 )
@@ -1233,7 +1233,7 @@ fun NativeAdminScreen(
                             },
                             text = {
                                 Text(
-                                    text = "Are you sure you want to permanently delete user \"${targetUser.name}\" (${targetUser.mobileNumber})? This action cannot be undone.",
+                                    text = "Are you sure you want to permanently delete user \"${targetUser.name}\" (${targetUser.email ?: ""})? This action cannot be undone.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
