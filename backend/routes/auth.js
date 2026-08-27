@@ -182,6 +182,7 @@ router.post('/login', async (req, res) => {
     const pass = (password || mobileNumber || '').trim();
 
     if (!rawInput) {
+      console.log('[LOGIN_DEBUG] Empty credential input. Returning HTTP 401 USER_NOT_FOUND');
       return res.status(401).json({
         success: false,
         code: 'USER_NOT_FOUND',
@@ -190,6 +191,7 @@ router.post('/login', async (req, res) => {
       });
     }
     if (!pass) {
+      console.log('[LOGIN_DEBUG] Empty password input. Returning HTTP 401 INVALID_PASSWORD');
       return res.status(401).json({
         success: false,
         code: 'INVALID_PASSWORD',
@@ -212,13 +214,16 @@ router.post('/login', async (req, res) => {
       ]
     });
 
-    // 2. Auto-seed admin user if missing
+    // Auto-seed admin user if missing
     if (!user) {
       user = await getOrSeedAdmin(rawInput);
     }
 
-    // 3. If user does NOT exist -> Return HTTP 401 { success: false, code: "USER_NOT_FOUND", message: "Invalid email or username" }
+    console.log(`[LOGIN_DEBUG] User lookup for "${rawInput}": ${user ? 'USER_FOUND (ID: ' + user.id + ')' : 'USER_NOT_FOUND'}`);
+
+    // 2. If user does NOT exist -> Return HTTP 401 { success: false, code: "USER_NOT_FOUND", message: "Invalid email or username" }
     if (!user) {
+      console.log(`[LOGIN_DEBUG] Returning HTTP 401 USER_NOT_FOUND for "${rawInput}"`);
       return res.status(401).json({
         success: false,
         code: 'USER_NOT_FOUND',
@@ -227,7 +232,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // 4. Compare entered password with stored password hash
+    // 3. Compare entered password with stored password hash
     const storedHash = user.password || '';
     let isMatch = false;
 
@@ -244,8 +249,11 @@ router.post('/login', async (req, res) => {
       isMatch = true;
     }
 
-    // 5. If password comparison fails -> Return HTTP 401 { success: false, code: "INVALID_PASSWORD", message: "Invalid password" }
+    console.log(`[LOGIN_DEBUG] Password comparison result for "${rawInput}": ${isMatch ? 'PASSWORD_MATCH_SUCCESS' : 'PASSWORD_MISMATCH_FAILED'}`);
+
+    // 4. If password comparison fails -> Return HTTP 401 { success: false, code: "INVALID_PASSWORD", message: "Invalid password" }
     if (!isMatch) {
+      console.log(`[LOGIN_DEBUG] Returning HTTP 401 INVALID_PASSWORD for "${rawInput}"`);
       return res.status(401).json({
         success: false,
         code: 'INVALID_PASSWORD',
@@ -254,7 +262,8 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // 6. Successful login -> Return HTTP 200 { success: true }
+    // 5. Successful login -> Return HTTP 200 { success: true }
+    console.log(`[LOGIN_DEBUG] Returning HTTP 200 LOGIN_SUCCESS for "${rawInput}"`);
     user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
     await user.save();
 
@@ -265,7 +274,7 @@ router.post('/login', async (req, res) => {
       if (err || !token) {
         return res.status(500).json({ success: false, code: 'AUTH_ERROR', message: 'Authentication error', msg: 'Authentication error' });
       }
-      return res.status(200).json({ success: true, token, user: sanitizeUser(user) });
+      return res.status(200).json({ success: true, code: 'LOGIN_SUCCESS', token, user: sanitizeUser(user) });
     });
   } catch (err) {
     console.error('Login Route Error:', err);

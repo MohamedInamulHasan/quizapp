@@ -1,6 +1,7 @@
 package com.ilygames.quizapp.ui.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ilygames.quizapp.data.api.ApiClient
@@ -92,7 +93,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // -------------------------------------------------------------
-    // SIGN IN (login) - Backend Code Based Error Handling
+    // SIGN IN (login) - Explicit Code-Based Sign In Handler
     // USER_NOT_FOUND -> "Invalid email or username"
     // INVALID_PASSWORD -> "Invalid password"
     // HTTP 200 -> Success
@@ -121,6 +122,12 @@ class AuthViewModel : ViewModel() {
                     )
                 )
 
+                val code = response.code()
+                val rawBody = response.errorBody()?.string()
+
+                println("[LOGIN_RESPONSE_DEBUG] HTTP Status: $code")
+                println("[LOGIN_RESPONSE_DEBUG] Raw Error Body: $rawBody")
+
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
@@ -128,19 +135,19 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    val code = response.code()
-                    val errJson = response.errorBody()?.string()
-                    val parsedMsg = parseSignInError(code, errJson)
+                    val parsedMsg = parseSignInError(code, rawBody)
+                    println("[LOGIN_RESPONSE_DEBUG] Displaying Sign In Error Message: '$parsedMsg'")
                     _authState.value = AuthState.Error(parsedMsg)
                 }
             } catch (e: Exception) {
+                println("[LOGIN_RESPONSE_DEBUG] Exception caught: ${e.localizedMessage}")
                 if (passwordInput == "000000" && exactAdminEmails.contains(trimmed.lowercase())) {
                     _token.value = "admin_verified_token_000000"
                     _user.value = defaultAdminUser
                     saveToken(context, "admin_verified_token_000000")
                     _authState.value = AuthState.Success(defaultAdminUser)
                 } else {
-                    _authState.value = AuthState.Error("Invalid email or username")
+                    _authState.value = AuthState.Error(e.localizedMessage ?: "Connection error. Please try again.")
                 }
             }
         }
@@ -157,16 +164,19 @@ class AuthViewModel : ViewModel() {
             } catch (_: Exception) {}
         }
 
+        println("[LOGIN_RESPONSE_DEBUG] Extracted response code: '$errCode', message: '$msg'")
+
         return when {
             errCode == "INVALID_PASSWORD" || msg.equals("Invalid password", ignoreCase = true) -> "Invalid password"
             errCode == "USER_NOT_FOUND" || msg.equals("Invalid email or username", ignoreCase = true) -> "Invalid email or username"
             httpCode == 401 && errCode.isBlank() && msg.contains("password", ignoreCase = true) -> "Invalid password"
+            httpCode == 401 && errCode.isBlank() -> "Invalid email or username"
             else -> "Invalid email or username"
         }
     }
 
     // -------------------------------------------------------------
-    // SIGN UP (register) - Backend Code Based Error Handling
+    // SIGN UP (register) - Explicit Code-Based Sign Up Handler
     // EMAIL_EXISTS -> "Email already in use"
     // USERNAME_EXISTS / HTTP 409 -> "Username already in use"
     // INVALID_EMAIL -> "Invalid email"
@@ -189,6 +199,12 @@ class AuthViewModel : ViewModel() {
                     )
                 )
 
+                val code = response.code()
+                val rawBody = response.errorBody()?.string()
+
+                println("[REGISTER_RESPONSE_DEBUG] HTTP Status: $code")
+                println("[REGISTER_RESPONSE_DEBUG] Raw Error Body: $rawBody")
+
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
@@ -196,9 +212,7 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    val code = response.code()
-                    val errJson = response.errorBody()?.string()
-                    val parsedMsg = parseSignUpError(code, errJson)
+                    val parsedMsg = parseSignUpError(code, rawBody)
                     _authState.value = AuthState.Error(parsedMsg)
                 }
             } catch (e: Exception) {
