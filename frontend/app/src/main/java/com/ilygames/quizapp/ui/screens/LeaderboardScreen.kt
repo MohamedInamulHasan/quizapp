@@ -175,24 +175,29 @@ fun LeaderboardScreen(
                                 .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
                         ) {
                             Column {
-                                // Integrated Header Bar
+                                // Integrated Header Bar (Highlighted neutral background with vertical column lines)
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(PrimaryGreen.copy(alpha = 0.10f))
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f))
+                                        .padding(horizontal = 14.dp, vertical = 12.dp)
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("RANK", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.width(52.dp))
-                                        Text("PLAYER DETAILS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.weight(1f))
-                                        Text("SCORE", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, textAlign = TextAlign.End)
+                                        Text("RANK", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.width(52.dp))
+                                        Box(modifier = Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text("PLAYER DETAILS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Box(modifier = Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text("SCORE", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.End)
                                     }
                                 }
 
-                                Divider(color = PrimaryGreen.copy(alpha = 0.2f), thickness = 1.dp)
+                                Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
 
                                 leaderboard.forEachIndexed { index, player ->
                                     LeaderboardRow(player = player, currentUserId = currentUserId, currentUserName = currentUserName)
@@ -381,51 +386,56 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .background(if (isMe) PrimaryGreen.copy(alpha = 0.08f) else Color.Transparent)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        // Rank Column
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = when (player.rank) {
+                1 -> Color(0xFFFFF8E1)
+                2 -> Color(0xFFF1F3F5)
+                3 -> Color(0xFFFFF3E0)
+                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            },
+            modifier = Modifier.width(52.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp)
+            ) {
+                if (medal != null) {
+                    Text(medal, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.width(2.dp))
+                }
+                Text(
+                    text = "#${player.rank}",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 11.sp,
+                    color = when (player.rank) {
+                        1 -> Color(0xFFB8860B)
+                        2 -> Color(0xFF495057)
+                        3 -> Color(0xFFCD7F32)
+                        else -> TextMuted
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+        // Vertical Line 1
+        Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)))
+        Spacer(modifier = Modifier.width(10.dp))
+
+        // Player Details Column
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.weight(1f)
         ) {
-            // Rank Pill Badge
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = when (player.rank) {
-                    1 -> Color(0xFFFFF8E1)
-                    2 -> Color(0xFFF1F3F5)
-                    3 -> Color(0xFFFFF3E0)
-                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                },
-                modifier = Modifier.widthIn(min = 44.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 3.dp)
-                ) {
-                    if (medal != null) {
-                        Text(medal, fontSize = 13.sp)
-                        Spacer(modifier = Modifier.width(2.dp))
-                    }
-                    Text(
-                        text = "#${player.rank}",
-                        fontWeight = FontWeight.Black,
-                        fontSize = 11.sp,
-                        color = when (player.rank) {
-                            1 -> Color(0xFFB8860B)
-                            2 -> Color(0xFF495057)
-                            3 -> Color(0xFFCD7F32)
-                            else -> TextMuted
-                        }
-                    )
-                }
-            }
-
-            // Avatar Circle
             Box(
                 modifier = Modifier
                     .size(38.dp)
@@ -453,7 +463,6 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
                 }
             }
 
-            // Name & (YOU) badge
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -483,7 +492,12 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
             }
         }
 
-        // Score Pill Badge
+        Spacer(modifier = Modifier.width(10.dp))
+        // Vertical Line 2
+        Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)))
+        Spacer(modifier = Modifier.width(10.dp))
+
+        // Score Column
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = if (isMe) PrimaryGreen else Color(0xFFF1F5F9)

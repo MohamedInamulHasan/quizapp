@@ -1121,45 +1121,55 @@ fun NativeAdminScreen(
                                 .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
                         ) {
                             Column {
-                                // Integrated Header Bar
+                                // Integrated Header Bar (Highlighted neutral background with vertical column lines)
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(PrimaryGreen.copy(alpha = 0.10f))
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f))
+                                        .padding(horizontal = 14.dp, vertical = 12.dp)
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("#", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.width(36.dp))
-                                        Text("USER & MOBILE DETAILS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.weight(1f))
-                                        Text("ACTION", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, textAlign = TextAlign.End)
+                                        Text("#", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.width(32.dp))
+                                        Box(modifier = Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text("USER & MOBILE DETAILS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Box(modifier = Modifier.width(1.dp).height(16.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text("ACTION", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.End)
                                     }
                                 }
 
-                                Divider(color = PrimaryGreen.copy(alpha = 0.2f), thickness = 1.dp)
+                                Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
 
-                                // Rows list inside same Card
+                                // Rows list inside same Card with vertical column lines
                                 val validUsers = usersList.filter { !it.mobileNumber.isNullOrBlank() }.sortedBy { it.name ?: "" }
                                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                                     itemsIndexed(validUsers) { index, user ->
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                                                .height(IntrinsicSize.Min)
+                                                .padding(horizontal = 14.dp, vertical = 10.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            // Index #
+                                            // Index # Column
                                             Text(
                                                 text = "${index + 1}",
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp,
                                                 color = TextMuted,
-                                                modifier = Modifier.width(36.dp)
+                                                modifier = Modifier.width(32.dp)
                                             )
 
-                                            // User Avatar & Details
+                                            // Column Line 1
+                                            Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)))
+                                            Spacer(modifier = Modifier.width(10.dp))
+
+                                            // User Avatar & Details Column
                                             Row(
                                                 modifier = Modifier.weight(1f),
                                                 verticalAlignment = Alignment.CenterVertically,
@@ -1218,7 +1228,12 @@ fun NativeAdminScreen(
                                                 }
                                             }
 
-                                            // Delete Icon Button
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            // Column Line 2
+                                            Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)))
+                                            Spacer(modifier = Modifier.width(10.dp))
+
+                                            // Action Column
                                             IconButton(
                                                 onClick = {
                                                     SoundManager.playClickSound()
