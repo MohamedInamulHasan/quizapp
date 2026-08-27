@@ -105,29 +105,24 @@ fun AppNavigation() {
                     navController.navigate("result") {
                         popUpTo("quiz") { inclusive = true }
                     }
+                },
+                onExitQuiz = {
+                    navController.popBackStack()
                 }
             )
         }
 
         composable("reading_quiz") {
             ReadingQuizScreen(
-                authViewModel = authViewModel,
-                onQuizFinished = { score, coins ->
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() }
             )
         }
 
         composable("result") {
-            ResultScreen(
+            ResultsScreen(
+                authViewModel = authViewModel,
                 quizViewModel = quizViewModel,
-                onPlayAgain = {
-                    quizViewModel.startQuiz(activeToken)
-                    navController.navigate("quiz") {
-                        popUpTo("result") { inclusive = true }
-                    }
-                },
-                onGoHome = {
+                onBackToHome = {
                     navController.navigate("home") {
                         popUpTo("result") { inclusive = true }
                     }
