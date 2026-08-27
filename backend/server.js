@@ -50,7 +50,7 @@ app.use('/api/admin', adminRoutes);
 
 // Ping / Health check route
 app.get('/api/ping', (req, res) => {
-  res.json({ status: 'ok', message: 'QuizApp Server Active 🚀', timestamp: Date.now() });
+  res.json({ status: 'ok', version: 'v2.0.0-clean-auth', message: 'QuizApp Server Active 🚀', timestamp: Date.now() });
 });
 
 // Redirect root to Admin panel for convenience
