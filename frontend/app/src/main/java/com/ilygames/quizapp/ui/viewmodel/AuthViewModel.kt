@@ -45,7 +45,8 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    _authState.value = AuthState.Error(parseErrorMsg(response.errorBody()?.string(), "Invalid username or mobile number"))
+                    val errJson = response.errorBody()?.string()
+                    _authState.value = AuthState.Error(parseErrorMsg(errJson, "Invalid credentials"))
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Network error. Please try again.")
@@ -65,7 +66,8 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    _authState.value = AuthState.Error(parseErrorMsg(response.errorBody()?.string(), "Invalid credentials"))
+                    val errJson = response.errorBody()?.string()
+                    _authState.value = AuthState.Error(parseErrorMsg(errJson, "Invalid credentials"))
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Network error. Please try again.")
@@ -85,7 +87,8 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    _authState.value = AuthState.Error(parseErrorMsg(response.errorBody()?.string(), "Registration failed"))
+                    val errJson = response.errorBody()?.string()
+                    _authState.value = AuthState.Error(parseErrorMsg(errJson, "Registration failed"))
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Network error. Please try again.")

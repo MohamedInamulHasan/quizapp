@@ -272,9 +272,14 @@ fun AuthScreen(
                     onClick = {
                         SoundManager.playClickSound()
                         if (isSignUp) {
-                            authViewModel.register(usernameInput, emailInput, passwordInput, context)
+                            authViewModel.register(usernameInput.trim(), emailInput.trim(), passwordInput, context)
                         } else {
-                            authViewModel.login(usernameInput, null, passwordInput, context)
+                            val trimmedInput = usernameInput.trim()
+                            if (trimmedInput.contains("@")) {
+                                authViewModel.login("", trimmedInput, passwordInput, context)
+                            } else {
+                                authViewModel.login(trimmedInput, null, passwordInput, context)
+                            }
                         }
                     },
                     enabled = usernameInput.trim().length >= 3 && isPasswordValid
