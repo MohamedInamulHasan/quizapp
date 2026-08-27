@@ -116,7 +116,7 @@ fun AuthScreen(
     val isSubmitEnabled = if (isSignUp) {
         isUsernameValid && isGmailValid && isPasswordValid && authState !is AuthState.Loading
     } else {
-        usernameInput.trim().isNotBlank() && isPasswordValid && authState !is AuthState.Loading
+        usernameInput.trim().isNotBlank() && passwordInput.isNotBlank() && authState !is AuthState.Loading
     }
 
     val scrollState = rememberScrollState()
@@ -293,7 +293,7 @@ fun AuthScreen(
                 }
 
                 // Field 3: Password (with Eye Toggle Icon)
-                val showPasswordError = passwordInput.isNotBlank() && !isPasswordValid
+                val showPasswordError = isSignUp && passwordInput.isNotBlank() && !isPasswordValid
                 OutlinedTextField(
                     value = passwordInput,
                     onValueChange = { passwordInput = it },
