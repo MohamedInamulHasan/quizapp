@@ -159,6 +159,8 @@ fun LeaderboardScreen(
                         currentUserName = currentUserName
                     )
                     Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 // Unified Table Card for All Rankings
                 item {
                     if (leaderboard.size > 3) {
