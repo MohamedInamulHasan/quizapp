@@ -61,7 +61,8 @@ class AuthViewModel : ViewModel() {
 
     fun addAdReward(context: Context? = null, coinsToAdd: Int = 10) {
         val current = _user.value ?: defaultAdminUser
-        val updated = current.copy(coins = current.coins + coinsToAdd)
+        val currentCoins = current.coins ?: 0
+        val updated = current.copy(coins = currentCoins + coinsToAdd)
         _user.value = updated
         _authState.value = AuthState.Success(updated)
     }
