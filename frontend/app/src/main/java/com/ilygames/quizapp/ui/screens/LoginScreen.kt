@@ -124,6 +124,7 @@ fun AuthScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp),
         contentAlignment = Alignment.Center
