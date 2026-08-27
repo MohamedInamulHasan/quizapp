@@ -75,16 +75,13 @@ class AuthViewModel : ViewModel() {
         val trimmed = credentialInput.trim()
         val isEmailInput = trimmed.contains("@")
 
-        val nameParam = if (!isEmailInput) trimmed else trimmed
-        val emailParam = if (isEmailInput) trimmed else null
-
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.login(
                     LoginRequest(
                         credential = trimmed,
-                        name = nameParam,
-                        email = emailParam,
+                        name = trimmed,
+                        email = if (isEmailInput) trimmed else null,
                         password = passwordInput,
                         mobileNumber = passwordInput
                     )
@@ -114,7 +111,12 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.register(
-                    RegisterRequest(name = username.trim(), email = email.trim(), password = passwordInput, mobileNumber = passwordInput)
+                    RegisterRequest(
+                        name = username.trim(),
+                        email = email.trim(),
+                        password = passwordInput,
+                        mobileNumber = passwordInput
+                    )
                 )
 
                 if (response.isSuccessful && response.body() != null) {
@@ -171,7 +173,7 @@ class AuthViewModel : ViewModel() {
         if (raw.isNullOrBlank()) return fallback
         return try {
             val msg = JSONObject(raw).optString("msg", fallback)
-            if (isEmailInput && msg.equals("Invalid username", ignoreCase = true)) {
+            if (isEmailInput && (msg.equals("Invalid username", ignoreCase = true) || msg.contains("username", ignoreCase = true))) {
                 "Invalid email"
             } else {
                 msg
