@@ -126,7 +126,7 @@ fun AuthScreen(
                 }
 
                 Text(
-                    text = "QuizApp",
+                    text = "Quizzy",
                     style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onSurface,
