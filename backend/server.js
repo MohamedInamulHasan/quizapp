@@ -63,45 +63,8 @@ const bcrypt = require('bcryptjs');
 
 mongoose
   .connect(MONGODB_URI)
-  .then(async () => {
+  .then(() => {
     console.log('MongoDB connected successfully.');
-
-    // Drop the old email index if it exists, to handle schema migration
-    try {
-      await mongoose.connection.db.collection('users').dropIndex('email_1');
-      console.log('Dropped old email index from users collection.');
-    } catch (e) {
-      // Index may not exist - that's fine
-    }
-
-    try {
-      // Ensure Admin Account for mohamedinamulhasan0@gmail.com exists
-      let targetAdmin = await User.findOne({
-        $or: [
-          { email: 'mohamedinamulhasan0@gmail.com' },
-          { name: 'Hasan28' }
-        ]
-      });
-      if (!targetAdmin) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('Moh@2004', salt);
-        targetAdmin = new User({
-          name: 'Hasan28',
-          email: 'mohamedinamulhasan0@gmail.com',
-          password: hashedPassword,
-          isAdmin: true
-        });
-        await targetAdmin.save();
-        console.log('👑 Admin Account Seeded: Hasan28 / mohamedinamulhasan0@gmail.com / Moh@2004');
-      } else {
-        targetAdmin.email = 'mohamedinamulhasan0@gmail.com';
-        targetAdmin.isAdmin = true;
-        await targetAdmin.save();
-        console.log('👑 Admin status active for mohamedinamulhasan0@gmail.com');
-      }
-    } catch (e) {
-      console.error('Error seeding admin account:', e);
-    }
   })
   .catch((err) => console.error('MongoDB connection error:', err));
 
