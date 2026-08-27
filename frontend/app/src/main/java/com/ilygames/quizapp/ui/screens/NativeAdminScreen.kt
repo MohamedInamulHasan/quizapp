@@ -49,6 +49,7 @@ var globalRewardTitle = mutableStateOf("Smart Temperature Water Bottle")
 var globalRewardDescription = mutableStateOf("500ml Insulated Stainless Steel Smart Thermal Bottle with LED Temperature Display.")
 var globalRewardImageUrl = mutableStateOf<String?>(null)
 var globalQuizQuestionLimit = mutableStateOf(20)
+var globalQuizTimerSeconds = mutableStateOf(20)
 private var isDataLoadedFromPrefs = false
 
 @Composable
@@ -70,9 +71,11 @@ fun loadPersistedAdminData(context: Context) {
     if (isDataLoadedFromPrefs) return
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
 
-    // Load Quiz Question Limit
+    // Load Quiz Question Limit & Timer Seconds
     val savedLimit = prefs.getInt("quiz_questions_limit_key", 20)
+    val savedTimer = prefs.getInt("quiz_timer_seconds_key", 20)
     globalQuizQuestionLimit.value = savedLimit
+    globalQuizTimerSeconds.value = savedTimer
 
     // Load Saved Reward Image
     val savedRewardImg = prefs.getString("saved_reward_img_key", null)
@@ -109,10 +112,14 @@ fun loadPersistedAdminData(context: Context) {
     isDataLoadedFromPrefs = true
 }
 
-fun saveQuizQuestionLimitToPrefs(context: Context, limit: Int) {
+fun saveQuizSettingsToPrefs(context: Context, limit: Int, timerSeconds: Int) {
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
-    prefs.edit().putInt("quiz_questions_limit_key", limit).apply()
+    prefs.edit()
+        .putInt("quiz_questions_limit_key", limit)
+        .putInt("quiz_timer_seconds_key", timerSeconds)
+        .apply()
     globalQuizQuestionLimit.value = limit
+    globalQuizTimerSeconds.value = timerSeconds
 }
 
 fun savePassagesToPrefs(context: Context) {
@@ -375,9 +382,10 @@ fun NativeAdminScreen(
     var usersList by remember { mutableStateOf<List<com.ilygames.quizapp.data.model.User>>(emptyList()) }
     var isLoadingUsers by remember { mutableStateOf(false) }
 
-    // Quiz Question Limit Settings Modal State
+    // Quiz Question Limit & Timing Settings Modal State
     var showQuizSettingsModal by remember { mutableStateOf(false) }
     var tempLimitText by remember { mutableStateOf(globalQuizQuestionLimit.value.toString()) }
+    var tempTimerText by remember { mutableStateOf(globalQuizTimerSeconds.value.toString()) }
 
     // Questions State
     var questionsStateList by remember { mutableStateOf<List<Question>>(emptyList()) }
@@ -543,6 +551,7 @@ fun NativeAdminScreen(
                     onClick = {
                         SoundManager.playClickSound()
                         tempLimitText = globalQuizQuestionLimit.value.toString()
+                        tempTimerText = globalQuizTimerSeconds.value.toString()
                         showQuizSettingsModal = true
                     },
                     modifier = Modifier
@@ -1585,7 +1594,7 @@ fun NativeAdminScreen(
             )
         }
 
-        // QUIZ QUESTION LIMIT SETTINGS MODAL
+        // ADMIN QUIZ TIMING & QUESTION LIMIT SETTINGS MODAL
         if (showQuizSettingsModal) {
             AlertDialog(
                 onDismissRequest = { showQuizSettingsModal = false },
@@ -1608,7 +1617,7 @@ fun NativeAdminScreen(
                                 tint = PrimaryGreen
                             )
                             Text(
-                                text = "Quiz Question Limit",
+                                text = "Admin Quiz Settings",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -1623,29 +1632,81 @@ fun NativeAdminScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
+                        // Section 1: Timer per Question
                         Text(
-                            text = "Configure how many questions are randomly served in each Daily Quiz session. If your DB contains 200+ questions, the app will dynamically shuffle the entire pool and serve random questions on every play and attempt!",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 18.sp),
-                            color = TextMuted
-                        )
-
-                        Text(
-                            text = "Quick Presets:",
+                            text = "⏱️ QUESTION TIMER (SECONDS)",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Black,
                             color = PrimaryGreen,
                             letterSpacing = 1.sp
                         )
 
-                        // REDESIGNED SLEEK PILL PRESET BUTTONS WITH EMERALD GRADIENT GLOW
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            listOf(5, 10, 15, 20).forEach { preset ->
+                            listOf(5, 10, 15, 20, 30, 45).forEach { preset ->
+                                val isSelected = tempTimerText == preset.toString()
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(50.dp))
+                                        .background(
+                                            brush = if (isSelected) {
+                                                Brush.linearGradient(colors = listOf(PrimaryGreen, EmeraldGlow))
+                                            } else {
+                                                Brush.linearGradient(colors = listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
+                                            }
+                                        )
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) ElectricMint else MaterialTheme.colorScheme.surfaceVariant,
+                                            RoundedCornerShape(50.dp)
+                                        )
+                                        .clickable { tempTimerText = preset.toString() }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${preset}s",
+                                        fontWeight = FontWeight.Black,
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        OutlinedTextField(
+                            value = tempTimerText,
+                            onValueChange = { tempTimerText = it },
+                            label = { Text("Custom Seconds per Question (e.g. 15, 30)") },
+                            singleLine = true,
+                            colors = defaultAdminTextFieldColors(),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+                        // Section 2: Questions Count per Quiz
+                        Text(
+                            text = "❓ QUESTIONS SHOWN PER QUIZ",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Black,
+                            color = PrimaryGreen,
+                            letterSpacing = 1.sp
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf(5, 10, 15, 20, 30, 50).forEach { preset ->
                                 val isSelected = tempLimitText == preset.toString()
                                 Box(
                                     modifier = Modifier
@@ -1664,14 +1725,14 @@ fun NativeAdminScreen(
                                             RoundedCornerShape(50.dp)
                                         )
                                         .clickable { tempLimitText = preset.toString() }
-                                        .padding(vertical = 10.dp),
+                                        .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "$preset Qs",
                                         fontWeight = FontWeight.Black,
                                         color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 13.sp
+                                        fontSize = 11.sp
                                     )
                                 }
                             }
@@ -1680,7 +1741,7 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = tempLimitText,
                             onValueChange = { tempLimitText = it },
-                            label = { Text("Custom Limit (e.g. 5, 20, 50)") },
+                            label = { Text("Custom Question Limit (e.g. 10, 20, 50)") },
                             singleLine = true,
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
@@ -1692,15 +1753,16 @@ fun NativeAdminScreen(
                     Button(
                         onClick = {
                             val limit = tempLimitText.toIntOrNull() ?: 20
-                            saveQuizQuestionLimitToPrefs(context, limit)
+                            val timerSec = tempTimerText.toIntOrNull() ?: 20
+                            saveQuizSettingsToPrefs(context, limit, timerSec)
                             showQuizSettingsModal = false
-                            Toast.makeText(context, "⚙️ Quiz limit set to $limit questions!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "⚙️ Settings Saved! $limit Qs | ${timerSec}s timer", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Save Settings", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Save All Settings", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             )

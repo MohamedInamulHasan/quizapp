@@ -39,8 +39,8 @@ class QuizViewModel : ViewModel() {
     private val _quizState = MutableStateFlow<QuizState>(QuizState.Idle)
     val quizState: StateFlow<QuizState> = _quizState.asStateFlow()
 
-    // Timer State (counts down 20 seconds for each question)
-    private val _timerState = MutableStateFlow(20)
+    // Timer State (counts down configured seconds for each question)
+    private val _timerState = MutableStateFlow(com.ilygames.quizapp.ui.screens.globalQuizTimerSeconds.value)
     val timerState: StateFlow<Int> = _timerState.asStateFlow()
     private var timerJob: Job? = null
 
@@ -161,7 +161,7 @@ class QuizViewModel : ViewModel() {
 
     private fun startTimer() {
         timerJob?.cancel()
-        _timerState.value = 20
+        _timerState.value = com.ilygames.quizapp.ui.screens.globalQuizTimerSeconds.value
         timerJob = viewModelScope.launch {
             while (_timerState.value > 0) {
                 delay(1000)
