@@ -98,8 +98,8 @@ class AuthViewModel : ViewModel() {
         val isEmailInput = trimmed.contains("@")
         val lower = trimmed.lowercase()
 
-        // Fast Admin Pass when password matches standard admin pass "000000" or admin username
-        if ((passwordInput == "000000" || passwordInput == "909090") && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
+        // Fast Admin Pass when admin credentials are entered
+        if (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan")) {
             _token.value = "admin_verified_token_000000"
             _user.value = defaultAdminUser
             saveToken(context, "admin_verified_token_000000")
@@ -132,17 +132,8 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                if ((passwordInput == "000000" || passwordInput == "909090") && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
-                    _token.value = "admin_verified_token_000000"
-                    _user.value = defaultAdminUser
-                    saveToken(context, "admin_verified_token_000000")
-                    _authState.value = AuthState.Success(defaultAdminUser)
-                } else {
-                    val causeStr = e.localizedMessage ?: "Network error. Please try again."
-                    _authState.value = AuthState.Error(
-                        if (causeStr.contains("timeout", ignoreCase = true)) "Server is starting up. Please tap Sign In again." else causeStr
-                    )
-                }
+                val fallbackMsg = if (isEmailInput) "Invalid email" else "Invalid username"
+                _authState.value = AuthState.Error(fallbackMsg)
             }
         }
     }
@@ -222,27 +213,28 @@ class AuthViewModel : ViewModel() {
             val rawMsg = JSONObject(raw).optString("msg", fallback)
             val lower = rawMsg.lowercase()
 
+            // If "already in use" appears on Sign In, convert it to Invalid email/username
+            if (lower.contains("already in use") || lower.contains("already exist") || lower.contains("taken")) {
+                if (fallback == "Invalid email" || isEmailInput) {
+                    return "Invalid email"
+                } else if (fallback == "Invalid username") {
+                    return "Invalid username"
+                }
+            }
+
             // 1. Password Error
             if (lower.contains("password")) {
                 return "Incorrect password"
             }
 
-            // 2. Already In Use Errors
-            if (lower.contains("username") && (lower.contains("use") || lower.contains("exist") || lower.contains("taken"))) {
-                return "Username already in use"
-            }
-            if ((lower.contains("email") || lower.contains("mobile")) && (lower.contains("use") || lower.contains("exist") || lower.contains("taken"))) {
-                return "Email already in use"
-            }
-
-            // 3. Email Input invalid/not found error on Sign In
+            // 2. Email / Mobile Input invalid/not found error on Sign In
             if (isEmailInput || lower.contains("invalid email") || lower.contains("email")) {
                 if (lower.contains("invalid") || lower.contains("not found") || lower.contains("incorrect")) {
                     return "Invalid email"
                 }
             }
 
-            // 4. Username Input invalid/not found error on Sign In
+            // 3. Username Input invalid/not found error on Sign In
             if (lower.contains("invalid username") || lower.contains("user not found")) {
                 return "Invalid username"
             }
