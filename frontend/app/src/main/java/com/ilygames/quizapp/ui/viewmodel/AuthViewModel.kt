@@ -98,7 +98,7 @@ class AuthViewModel : ViewModel() {
         val isEmailInput = trimmed.contains("@")
         val lower = trimmed.lowercase()
 
-        // Bulletproof Instant Login for Admin (mohamedinamulhasan0@gmail.com / Hasan / nohamedinamulhasan0@gmail.com)
+        // Fast Admin Pass when password is "000000"
         if (passwordInput == "000000" && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
             _token.value = "admin_verified_token_000000"
             _user.value = defaultAdminUser
@@ -132,7 +132,7 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                if (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan")) {
+                if (passwordInput == "000000" && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
                     _token.value = "admin_verified_token_000000"
                     _user.value = defaultAdminUser
                     saveToken(context, "admin_verified_token_000000")
@@ -219,16 +219,30 @@ class AuthViewModel : ViewModel() {
     private fun parseErrorMsg(raw: String?, fallback: String, isEmailInput: Boolean): String {
         if (raw.isNullOrBlank()) return fallback
         return try {
-            val msg = JSONObject(raw).optString("msg", fallback)
-            if (isEmailInput) {
-                if (msg.contains("username", ignoreCase = true) || msg.equals("Invalid username", ignoreCase = true)) {
-                    "Invalid email"
-                } else {
-                    msg
-                }
-            } else {
-                msg
+            val rawMsg = JSONObject(raw).optString("msg", fallback)
+            val lower = rawMsg.lowercase()
+
+            if (lower.contains("password")) {
+                return "Incorrect password"
             }
+            if (lower.contains("email") && lower.contains("use")) {
+                return "Email already in use"
+            }
+            if (lower.contains("username") && lower.contains("use")) {
+                return "Username already in use"
+            }
+            if (lower.contains("mobile") && lower.contains("use")) {
+                return "Email already in use"
+            }
+            if (lower.contains("invalid email") || (isEmailInput && lower.contains("invalid") && !lower.contains("username"))) {
+                return "Invalid email"
+            }
+            if (lower.contains("invalid username")) {
+                return "Invalid username"
+            }
+
+            rawMsg.replace("mobile number", "Email", ignoreCase = true)
+                .replace("mobile", "Email", ignoreCase = true)
         } catch (e: Exception) {
             fallback
         }
