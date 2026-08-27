@@ -1,25 +1,27 @@
 package com.ilygames.quizapp.ui.screens
 
 import android.content.Context
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Gamepad
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ilygames.quizapp.ui.theme.ElectricMint
-import com.ilygames.quizapp.ui.theme.PrimaryGreen
 import com.ilygames.quizapp.ui.viewmodel.AuthState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
+import kotlinx.coroutines.delay
+
+private val QuizzyGreen = Color(0xFF128A58)
+private val OffWhiteBg = Color(0xFFF5F5F0)
 
 @Composable
 fun SplashScreen(
@@ -30,16 +32,38 @@ fun SplashScreen(
     val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
 
+    // Animated loading bar progress
+    var progressTarget by remember { mutableStateOf(0.1f) }
+    val progress by animateFloatAsState(
+        targetValue = progressTarget,
+        animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
+        label = "splash_progress"
+    )
+
+    LaunchedEffect(Unit) {
+        progressTarget = 0.85f
+    }
+
     LaunchedEffect(authState) {
         val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
         val hasToken = !sharedPrefs.getString("auth_token", null).isNullOrBlank()
 
         if (!hasToken) {
+            progressTarget = 1.0f
+            delay(300)
             onNavigateToLogin()
         } else {
             when (authState) {
-                is AuthState.Success -> onNavigateToHome()
-                is AuthState.Error -> onNavigateToLogin()
+                is AuthState.Success -> {
+                    progressTarget = 1.0f
+                    delay(250)
+                    onNavigateToHome()
+                }
+                is AuthState.Error -> {
+                    progressTarget = 1.0f
+                    delay(300)
+                    onNavigateToLogin()
+                }
                 else -> {} // Idle or Loading: keep waiting
             }
         }
@@ -48,40 +72,52 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(OffWhiteBg),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.Center
         ) {
+            // Squircle "Q" Icon matching user screenshot
             Box(
                 modifier = Modifier
-                    .size(86.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            listOf(PrimaryGreen.copy(alpha = 0.18f), ElectricMint.copy(alpha = 0.1f))
-                        ),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .border(1.5.dp, PrimaryGreen.copy(alpha = 0.45f), RoundedCornerShape(24.dp)),
+                    .size(110.dp)
+                    .shadow(12.dp, RoundedCornerShape(32.dp), spotColor = QuizzyGreen.copy(alpha = 0.3f))
+                    .background(QuizzyGreen, RoundedCornerShape(32.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Gamepad,
-                    contentDescription = null,
-                    tint = PrimaryGreen,
-                    modifier = Modifier.size(46.dp)
+                Text(
+                    text = "Q",
+                    fontSize = 62.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
                 )
             }
 
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // "Quizzy" Brand Title
             Text(
-                text = "QuizApp",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
+                text = "Quizzy",
+                fontSize = 46.sp,
                 fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurface
+                color = QuizzyGreen,
+                letterSpacing = (-1).sp
             )
 
+            Spacer(modifier = Modifier.height(36.dp))
+
+            // Smooth Green Loading Bar below logo
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier
+                    .width(140.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = QuizzyGreen,
+                trackColor = Color(0xFFE2E2DC)
+            )
         }
     }
 }

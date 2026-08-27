@@ -399,7 +399,19 @@ async function endLiveQuiz() {
   }, 15000);
 }
 
-// Start Server
+// Start Server & Keep-Alive Ping Loop (Prevents Render Free Tier from sleeping)
+const https = require('https');
+
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Self-ping Render server every 10 minutes (600,000 ms) so it stays awake 24/7
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL || 'https://quizapp-8jh3.onrender.com';
+  setInterval(() => {
+    https.get(`${RENDER_URL}/api/ping`, (res) => {
+      console.log(`[Keep-Alive] Pinged ${RENDER_URL}/api/ping - Status: ${res.statusCode}`);
+    }).on('error', (err) => {
+      console.error('[Keep-Alive] Ping error:', err.message);
+    });
+  }, 10 * 60 * 1000);
 });
