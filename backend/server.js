@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/quizapp';
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
+// Force Render deployment sync v1.0.4
+
 // Middleware
 app.use(cors());
 app.use(express.json());
