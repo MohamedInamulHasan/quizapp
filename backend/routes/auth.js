@@ -104,11 +104,14 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ msg: 'Password is required' });
     }
 
-    // Find by Username OR Email
+    // Find by Username OR Email (Case-Insensitive)
+    const inputLower = input.toLowerCase();
+    const safeRegex = new RegExp('^' + input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+
     const user = await User.findOne({
       $or: [
-        { name: input },
-        { email: input.toLowerCase() }
+        { name: safeRegex },
+        { email: inputLower }
       ]
     });
 

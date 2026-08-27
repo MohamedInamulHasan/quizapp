@@ -71,12 +71,29 @@ mongoose
     }
 
     try {
-      // Grant Admin status ONLY to email mohamedinamulhasan0@gmail.com
-      const targetAdmin = await User.findOne({ email: 'mohamedinamulhasan0@gmail.com' });
-      if (targetAdmin && !targetAdmin.isAdmin) {
+      // Ensure Admin Account for mohamedinamulhasan0@gmail.com exists
+      let targetAdmin = await User.findOne({
+        $or: [
+          { email: 'mohamedinamulhasan0@gmail.com' },
+          { name: 'Hasan28' }
+        ]
+      });
+      if (!targetAdmin) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('Moh@2004', salt);
+        targetAdmin = new User({
+          name: 'Hasan28',
+          email: 'mohamedinamulhasan0@gmail.com',
+          password: hashedPassword,
+          isAdmin: true
+        });
+        await targetAdmin.save();
+        console.log('👑 Admin Account Seeded: Hasan28 / mohamedinamulhasan0@gmail.com / Moh@2004');
+      } else {
+        targetAdmin.email = 'mohamedinamulhasan0@gmail.com';
         targetAdmin.isAdmin = true;
         await targetAdmin.save();
-        console.log('👑 Admin status granted to mohamedinamulhasan0@gmail.com');
+        console.log('👑 Admin status active for mohamedinamulhasan0@gmail.com');
       }
     } catch (e) {
       console.error('Error seeding admin account:', e);
