@@ -38,29 +38,34 @@ function sanitizeUser(user) {
 
 // Helper: Ensure default Admin accounts exist in DB
 async function getOrSeedAdmin(credential) {
-  const clean = credential.trim().toLowerCase();
-  const isAdminCred = ADMIN_IDENTIFIERS.includes(clean);
-  if (!isAdminCred) return null;
+  try {
+    const clean = credential.trim().toLowerCase();
+    const isAdminCred = ADMIN_IDENTIFIERS.includes(clean);
+    if (!isAdminCred) return null;
 
-  let user = await User.findOne({
-    $or: [
-      { email: clean },
-      { name: clean }
-    ]
-  });
-
-  if (!user) {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('000000', salt);
-    user = new User({
-      name: clean.includes('@') ? 'Hasan' : clean,
-      email: clean.includes('@') ? clean : 'mohamedinamulhasan0@gmail.com',
-      password: hashedPassword,
-      isAdmin: true
+    let user = await User.findOne({
+      $or: [
+        { email: clean },
+        { name: clean }
+      ]
     });
-    await user.save();
+
+    if (!user) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('000000', salt);
+      user = new User({
+        name: clean.includes('@') ? 'Hasan' : clean,
+        email: clean.includes('@') ? clean : 'mohamedinamulhasan0@gmail.com',
+        password: hashedPassword,
+        isAdmin: true
+      });
+      await user.save();
+    }
+    return user;
+  } catch (e) {
+    console.error('getOrSeedAdmin Error:', e);
+    return null;
   }
-  return user;
 }
 
 // ==========================================
@@ -145,6 +150,24 @@ router.post('/register', async (req, res) => {
     });
   } catch (err) {
     console.error('Register Route Error:', err);
+    if (err.code === 11000) {
+      const isEmailDup = (err.keyPattern && err.keyPattern.email) || (err.errmsg && err.errmsg.includes('email'));
+      if (isEmailDup) {
+        return res.status(409).json({
+          success: false,
+          code: 'EMAIL_EXISTS',
+          message: 'Email already in use',
+          msg: 'Email already in use'
+        });
+      } else {
+        return res.status(409).json({
+          success: false,
+          code: 'USERNAME_EXISTS',
+          message: 'Username already in use',
+          msg: 'Username already in use'
+        });
+      }
+    }
     return res.status(500).json({ success: false, code: 'SERVER_ERROR', message: 'Registration failed', msg: 'Registration failed' });
   }
 });
