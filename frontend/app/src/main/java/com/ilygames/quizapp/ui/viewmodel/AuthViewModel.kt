@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ilygames.quizapp.data.api.ApiClient
-import com.ilygames.quizapp.data.model.*
+import com.ilygames.quizapp.data.model.LoginRequest
+import com.ilygames.quizapp.data.model.RegisterRequest
+import com.ilygames.quizapp.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,11 +35,21 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 
-    fun authenticate(name: String, email: String? = null, mobileNumber: String, context: Context) {
+    // Sign In method
+    fun login(credential: String, passwordInput: String, context: Context) {
         _authState.value = AuthState.Loading
+        val trimmed = credential.trim()
+        val isEmailInput = trimmed.contains("@")
+
+        val nameParam = if (isEmailInput) trimmed else trimmed
+        val emailParam = if (isEmailInput) trimmed else null
+
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.authenticate(LoginRequest(name, email, mobileNumber))
+                val response = ApiClient.apiService.login(
+                    LoginRequest(name = nameParam, email = emailParam, mobileNumber = passwordInput)
+                )
+
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
@@ -46,20 +58,25 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
                     val errJson = response.errorBody()?.string()
-                    _authState.value = AuthState.Error(parseErrorMsg(errJson, "Invalid credentials"))
+                    val fallbackMsg = if (isEmailInput) "Invalid email" else "Invalid username"
+                    val parsed = parseErrorMsg(errJson, fallbackMsg, isEmailInput)
+                    _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error("Network error. Please try again.")
+                _authState.value = AuthState.Error("Network error. Please check connection.")
             }
         }
     }
 
-    fun login(name: String, email: String? = null, mobileNumber: String, context: Context) {
+    // Sign Up method
+    fun register(username: String, email: String, passwordInput: String, context: Context) {
         _authState.value = AuthState.Loading
-        val isEmailInput = name.contains("@") || (email?.contains("@") == true)
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.login(LoginRequest(name, email, mobileNumber))
+                val response = ApiClient.apiService.register(
+                    RegisterRequest(name = username.trim(), email = email.trim(), mobileNumber = passwordInput)
+                )
+
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
@@ -68,91 +85,11 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
                     val errJson = response.errorBody()?.string()
-                    _authState.value = AuthState.Error(parseErrorMsg(errJson, if (isEmailInput) "Invalid email" else "Invalid username", isEmailInput))
+                    val parsed = parseErrorMsg(errJson, "Registration failed", false)
+                    _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error("Network error. Please try again.")
-            }
-        }
-    }
-
-    fun register(name: String, email: String? = null, mobileNumber: String, context: Context) {
-        _authState.value = AuthState.Loading
-        viewModelScope.launch {
-            try {
-                val response = ApiClient.apiService.register(RegisterRequest(name, email, mobileNumber))
-                if (response.isSuccessful && response.body() != null) {
-                    val authResponse = response.body()!!
-                    _token.value = authResponse.token
-                    _user.value = authResponse.user
-                    saveToken(context, authResponse.token)
-                    _authState.value = AuthState.Success(authResponse.user)
-                } else {
-                    val errJson = response.errorBody()?.string()
-                    _authState.value = AuthState.Error(parseErrorMsg(errJson, "Registration failed"))
-                }
-            } catch (e: Exception) {
-                _authState.value = AuthState.Error("Network error. Please try again.")
-            }
-        }
-    }
-
-    fun tryAutoLogin(context: Context) {
-        val savedToken = getToken(context)
-        if (savedToken != null) {
-            _token.value = savedToken
-            _authState.value = AuthState.Loading
-            viewModelScope.launch {
-                try {
-                    val response = ApiClient.apiService.getProfile(savedToken)
-                    if (response.isSuccessful && response.body() != null) {
-                        val userProfile = response.body()!!
-                        _user.value = userProfile
-                        _authState.value = AuthState.Success(userProfile)
-                    } else {
-                        clearToken(context)
-                        _authState.value = AuthState.Idle
-                    }
-                } catch (e: Exception) {
-                    _authState.value = AuthState.Error("Network error. Working offline if data cached.")
-                }
-            }
-        }
-    }
-
-    fun updateProfileState(name: String? = null, profileImageUrl: String? = null) {
-        _user.value = _user.value?.copy(
-            name = name ?: _user.value?.name ?: "",
-            profileImageUrl = profileImageUrl ?: _user.value?.profileImageUrl
-        )
-    }
-
-    /** Silently re-fetches user profile from server and updates local state. */
-    fun refreshProfile() {
-        val currentToken = _token.value ?: return
-        viewModelScope.launch {
-            try {
-                val response = ApiClient.apiService.getProfile(currentToken)
-                if (response.isSuccessful && response.body() != null) {
-                    _user.value = response.body()!!
-                }
-            } catch (_: Exception) {}
-        }
-    }
-
-    fun addAdReward(context: Context) {
-        val currentToken = _token.value ?: return
-        viewModelScope.launch {
-            try {
-                val response = ApiClient.apiService.addRewards(currentToken, CoinsRewardRequest(100))
-                if (response.isSuccessful && response.body() != null) {
-                    val profileResponse = ApiClient.apiService.getProfile(currentToken)
-                    if (profileResponse.isSuccessful && profileResponse.body() != null) {
-                        _user.value = profileResponse.body()!!
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                _authState.value = AuthState.Error("Network error. Please check connection.")
             }
         }
     }
@@ -164,8 +101,8 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 
-    // Parses {"msg":"..."} response body and returns clean message string
-    private fun parseErrorMsg(raw: String?, fallback: String, isEmailInput: Boolean = false): String {
+    // Parses {"msg":"..."} response body and applies client-side safety overrides
+    private fun parseErrorMsg(raw: String?, fallback: String, isEmailInput: Boolean): String {
         if (raw.isNullOrBlank()) return fallback
         return try {
             val msg = JSONObject(raw).optString("msg", fallback)
