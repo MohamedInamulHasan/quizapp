@@ -79,6 +79,7 @@ fun HomeScreen(
 ) {
     val user by authViewModel.user.collectAsState()
     var showSettingsMenu by remember { mutableStateOf(false) }
+    var showSignOutConfirmationModal by remember { mutableStateOf(false) }
     var showRewardShowcaseModal by remember { mutableStateOf(false) }
     var showEditNameModal by remember { mutableStateOf(false) }
     var showGPayProfileModal by remember { mutableStateOf(false) }
@@ -421,9 +422,9 @@ fun HomeScreen(
                                                         interactionSource = remember { MutableInteractionSource() },
                                                         indication = null
                                                     ) {
+                                                        SoundManager.playClickSound()
                                                         showSettingsMenu = false
-                                                        authViewModel.logout(context)
-                                                        onLogout()
+                                                        showSignOutConfirmationModal = true
                                                     }
                                                     .padding(vertical = 8.dp, horizontal = 4.dp),
                                                 verticalAlignment = Alignment.CenterVertically
@@ -1002,6 +1003,56 @@ fun HomeScreen(
                         }
                     }
                 }
+            )
+        }
+
+        // Sign Out Confirmation Modal Popup
+        if (showSignOutConfirmationModal) {
+            AlertDialog(
+                onDismissRequest = { showSignOutConfirmationModal = false },
+                title = {
+                    Text(
+                        text = "Sign Out",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Are you sure you want to sign out of Quizzy?",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            showSignOutConfirmationModal = false
+                            authViewModel.logout(context)
+                            onLogout()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Sign Out", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            showSignOutConfirmationModal = false
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                    }
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
     }

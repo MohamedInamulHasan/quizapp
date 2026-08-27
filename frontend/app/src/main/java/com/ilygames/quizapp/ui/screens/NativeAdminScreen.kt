@@ -57,15 +57,15 @@ private var isDataLoadedFromPrefs = false
 fun defaultAdminTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = PrimaryGreen,
     unfocusedBorderColor = PrimaryGreen.copy(alpha = 0.6f),
-    focusedLabelColor = Color(0xFF0F7B52),
-    unfocusedLabelColor = Color(0xFF0F7B52),
-    focusedTextColor = Color(0xFF0F172A),
-    unfocusedTextColor = Color(0xFF0F172A),
-    focusedPlaceholderColor = Color(0xFF475569),
-    unfocusedPlaceholderColor = Color(0xFF475569),
+    focusedLabelColor = PrimaryGreen,
+    unfocusedLabelColor = PrimaryGreen.copy(alpha = 0.8f),
+    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
     cursorColor = PrimaryGreen,
-    focusedContainerColor = Color.White,
-    unfocusedContainerColor = Color.White
+    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
 )
 
 fun loadPersistedAdminData(context: Context) {
