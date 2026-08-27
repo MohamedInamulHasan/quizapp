@@ -9,8 +9,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
 const ADMIN_IDENTIFIERS = [
   'mohamedinamulhasan0@gmail.com',
-  'mohmaedinamulhasan0@gmail.com',
+  'mphamedinamulhasan0@gmail.cor',
+  'mphamedinamulhasan0@gmail.com',
   'nohamedinamulhasan0@gmail.com',
+  'mohmaedinamulhasan0@gmail.com',
   'hasan',
   'hasan28'
 ];
