@@ -24,10 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,17 @@ import com.ilygames.quizapp.ui.theme.*
 import com.ilygames.quizapp.ui.viewmodel.AuthState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
+
+// Custom Soft Password Transformation: Renders dot mask (••••••) without triggering Android IME screen-mirror freeze
+class SoftPasswordTransformation(private val maskChar: Char = '•') : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val masked = maskChar.toString().repeat(text.text.length)
+        return TransformedText(
+            text = AnnotatedString(masked),
+            offsetMapping = OffsetMapping.Identity
+        )
+    }
+}
 
 @Composable
 fun LoginScreen(
@@ -149,7 +161,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Field 2: Password
+                // Field 2: Password with SoftPasswordTransformation (smooth PC mirror support)
                 OutlinedTextField(
                     value = passwordInput,
                     onValueChange = { passwordInput = it },
@@ -164,8 +176,7 @@ fun LoginScreen(
                             )
                         }
                     },
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = inputTextStyle,

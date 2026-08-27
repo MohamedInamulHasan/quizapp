@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -203,12 +202,11 @@ fun RegisterScreen(
                             )
                         }
                     },
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
                     isError = showPasswordError,
                     supportingText = if (showPasswordError) {
                         { Text("Password must be at least 6 characters", color = IncorrectRed, fontSize = 12.sp) }
                     } else null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = inputTextStyle,
@@ -235,12 +233,11 @@ fun RegisterScreen(
                     onValueChange = { confirmPasswordInput = it },
                     label = { Text("Confirm Password", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
                     isError = showConfirmError,
                     supportingText = if (showConfirmError) {
                         { Text("Passwords do not match", color = IncorrectRed, fontSize = 12.sp) }
                     } else null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = inputTextStyle,
