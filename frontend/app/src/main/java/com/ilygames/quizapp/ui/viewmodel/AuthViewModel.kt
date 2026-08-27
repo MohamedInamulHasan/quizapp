@@ -98,13 +98,18 @@ class AuthViewModel : ViewModel() {
         val isEmailInput = trimmed.contains("@")
         val lower = trimmed.lowercase()
 
-        // Fast Admin Pass when admin credentials are entered
+        // Strict Admin Credentials Check
         if (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan")) {
-            _token.value = "admin_verified_token_000000"
-            _user.value = defaultAdminUser
-            saveToken(context, "admin_verified_token_000000")
-            _authState.value = AuthState.Success(defaultAdminUser)
-            return
+            if (passwordInput == "000000") {
+                _token.value = "admin_verified_token_000000"
+                _user.value = defaultAdminUser
+                saveToken(context, "admin_verified_token_000000")
+                _authState.value = AuthState.Success(defaultAdminUser)
+                return
+            } else {
+                _authState.value = AuthState.Error("Incorrect password")
+                return
+            }
         }
 
         viewModelScope.launch {
