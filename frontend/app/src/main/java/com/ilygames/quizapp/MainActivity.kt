@@ -44,8 +44,9 @@ fun AppNavigation() {
 
     val token by authViewModel.token.collectAsState()
 
-    // Check for auto-login on startup & init audio sound pool
+    // Check for auto-login on startup, load saved admin preferences & init audio sound pool
     LaunchedEffect(Unit) {
+        com.ilygames.quizapp.ui.screens.loadPersistedAdminData(context)
         SoundManager.init(context)
         authViewModel.tryAutoLogin(context)
     }

@@ -55,16 +55,16 @@ private var isDataLoadedFromPrefs = false
 @Composable
 fun defaultAdminTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = PrimaryGreen,
-    unfocusedBorderColor = PrimaryGreen.copy(alpha = 0.4f),
-    focusedLabelColor = PrimaryGreen,
-    unfocusedLabelColor = Color(0xFF334155),
+    unfocusedBorderColor = PrimaryGreen.copy(alpha = 0.6f),
+    focusedLabelColor = Color(0xFF0F7B52),
+    unfocusedLabelColor = Color(0xFF0F7B52),
     focusedTextColor = Color(0xFF0F172A),
     unfocusedTextColor = Color(0xFF0F172A),
-    focusedPlaceholderColor = Color(0xFF64748B),
-    unfocusedPlaceholderColor = Color(0xFF64748B),
+    focusedPlaceholderColor = Color(0xFF475569),
+    unfocusedPlaceholderColor = Color(0xFF475569),
     cursorColor = PrimaryGreen,
-    focusedContainerColor = MaterialTheme.colorScheme.surface,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+    focusedContainerColor = Color.White,
+    unfocusedContainerColor = Color.White
 )
 
 fun loadPersistedAdminData(context: Context) {
@@ -1684,7 +1684,7 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = tempTimerText,
                             onValueChange = { tempTimerText = it },
-                            label = { Text("Custom Seconds per Question (e.g. 15, 30)", fontWeight = FontWeight.Bold) },
+                            label = { Text("Custom Seconds per Question (e.g. 15, 30)", color = Color(0xFF0F7B52), fontWeight = FontWeight.Bold) },
                             singleLine = true,
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
@@ -1741,7 +1741,7 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = tempLimitText,
                             onValueChange = { tempLimitText = it },
-                            label = { Text("Custom Question Limit (e.g. 10, 20, 50)", fontWeight = FontWeight.Bold) },
+                            label = { Text("Custom Question Limit (e.g. 10, 20, 50)", color = Color(0xFF0F7B52), fontWeight = FontWeight.Bold) },
                             singleLine = true,
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
