@@ -73,9 +73,9 @@ router.get('/questions', [auth, adminAuth], async (req, res) => {
 });
 
 // @route    POST api/admin/upload-image
-// @desc     Upload an image (question or reward) to the server, returns hosted URL
-// @access   Private (Admin)
-router.post('/upload-image', [auth, adminAuth], upload.single('image'), (req, res) => {
+// @desc     Upload an image (profile, question, or reward) to the server, returns hosted URL
+// @access   Private
+router.post('/upload-image', auth, upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ msg: 'No image file received' });
   // Build the hosted URL (works via adb reverse port forwarding)
   const host = `${req.protocol}://${req.get('host')}`;
