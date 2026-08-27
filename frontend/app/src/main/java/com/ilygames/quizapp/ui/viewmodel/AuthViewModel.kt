@@ -128,6 +128,31 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    fun updateProfileState(name: String? = null, profileImageUrl: String? = null) {
+        val currentUser = _user.value ?: return
+        _user.value = currentUser.copy(
+            name = name ?: currentUser.name,
+            profileImageUrl = profileImageUrl ?: currentUser.profileImageUrl
+        )
+    }
+
+    fun addAdReward(context: Context, coinsToAdd: Int = 10) {
+        viewModelScope.launch {
+            try {
+                val tokenStr = _token.value ?: getToken(context) ?: return@launch
+                val response = ApiClient.apiService.addRewards(
+                    tokenStr,
+                    com.ilygames.quizapp.data.model.CoinsRewardRequest(coinsToAdd)
+                )
+                if (response.isSuccessful) {
+                    refreshProfile(context)
+                }
+            } catch (e: Exception) {
+                // Ignore silent ad reward error
+            }
+        }
+    }
+
     fun logout(context: Context) {
         clearToken(context)
         _token.value = null
