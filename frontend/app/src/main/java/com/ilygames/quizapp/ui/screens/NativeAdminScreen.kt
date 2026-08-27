@@ -1691,7 +1691,7 @@ fun NativeAdminScreen(
                             shape = RoundedCornerShape(16.dp)
                         )
 
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
 
                         // Section 2: Questions Count per Quiz
                         Text(
