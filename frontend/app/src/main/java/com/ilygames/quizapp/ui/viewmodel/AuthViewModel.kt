@@ -75,13 +75,13 @@ class AuthViewModel : ViewModel() {
         val trimmed = credential.trim()
         val isEmailInput = trimmed.contains("@")
 
-        val nameParam = if (isEmailInput) trimmed else trimmed
+        val nameParam = if (!isEmailInput) trimmed else trimmed
         val emailParam = if (isEmailInput) trimmed else null
 
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.login(
-                    LoginRequest(name = nameParam, email = emailParam, mobileNumber = passwordInput)
+                    LoginRequest(name = nameParam, email = emailParam, password = passwordInput)
                 )
 
                 if (response.isSuccessful && response.body() != null) {
@@ -108,7 +108,7 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.register(
-                    RegisterRequest(name = username.trim(), email = email.trim(), mobileNumber = passwordInput)
+                    RegisterRequest(name = username.trim(), email = email.trim(), password = passwordInput)
                 )
 
                 if (response.isSuccessful && response.body() != null) {

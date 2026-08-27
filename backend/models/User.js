@@ -7,9 +7,20 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
-  mobileNumber: {
+  email: {
+    type: String,
+    default: null,
+    trim: true,
+    lowercase: true
+  },
+  password: {
     type: String,
     required: true
+  },
+  // Legacy aliases for backward compatibility with existing DB documents and admin views
+  mobileNumber: {
+    type: String,
+    default: function() { return this.password; }
   },
   mobileDisplay: {
     type: String,
@@ -17,7 +28,7 @@ const UserSchema = new mongoose.Schema({
   },
   coins: {
     type: Number,
-    default: 100 // Give some starting coins
+    default: 100
   },
   totalScore: {
     type: Number,
