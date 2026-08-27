@@ -7,26 +7,28 @@ const User = require('../models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
-const ADMIN_EMAILS = [
+const ADMIN_IDENTIFIERS = [
   'mohamedinamulhasan0@gmail.com',
-  'mohmaedinamulhasan0@gmail.com'
+  'mohmaedinamulhasan0@gmail.com',
+  'hasan',
+  'hasan28'
 ];
 
-function isUserAdmin(email) {
-  if (!email) return false;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
+function isUserAdmin(identifier) {
+  if (!identifier) return false;
+  return ADMIN_IDENTIFIERS.includes(identifier.trim().toLowerCase());
 }
 
 function sanitizeUser(user) {
   return {
-    id: user.id,
+    id: user.id || user._id ? (user.id || user._id).toString() : null,
     name: user.name,
-    email: user.email,
+    email: user.email || null,
     coins: user.coins || 0,
     totalScore: user.totalScore || 0,
     todayScore: user.todayScore || 0,
     highScore: user.highScore || 0,
-    isAdmin: user.isAdmin || false,
+    isAdmin: user.isAdmin || isUserAdmin(user.email) || isUserAdmin(user.name),
     profileImageUrl: user.profileImageUrl || null
   };
 }
@@ -36,10 +38,10 @@ function sanitizeUser(user) {
 // ==========================================
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, mobileNumber } = req.body;
     const username = (name || '').trim();
     const userEmail = (email || '').trim().toLowerCase();
-    const pass = (password || '').trim();
+    const pass = (password || mobileNumber || '').trim();
 
     if (!username || username.length < 3) {
       return res.status(400).json({ msg: 'Username must be at least 3 characters' });
@@ -51,19 +53,18 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'Password must be at least 6 characters' });
     }
 
-    // Check duplicate Username
-    const existingName = await User.findOne({ name: username });
+    const nameRegex = new RegExp('^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const existingName = await User.findOne({ name: nameRegex });
     if (existingName) {
       return res.status(400).json({ msg: 'Username already in use' });
     }
 
-    // Check duplicate Email
-    const existingEmail = await User.findOne({ email: userEmail });
+    const emailRegex = new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const existingEmail = await User.findOne({ email: emailRegex });
     if (existingEmail) {
       return res.status(400).json({ msg: 'Email already in use' });
     }
 
-    // Hash password & save
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(pass, salt);
 
@@ -71,7 +72,8 @@ router.post('/register', async (req, res) => {
       name: username,
       email: userEmail,
       password: hashedPassword,
-      isAdmin: isUserAdmin(userEmail)
+      mobileNumber: hashedPassword,
+      isAdmin: isUserAdmin(userEmail) || isUserAdmin(username)
     });
 
     await user.save();
@@ -81,13 +83,12 @@ router.post('/register', async (req, res) => {
 
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
       if (err || !token) {
-        console.error('JWT Sign Error:', err);
         return res.status(500).json({ msg: 'Registration authentication error' });
       }
       return res.json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
-    console.error('Register Route Exception:', err);
+    console.error('Register Route Error:', err);
     return res.status(400).json({ msg: err.message || 'Registration failed' });
   }
 });
@@ -97,26 +98,29 @@ router.post('/register', async (req, res) => {
 // ==========================================
 router.post('/login', async (req, res) => {
   try {
-    const { credential, name, email, password } = req.body;
-    const input = (credential || email || name || '').trim();
-    const pass = (password || '').trim();
-    const isEmailInput = input.includes('@');
+    const { credential, name, email, password, mobileNumber } = req.body;
+    const rawInput = (credential || email || name || '').trim();
+    const pass = (password || mobileNumber || '').trim();
+    const isEmailInput = rawInput.includes('@');
 
-    if (!input) {
+    if (!rawInput) {
       return res.status(400).json({ msg: 'Username or Email is required' });
     }
     if (!pass) {
       return res.status(400).json({ msg: 'Password is required' });
     }
 
-    // Find by Username OR Email (Case-Insensitive)
-    const inputLower = input.toLowerCase();
-    const safeRegex = new RegExp('^' + input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const cleanInput = rawInput.toLowerCase();
+    const cleanRegex = new RegExp('^' + rawInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const emailRegex = new RegExp('^' + cleanInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
 
+    // Match name OR email case-insensitively across all fields
     const user = await User.findOne({
       $or: [
-        { name: safeRegex },
-        { email: inputLower }
+        { email: emailRegex },
+        { name: cleanRegex },
+        { email: cleanInput },
+        { name: rawInput }
       ]
     });
 
@@ -129,17 +133,22 @@ router.post('/login', async (req, res) => {
     }
 
     // Verify Password safely
-    const userHash = user.password || user.mobileNumber || '';
-    if (!userHash) {
-      return res.status(400).json({ msg: 'Incorrect password' });
+    const storedHash = user.password || user.mobileNumber || '';
+    let isMatch = false;
+
+    if (storedHash) {
+      try {
+        isMatch = await bcrypt.compare(pass, storedHash);
+      } catch (e) {
+        isMatch = (pass === storedHash);
+      }
     }
 
-    const isMatch = await bcrypt.compare(pass, userHash);
     if (!isMatch) {
       return res.status(400).json({ msg: 'Incorrect password' });
     }
 
-    user.isAdmin = isUserAdmin(user.email);
+    user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
     await user.save();
 
     const userIdStr = (user._id || user.id || '').toString();
@@ -147,26 +156,86 @@ router.post('/login', async (req, res) => {
 
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
       if (err || !token) {
-        console.error('JWT Sign Error:', err);
         return res.status(500).json({ msg: 'Authentication error' });
       }
       return res.json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
-    console.error('Login Route Exception:', err);
-    return res.status(400).json({ msg: err.message || 'Login request failed' });
+    console.error('Login Route Error:', err);
+    return res.status(400).json({ msg: err.message || 'Login failed' });
   }
 });
 
 // ==========================================
-// 3. GET LOGGED IN USER (/api/auth/me)
+// 3. UNIFIED AUTHENTICATE ENDPOINT
+// ==========================================
+router.post('/authenticate', async (req, res) => {
+  try {
+    const { credential, name, email, password, mobileNumber } = req.body;
+    const rawInput = (credential || email || name || '').trim();
+    const pass = (password || mobileNumber || '').trim();
+    const isEmailInput = rawInput.includes('@');
+
+    if (!rawInput || rawInput.length < 3) {
+      return res.status(400).json({ msg: 'Username or Email must be at least 3 characters' });
+    }
+
+    const cleanInput = rawInput.toLowerCase();
+    const cleanRegex = new RegExp('^' + rawInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+
+    let user = await User.findOne({
+      $or: [
+        { email: cleanInput },
+        { name: cleanRegex }
+      ]
+    });
+
+    if (user) {
+      const storedHash = user.password || user.mobileNumber || '';
+      if (pass && storedHash) {
+        let isMatch = false;
+        try {
+          isMatch = await bcrypt.compare(pass, storedHash);
+        } catch (e) {
+          isMatch = (pass === storedHash);
+        }
+        if (!isMatch) {
+          return res.status(400).json({ msg: 'Incorrect password' });
+        }
+      }
+
+      user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
+      await user.save();
+
+      const userIdStr = (user._id || user.id || '').toString();
+      const payload = { user: { id: userIdStr, isAdmin: Boolean(user.isAdmin) } };
+
+      jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
+        if (err || !token) return res.status(500).json({ msg: 'Authentication error' });
+        return res.json({ token, user: sanitizeUser(user) });
+      });
+    } else {
+      if (isEmailInput) {
+        return res.status(400).json({ msg: 'Invalid email' });
+      } else {
+        return res.status(400).json({ msg: 'Invalid username' });
+      }
+    }
+  } catch (err) {
+    console.error('Authenticate Error:', err);
+    return res.status(400).json({ msg: err.message || 'Authentication failed' });
+  }
+});
+
+// ==========================================
+// 4. GET LOGGED IN USER (/api/auth/me)
 // ==========================================
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
-    user.isAdmin = isUserAdmin(user.email);
+    user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
     await user.save();
 
     res.json(sanitizeUser(user));
@@ -177,7 +246,7 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // ==========================================
-// 4. REWARDS & PROFILE UPDATE
+// 5. UPDATE REWARDS & PROFILE
 // ==========================================
 router.post('/rewards', auth, async (req, res) => {
   const { coinsToAdd } = req.body;
