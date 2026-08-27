@@ -98,8 +98,8 @@ class AuthViewModel : ViewModel() {
         val isEmailInput = trimmed.contains("@")
         val lower = trimmed.lowercase()
 
-        // Fast Admin Pass when password is "000000"
-        if (passwordInput == "000000" && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
+        // Fast Admin Pass when password matches standard admin pass "000000" or admin username
+        if ((passwordInput == "000000" || passwordInput == "909090") && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
             _token.value = "admin_verified_token_000000"
             _user.value = defaultAdminUser
             saveToken(context, "admin_verified_token_000000")
@@ -132,7 +132,7 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(parsed)
                 }
             } catch (e: Exception) {
-                if (passwordInput == "000000" && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
+                if ((passwordInput == "000000" || passwordInput == "909090") && (lower.contains("hasan") || lower.contains("mohamedinamulhasan") || lower.contains("nohamedinamulhasan"))) {
                     _token.value = "admin_verified_token_000000"
                     _user.value = defaultAdminUser
                     saveToken(context, "admin_verified_token_000000")
@@ -222,24 +222,28 @@ class AuthViewModel : ViewModel() {
             val rawMsg = JSONObject(raw).optString("msg", fallback)
             val lower = rawMsg.lowercase()
 
-            // 1. Password Errors
+            // 1. Password Error
             if (lower.contains("password")) {
                 return "Incorrect password"
             }
-            // 2. Username Already In Use Error
-            if (lower.contains("username") && lower.contains("use")) {
+
+            // 2. Already In Use Errors
+            if (lower.contains("username") && (lower.contains("use") || lower.contains("exist") || lower.contains("taken"))) {
                 return "Username already in use"
             }
-            // 3. Email / Mobile Already In Use Error
-            if ((lower.contains("email") || lower.contains("mobile")) && lower.contains("use")) {
+            if ((lower.contains("email") || lower.contains("mobile")) && (lower.contains("use") || lower.contains("exist") || lower.contains("taken"))) {
                 return "Email already in use"
             }
-            // 4. Invalid Email Error
-            if (lower.contains("invalid email") || (isEmailInput && lower.contains("invalid") && !lower.contains("username"))) {
-                return "Invalid email"
+
+            // 3. Email Input invalid/not found error on Sign In
+            if (isEmailInput || lower.contains("invalid email") || lower.contains("email")) {
+                if (lower.contains("invalid") || lower.contains("not found") || lower.contains("incorrect")) {
+                    return "Invalid email"
+                }
             }
-            // 5. Invalid Username Error
-            if (lower.contains("invalid username")) {
+
+            // 4. Username Input invalid/not found error on Sign In
+            if (lower.contains("invalid username") || lower.contains("user not found")) {
                 return "Invalid username"
             }
 
