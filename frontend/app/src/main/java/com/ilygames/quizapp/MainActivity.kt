@@ -22,6 +22,8 @@ import com.ilygames.quizapp.utils.SoundManager
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Allow smooth screen mirroring and screenshots on PC during development
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
             QuizAppTheme {
                 Surface(
