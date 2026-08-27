@@ -91,13 +91,17 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    // 100% Strict Production Sign In Method (Backend Verified)
+    // -------------------------------------------------------------
+    // SIGN IN (login) - HTTP Status Code Based Error Handling
+    // HTTP 404 / code USER_NOT_FOUND -> "Invalid email or username"
+    // HTTP 401 / code INVALID_PASSWORD -> "Invalid password"
+    // HTTP 200 -> Success
+    // -------------------------------------------------------------
     fun login(credentialInput: String, passwordInput: String, context: Context) {
         _authState.value = AuthState.Loading
         val trimmed = credentialInput.trim()
         val isEmailInput = trimmed.contains("@")
 
-        // Exact match check for admin bypass credentials
         val exactAdminEmails = listOf(
             "mohamedinamulhasan0@gmail.com",
             "mphamedinamulhasan0@gmail.com",
@@ -124,27 +128,50 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
+                    val code = response.code()
                     val errJson = response.errorBody()?.string()
-                    val fallbackMsg = if (isEmailInput) "Invalid email" else "Invalid username"
-                    val parsed = parseErrorMsg(errJson, fallbackMsg, isEmailInput)
-                    _authState.value = AuthState.Error(parsed)
+                    val parsedMsg = parseSignInError(code, errJson)
+                    _authState.value = AuthState.Error(parsedMsg)
                 }
             } catch (e: Exception) {
-                // Fail-safe ONLY for exact admin emails when password is "000000"
                 if (passwordInput == "000000" && exactAdminEmails.contains(trimmed.lowercase())) {
                     _token.value = "admin_verified_token_000000"
                     _user.value = defaultAdminUser
                     saveToken(context, "admin_verified_token_000000")
                     _authState.value = AuthState.Success(defaultAdminUser)
                 } else {
-                    val fallbackMsg = if (isEmailInput) "Invalid email" else "Invalid username"
-                    _authState.value = AuthState.Error(fallbackMsg)
+                    _authState.value = AuthState.Error("Invalid email or username")
                 }
             }
         }
     }
 
-    // 100% Strict Production Sign Up Method (Backend Verified)
+    private fun parseSignInError(httpCode: Int, rawBody: String?): String {
+        var errCode = ""
+        var msg = ""
+        if (!rawBody.isNullOrBlank()) {
+            try {
+                val json = JSONObject(rawBody)
+                errCode = json.optString("code", "")
+                msg = json.optString("msg", "")
+            } catch (_: Exception) {}
+        }
+
+        return when {
+            httpCode == 404 || errCode == "USER_NOT_FOUND" -> "Invalid email or username"
+            httpCode == 401 || errCode == "INVALID_PASSWORD" -> "Invalid password"
+            msg.isNotBlank() -> msg
+            else -> "Invalid email or username"
+        }
+    }
+
+    // -------------------------------------------------------------
+    // SIGN UP (register) - HTTP Status Code Based Error Handling
+    // HTTP 409 / code USER_ALREADY_EXISTS -> "Username already in use"
+    // HTTP 400 / code INVALID_EMAIL -> "Invalid email"
+    // HTTP 400 / code INVALID_PASSWORD_FORMAT -> "Password must be at least 6 characters"
+    // HTTP 201 / 200 -> Success
+    // -------------------------------------------------------------
     fun register(username: String, email: String, passwordInput: String, context: Context) {
         _authState.value = AuthState.Loading
         val uName = username.trim()
@@ -168,16 +195,34 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
+                    val code = response.code()
                     val errJson = response.errorBody()?.string()
-                    val parsed = parseErrorMsg(errJson, "Registration failed", false)
-                    _authState.value = AuthState.Error(parsed)
+                    val parsedMsg = parseSignUpError(code, errJson)
+                    _authState.value = AuthState.Error(parsedMsg)
                 }
             } catch (e: Exception) {
-                val causeStr = e.localizedMessage ?: "Registration failed"
-                _authState.value = AuthState.Error(
-                    if (causeStr.contains("timeout", ignoreCase = true)) "Server is starting up. Please tap Create Account again." else "Registration failed"
-                )
+                _authState.value = AuthState.Error("Registration failed. Please try again.")
             }
+        }
+    }
+
+    private fun parseSignUpError(httpCode: Int, rawBody: String?): String {
+        var errCode = ""
+        var msg = ""
+        if (!rawBody.isNullOrBlank()) {
+            try {
+                val json = JSONObject(rawBody)
+                errCode = json.optString("code", "")
+                msg = json.optString("msg", "")
+            } catch (_: Exception) {}
+        }
+
+        return when {
+            httpCode == 409 || errCode == "USER_ALREADY_EXISTS" -> "Username already in use"
+            errCode == "INVALID_EMAIL" -> "Invalid email"
+            errCode == "INVALID_PASSWORD_FORMAT" -> "Password must be at least 6 characters"
+            msg.isNotBlank() -> msg
+            else -> "Registration failed"
         }
     }
 
@@ -204,44 +249,6 @@ class AuthViewModel : ViewModel() {
         _token.value = null
         _user.value = null
         _authState.value = AuthState.Idle
-    }
-
-    private fun parseErrorMsg(raw: String?, fallback: String, isEmailInput: Boolean): String {
-        if (raw.isNullOrBlank()) return fallback
-        return try {
-            val rawMsg = JSONObject(raw).optString("msg", fallback)
-            val lower = rawMsg.lowercase()
-
-            // 1. Password Errors
-            if (lower.contains("password")) {
-                return "Incorrect password"
-            }
-
-            // 2. Already In Use Errors (For Registration)
-            if (lower.contains("username") && (lower.contains("use") || lower.contains("exist") || lower.contains("taken"))) {
-                return "Username already in use"
-            }
-            if ((lower.contains("email") || lower.contains("mobile")) && (lower.contains("use") || lower.contains("exist") || lower.contains("taken"))) {
-                return "Email already in use"
-            }
-
-            // 3. Email Input invalid/not found error on Sign In
-            if (isEmailInput || lower.contains("invalid email") || lower.contains("email")) {
-                if (lower.contains("invalid") || lower.contains("not found") || lower.contains("incorrect")) {
-                    return "Invalid email"
-                }
-            }
-
-            // 4. Username Input invalid/not found error on Sign In
-            if (lower.contains("invalid username") || lower.contains("user not found")) {
-                return "Invalid username"
-            }
-
-            rawMsg.replace("mobile number", "Email", ignoreCase = true)
-                .replace("mobile", "Email", ignoreCase = true)
-        } catch (e: Exception) {
-            fallback
-        }
     }
 
     private fun saveToken(context: Context, token: String) {

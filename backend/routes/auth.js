@@ -37,8 +37,11 @@ function sanitizeUser(user) {
 }
 
 // ==========================================
-// 1. REGISTER NEW USER
+// 1. REGISTER NEW USER (Sign Up)
 // ==========================================
+// HTTP 201: Account created successfully
+// HTTP 400: Invalid format (Invalid email / Username too short / Password too short)
+// HTTP 409: Account already exists (Username already in use)
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, mobileNumber } = req.body;
@@ -47,25 +50,27 @@ router.post('/register', async (req, res) => {
     const pass = (password || mobileNumber || '').trim();
 
     if (!username || username.length < 3) {
-      return res.status(400).json({ msg: 'Username must be at least 3 characters' });
+      return res.status(400).json({ code: 'INVALID_USERNAME_FORMAT', msg: 'Username must be at least 3 characters' });
     }
     if (!userEmail || !userEmail.endsWith('@gmail.com') || userEmail.length < 11) {
-      return res.status(400).json({ msg: 'Please enter a valid @gmail.com email address' });
+      return res.status(400).json({ code: 'INVALID_EMAIL', msg: 'Invalid email' });
     }
     if (!pass || pass.length < 6) {
-      return res.status(400).json({ msg: 'Password must be at least 6 characters' });
+      return res.status(400).json({ code: 'INVALID_PASSWORD_FORMAT', msg: 'Password must be at least 6 characters' });
     }
 
     const nameRegex = new RegExp('^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-    const existingName = await User.findOne({ name: nameRegex });
-    if (existingName) {
-      return res.status(400).json({ msg: 'Username already in use' });
-    }
-
     const emailRegex = new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-    const existingEmail = await User.findOne({ email: emailRegex });
-    if (existingEmail) {
-      return res.status(400).json({ msg: 'Email already in use' });
+
+    const existingUser = await User.findOne({
+      $or: [
+        { name: nameRegex },
+        { email: emailRegex }
+      ]
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ code: 'USER_ALREADY_EXISTS', msg: 'Username already in use' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -86,38 +91,40 @@ router.post('/register', async (req, res) => {
 
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
       if (err || !token) {
-        return res.status(500).json({ msg: 'Registration authentication error' });
+        return res.status(500).json({ code: 'AUTH_ERROR', msg: 'Registration authentication error' });
       }
-      return res.json({ token, user: sanitizeUser(user) });
+      return res.status(201).json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
     console.error('Register Route Error:', err);
-    return res.status(400).json({ msg: err.message || 'Registration failed' });
+    return res.status(500).json({ code: 'SERVER_ERROR', msg: 'Registration failed' });
   }
 });
 
 // ==========================================
-// 2. SIGN IN USER (Username/Email & Password)
+// 2. SIGN IN USER (Sign In)
 // ==========================================
+// HTTP 200: Login successful
+// HTTP 404: User does not exist ("Invalid email or username")
+// HTTP 401: Password incorrect ("Invalid password")
 router.post('/login', async (req, res) => {
   try {
     const { credential, name, email, password, mobileNumber } = req.body;
     const rawInput = (credential || email || name || '').trim();
     const pass = (password || mobileNumber || '').trim();
-    const isEmailInput = rawInput.includes('@');
 
     if (!rawInput) {
-      return res.status(400).json({ msg: 'Username or Email is required' });
+      return res.status(404).json({ code: 'USER_NOT_FOUND', msg: 'Invalid email or username' });
     }
     if (!pass) {
-      return res.status(400).json({ msg: 'Password is required' });
+      return res.status(401).json({ code: 'INVALID_PASSWORD', msg: 'Invalid password' });
     }
 
     const cleanInput = rawInput.toLowerCase();
     const cleanRegex = new RegExp('^' + rawInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
     const emailRegex = new RegExp('^' + cleanInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
 
-    // Match name OR email case-insensitively across all fields
+    // 1. Look up user by email or username
     const user = await User.findOne({
       $or: [
         { email: emailRegex },
@@ -127,15 +134,12 @@ router.post('/login', async (req, res) => {
       ]
     });
 
+    // 2. If user does NOT exist -> Return HTTP 404 "Invalid email or username"
     if (!user) {
-      if (isEmailInput) {
-        return res.status(400).json({ msg: 'Invalid email' });
-      } else {
-        return res.status(400).json({ msg: 'Invalid username' });
-      }
+      return res.status(404).json({ code: 'USER_NOT_FOUND', msg: 'Invalid email or username' });
     }
 
-    // Verify Password safely
+    // 3. Compare entered password with stored password hash
     const storedHash = user.password || user.mobileNumber || '';
     let isMatch = false;
 
@@ -147,10 +151,12 @@ router.post('/login', async (req, res) => {
       }
     }
 
+    // 4. If password comparison fails -> Return HTTP 401 "Invalid password"
     if (!isMatch) {
-      return res.status(400).json({ msg: 'Incorrect password' });
+      return res.status(401).json({ code: 'INVALID_PASSWORD', msg: 'Invalid password' });
     }
 
+    // 5. Successful login
     user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
     await user.save();
 
@@ -159,84 +165,23 @@ router.post('/login', async (req, res) => {
 
     jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
       if (err || !token) {
-        return res.status(500).json({ msg: 'Authentication error' });
+        return res.status(500).json({ code: 'AUTH_ERROR', msg: 'Authentication error' });
       }
-      return res.json({ token, user: sanitizeUser(user) });
+      return res.status(200).json({ token, user: sanitizeUser(user) });
     });
   } catch (err) {
     console.error('Login Route Error:', err);
-    return res.status(400).json({ msg: err.message || 'Login failed' });
+    return res.status(500).json({ code: 'SERVER_ERROR', msg: 'Login failed' });
   }
 });
 
 // ==========================================
-// 3. UNIFIED AUTHENTICATE ENDPOINT
-// ==========================================
-router.post('/authenticate', async (req, res) => {
-  try {
-    const { credential, name, email, password, mobileNumber } = req.body;
-    const rawInput = (credential || email || name || '').trim();
-    const pass = (password || mobileNumber || '').trim();
-    const isEmailInput = rawInput.includes('@');
-
-    if (!rawInput || rawInput.length < 3) {
-      return res.status(400).json({ msg: 'Username or Email must be at least 3 characters' });
-    }
-
-    const cleanInput = rawInput.toLowerCase();
-    const cleanRegex = new RegExp('^' + rawInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-
-    let user = await User.findOne({
-      $or: [
-        { email: cleanInput },
-        { name: cleanRegex }
-      ]
-    });
-
-    if (user) {
-      const storedHash = user.password || user.mobileNumber || '';
-      if (pass && storedHash) {
-        let isMatch = false;
-        try {
-          isMatch = await bcrypt.compare(pass, storedHash);
-        } catch (e) {
-          isMatch = (pass === storedHash);
-        }
-        if (!isMatch) {
-          return res.status(400).json({ msg: 'Incorrect password' });
-        }
-      }
-
-      user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
-      await user.save();
-
-      const userIdStr = (user._id || user.id || '').toString();
-      const payload = { user: { id: userIdStr, isAdmin: Boolean(user.isAdmin) } };
-
-      jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
-        if (err || !token) return res.status(500).json({ msg: 'Authentication error' });
-        return res.json({ token, user: sanitizeUser(user) });
-      });
-    } else {
-      if (isEmailInput) {
-        return res.status(400).json({ msg: 'Invalid email' });
-      } else {
-        return res.status(400).json({ msg: 'Invalid username' });
-      }
-    }
-  } catch (err) {
-    console.error('Authenticate Error:', err);
-    return res.status(400).json({ msg: err.message || 'Authentication failed' });
-  }
-});
-
-// ==========================================
-// 4. GET LOGGED IN USER (/api/auth/me)
+// 3. GET LOGGED IN USER (/api/auth/me)
 // ==========================================
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ msg: 'User not found' });
+    if (!user) return res.status(404).json({ code: 'USER_NOT_FOUND', msg: 'User not found' });
 
     user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
     await user.save();
@@ -244,25 +189,25 @@ router.get('/me', auth, async (req, res) => {
     res.json(sanitizeUser(user));
   } catch (err) {
     console.error('Get Me Error:', err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ code: 'SERVER_ERROR', msg: 'Server error' });
   }
 });
 
 // ==========================================
-// 5. UPDATE REWARDS & PROFILE
+// 4. UPDATE REWARDS & PROFILE
 // ==========================================
 router.post('/rewards', auth, async (req, res) => {
   const { coinsToAdd } = req.body;
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ msg: 'User not found' });
+    if (!user) return res.status(404).json({ code: 'USER_NOT_FOUND', msg: 'User not found' });
 
     user.coins += parseInt(coinsToAdd) || 0;
     await user.save();
 
     res.json({ coins: user.coins, msg: `Added ${coinsToAdd} coins.` });
   } catch (err) {
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ code: 'SERVER_ERROR', msg: 'Server error' });
   }
 });
 
@@ -270,12 +215,12 @@ router.put('/profile', auth, async (req, res) => {
   const { name, profileImageUrl } = req.body;
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ msg: 'User not found' });
+    if (!user) return res.status(404).json({ code: 'USER_NOT_FOUND', msg: 'User not found' });
 
     if (name && name.trim()) {
       const existingUser = await User.findOne({ name: name.trim() });
       if (existingUser && existingUser.id !== user.id) {
-        return res.status(400).json({ msg: 'Username already in use' });
+        return res.status(409).json({ code: 'USER_ALREADY_EXISTS', msg: 'Username already in use' });
       }
       user.name = name.trim();
     }
@@ -284,7 +229,7 @@ router.put('/profile', auth, async (req, res) => {
     await user.save();
     res.json(sanitizeUser(user));
   } catch (err) {
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ code: 'SERVER_ERROR', msg: 'Server error' });
   }
 });
 
