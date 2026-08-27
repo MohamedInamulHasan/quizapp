@@ -19,11 +19,13 @@ data class AuthResponse(
 
 data class RegisterRequest(
     val name: String,
+    val email: String? = null,
     val mobileNumber: String
 )
 
 data class LoginRequest(
     val name: String,
+    val email: String? = null,
     val mobileNumber: String
 )
 

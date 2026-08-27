@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -240,9 +241,9 @@ fun AuthScreen(
                     onClick = {
                         SoundManager.playClickSound()
                         if (isSignUp) {
-                            authViewModel.register(usernameInput, passwordInput, context)
+                            authViewModel.register(usernameInput, emailInput, passwordInput, context)
                         } else {
-                            authViewModel.login(usernameInput, passwordInput, context)
+                            authViewModel.login(usernameInput, null, passwordInput, context)
                         }
                     },
                     enabled = usernameInput.isNotBlank() && passwordInput.isNotBlank()

@@ -53,11 +53,11 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun login(name: String, mobileNumber: String, context: Context) {
+    fun login(name: String, email: String? = null, mobileNumber: String, context: Context) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.login(LoginRequest(name, mobileNumber))
+                val response = ApiClient.apiService.login(LoginRequest(name, email, mobileNumber))
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
@@ -65,7 +65,7 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    _authState.value = AuthState.Error(parseErrorMsg(response.errorBody()?.string(), "Invalid username or mobile number"))
+                    _authState.value = AuthState.Error(parseErrorMsg(response.errorBody()?.string(), "Invalid credentials"))
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Network error. Please try again.")
@@ -73,11 +73,11 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun register(name: String, mobileNumber: String, context: Context) {
+    fun register(name: String, email: String? = null, mobileNumber: String, context: Context) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
             try {
-                val response = ApiClient.apiService.register(RegisterRequest(name, mobileNumber))
+                val response = ApiClient.apiService.register(RegisterRequest(name, email, mobileNumber))
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     _token.value = authResponse.token
