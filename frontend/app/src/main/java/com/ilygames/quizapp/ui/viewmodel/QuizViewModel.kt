@@ -107,9 +107,16 @@ class QuizViewModel : ViewModel() {
                 val response = ApiClient.apiService.getQuestions(token, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
-                    // Guarantee 100% unique questions in random order (no repeated questions in a single match)
-                    val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }.shuffled()
-                    val randomizedQuestions = if (limit > 0) uniqueQuestions.take(limit) else uniqueQuestions
+                    val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }
+                    val randomizedQuestions = if (limit > 0 && uniqueQuestions.isNotEmpty()) {
+                        val pool = mutableListOf<Question>()
+                        while (pool.size < limit) {
+                            pool.addAll(uniqueQuestions.shuffled())
+                        }
+                        pool.take(limit)
+                    } else {
+                        uniqueQuestions.shuffled()
+                    }
 
                     _quizState.value = QuizState.Active(
                         questions = randomizedQuestions,
@@ -136,9 +143,16 @@ class QuizViewModel : ViewModel() {
                 val response = ApiClient.apiService.getQuestions(token, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
-                    // Guarantee 100% unique questions in random order (no repeated questions in a single match)
-                    val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }.shuffled()
-                    val randomizedQuestions = if (limit > 0) uniqueQuestions.take(limit) else uniqueQuestions
+                    val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }
+                    val randomizedQuestions = if (limit > 0 && uniqueQuestions.isNotEmpty()) {
+                        val pool = mutableListOf<Question>()
+                        while (pool.size < limit) {
+                            pool.addAll(uniqueQuestions.shuffled())
+                        }
+                        pool.take(limit)
+                    } else {
+                        uniqueQuestions.shuffled()
+                    }
                     _quizState.value = QuizState.Active(
                         questions = randomizedQuestions,
                         currentQuestionIndex = 0,
