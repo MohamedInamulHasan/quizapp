@@ -165,8 +165,8 @@ class AuthViewModel : ViewModel() {
         if (raw.isNullOrBlank()) return fallback
         return try {
             val msg = JSONObject(raw).optString("msg", fallback)
-            if (msg.equals("Invalid Credentials", ignoreCase = true)) {
-                "Invalid username or mobile number"
+            if (msg.contains("mobile", ignoreCase = true) || msg.equals("Invalid Credentials", ignoreCase = true)) {
+                "Invalid username/email or password"
             } else {
                 msg
             }

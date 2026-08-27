@@ -105,8 +105,11 @@ router.post('/register', async (req, res) => {
   if (!username || username.length < 3) {
     return res.status(400).json({ msg: 'Username must be at least 3 characters' });
   }
-  if (!pass) {
-    return res.status(400).json({ msg: 'Password is required' });
+  if (!userEmail || !userEmail.endsWith('@gmail.com') || userEmail.length < 11) {
+    return res.status(400).json({ msg: 'Please enter a valid @gmail.com email address' });
+  }
+  if (!pass || pass.length < 6) {
+    return res.status(400).json({ msg: 'Password must be at least 6 characters' });
   }
 
   try {

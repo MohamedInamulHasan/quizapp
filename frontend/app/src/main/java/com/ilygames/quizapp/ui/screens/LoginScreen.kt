@@ -86,6 +86,12 @@ fun AuthScreen(
         fontWeight = FontWeight.Normal
     )
 
+    val isEmailValid = emailInput.trim().endsWith("@gmail.com", ignoreCase = true) &&
+            emailInput.trim().length >= 11 &&
+            emailInput.trim().substringBefore("@gmail.com", "").isNotBlank()
+
+    val isPasswordValid = passwordInput.length >= 6
+
     // Outer full screen Box — centers the Card vertically and horizontally
     Box(
         modifier = Modifier
@@ -167,13 +173,18 @@ fun AuthScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Field 2: Email (ONLY in Sign Up mode)
+                // Field 2: Email (ONLY in Sign Up mode with @gmail.com validation)
                 if (isSignUp) {
+                    val showEmailError = emailInput.isNotBlank() && !isEmailValid
                     OutlinedTextField(
                         value = emailInput,
                         onValueChange = { emailInput = it },
                         label = { Text("Email", color = TextMuted) },
                         leadingIcon = { Icon(Icons.Default.Email, null, tint = PrimaryGreen) },
+                        isError = showEmailError,
+                        supportingText = if (showEmailError) {
+                            { Text("Must be a valid @gmail.com email", color = IncorrectRed, fontSize = 12.sp) }
+                        } else null,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp),
@@ -195,13 +206,18 @@ fun AuthScreen(
                     )
                 }
 
-                // Field 3: Password (in both Sign In & Sign Up modes)
+                // Field 3: Password (min 6 characters validation)
+                val showPasswordError = passwordInput.isNotBlank() && !isPasswordValid
                 OutlinedTextField(
                     value = passwordInput,
                     onValueChange = { passwordInput = it },
                     label = { Text("Password", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     visualTransformation = PasswordVisualTransformation(),
+                    isError = showPasswordError,
+                    supportingText = if (showPasswordError) {
+                        { Text("Password must be at least 6 characters", color = IncorrectRed, fontSize = 12.sp) }
+                    } else null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
@@ -246,8 +262,8 @@ fun AuthScreen(
                             authViewModel.login(usernameInput, null, passwordInput, context)
                         }
                     },
-                    enabled = usernameInput.isNotBlank() && passwordInput.isNotBlank()
-                            && (!isSignUp || emailInput.isNotBlank())
+                    enabled = usernameInput.trim().length >= 3 && isPasswordValid
+                            && (!isSignUp || isEmailValid)
                             && authState !is AuthState.Loading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryGreen,
