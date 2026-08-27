@@ -92,9 +92,9 @@ class AuthViewModel : ViewModel() {
     }
 
     // -------------------------------------------------------------
-    // SIGN IN (login) - HTTP Status Code Based Error Handling
-    // HTTP 404 / code USER_NOT_FOUND -> "Invalid email or username"
-    // HTTP 401 / code INVALID_PASSWORD -> "Invalid password"
+    // SIGN IN (login) - Backend Code Based Error Handling
+    // USER_NOT_FOUND -> "Invalid email or username"
+    // INVALID_PASSWORD -> "Invalid password"
     // HTTP 200 -> Success
     // -------------------------------------------------------------
     fun login(credentialInput: String, passwordInput: String, context: Context) {
@@ -153,23 +153,23 @@ class AuthViewModel : ViewModel() {
             try {
                 val json = JSONObject(rawBody)
                 errCode = json.optString("code", "")
-                msg = json.optString("msg", "")
+                msg = json.optString("message", json.optString("msg", ""))
             } catch (_: Exception) {}
         }
 
         return when {
-            httpCode == 404 || errCode == "USER_NOT_FOUND" -> "Invalid email or username"
-            httpCode == 401 || errCode == "INVALID_PASSWORD" -> "Invalid password"
-            msg.isNotBlank() -> msg
+            errCode == "INVALID_PASSWORD" || msg.equals("Invalid password", ignoreCase = true) -> "Invalid password"
+            errCode == "USER_NOT_FOUND" || msg.equals("Invalid email or username", ignoreCase = true) -> "Invalid email or username"
+            httpCode == 401 && errCode.isBlank() && msg.contains("password", ignoreCase = true) -> "Invalid password"
             else -> "Invalid email or username"
         }
     }
 
     // -------------------------------------------------------------
-    // SIGN UP (register) - HTTP Status Code Based Error Handling
-    // HTTP 409 / code USER_ALREADY_EXISTS -> "Username already in use"
-    // HTTP 400 / code INVALID_EMAIL -> "Invalid email"
-    // HTTP 400 / code INVALID_PASSWORD_FORMAT -> "Password must be at least 6 characters"
+    // SIGN UP (register) - Backend Code Based Error Handling
+    // USERNAME_EXISTS / HTTP 409 -> "Username already in use"
+    // INVALID_EMAIL -> "Invalid email"
+    // INVALID_PASSWORD_FORMAT -> "Password must be at least 6 characters"
     // HTTP 201 / 200 -> Success
     // -------------------------------------------------------------
     fun register(username: String, email: String, passwordInput: String, context: Context) {
@@ -213,13 +213,13 @@ class AuthViewModel : ViewModel() {
             try {
                 val json = JSONObject(rawBody)
                 errCode = json.optString("code", "")
-                msg = json.optString("msg", "")
+                msg = json.optString("message", json.optString("msg", ""))
             } catch (_: Exception) {}
         }
 
         return when {
-            httpCode == 409 || errCode == "USER_ALREADY_EXISTS" -> "Username already in use"
-            errCode == "INVALID_EMAIL" -> "Invalid email"
+            httpCode == 409 || errCode == "USERNAME_EXISTS" || errCode == "USER_ALREADY_EXISTS" -> "Username already in use"
+            errCode == "INVALID_EMAIL" || msg.contains("email", ignoreCase = true) -> "Invalid email"
             errCode == "INVALID_PASSWORD_FORMAT" -> "Password must be at least 6 characters"
             msg.isNotBlank() -> msg
             else -> "Registration failed"
