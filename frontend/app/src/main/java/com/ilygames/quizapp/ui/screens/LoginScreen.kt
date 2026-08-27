@@ -109,24 +109,19 @@ fun AuthScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Logo
+                // Official Quizzy Green Squircle Q Logo
                 Box(
                     modifier = Modifier
                         .size(76.dp)
-                        .background(
-                            brush = Brush.linearGradient(
-                                listOf(PrimaryGreen.copy(alpha = 0.18f), ElectricMint.copy(alpha = 0.1f))
-                            ),
-                            shape = RoundedCornerShape(22.dp)
-                        )
-                        .border(1.5.dp, PrimaryGreen.copy(alpha = 0.45f), RoundedCornerShape(22.dp)),
+                        .shadow(8.dp, RoundedCornerShape(22.dp), spotColor = PrimaryGreen.copy(alpha = 0.35f))
+                        .background(PrimaryGreen, RoundedCornerShape(22.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Gamepad,
-                        contentDescription = null,
-                        tint = PrimaryGreen,
-                        modifier = Modifier.size(40.dp)
+                    Text(
+                        text = "Q",
+                        fontSize = 44.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
                     )
                 }
 
