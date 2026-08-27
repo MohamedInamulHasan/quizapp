@@ -164,12 +164,7 @@ class AuthViewModel : ViewModel() {
     private fun parseErrorMsg(raw: String?, fallback: String): String {
         if (raw.isNullOrBlank()) return fallback
         return try {
-            val msg = JSONObject(raw).optString("msg", fallback)
-            if (msg.contains("mobile", ignoreCase = true) || msg.equals("Invalid Credentials", ignoreCase = true)) {
-                "Invalid username/email or password"
-            } else {
-                msg
-            }
+            JSONObject(raw).optString("msg", fallback)
         } catch (e: Exception) {
             fallback
         }

@@ -29,6 +29,10 @@ import com.ilygames.quizapp.ui.viewmodel.AuthState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
 
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.input.VisualTransformation
+
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
@@ -68,11 +72,13 @@ fun AuthScreen(
     var usernameInput by remember { mutableStateOf("") }
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(isSignUp) {
         usernameInput = ""
         emailInput = ""
         passwordInput = ""
+        isPasswordVisible = false
         authViewModel.resetAuthState()
     }
 
@@ -206,14 +212,23 @@ fun AuthScreen(
                     )
                 }
 
-                // Field 3: Password (min 6 characters validation)
+                // Field 3: Password (min 6 characters validation & eye icon toggle)
                 val showPasswordError = passwordInput.isNotBlank() && !isPasswordValid
                 OutlinedTextField(
                     value = passwordInput,
                     onValueChange = { passwordInput = it },
                     label = { Text("Password", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                            Icon(
+                                imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (isPasswordVisible) "Hide Password" else "Show Password",
+                                tint = TextMuted
+                            )
+                        }
+                    },
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     isError = showPasswordError,
                     supportingText = if (showPasswordError) {
                         { Text("Password must be at least 6 characters", color = IncorrectRed, fontSize = 12.sp) }

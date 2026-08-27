@@ -115,13 +115,13 @@ router.post('/register', async (req, res) => {
   try {
     const existingName = await User.findOne({ name: username });
     if (existingName) {
-      return res.status(400).json({ msg: 'Username is already in use. Please try another.' });
+      return res.status(400).json({ msg: 'Username already in use' });
     }
 
     if (userEmail) {
       const existingEmail = await User.findOne({ email: userEmail });
       if (existingEmail) {
-        return res.status(400).json({ msg: 'Email is already registered. Please sign in instead.' });
+        return res.status(400).json({ msg: 'Email already in use' });
       }
     }
 
@@ -156,6 +156,7 @@ router.post('/login', async (req, res) => {
   const { name, email, password, mobileNumber } = req.body;
   const credential = (name || email || '').trim();
   const pass = (password || mobileNumber || '').trim();
+  const isEmailFormat = credential.includes('@');
 
   if (!credential) {
     return res.status(400).json({ msg: 'Username or Email is required' });
@@ -173,7 +174,11 @@ router.post('/login', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid username or email' });
+      if (isEmailFormat) {
+        return res.status(400).json({ msg: 'Invalid email' });
+      } else {
+        return res.status(400).json({ msg: 'Invalid username' });
+      }
     }
 
     const isMatch = await bcrypt.compare(pass, user.mobileNumber);
