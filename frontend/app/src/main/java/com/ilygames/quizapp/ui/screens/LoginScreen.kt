@@ -49,7 +49,8 @@ fun LoginScreen(
     AuthScreen(
         authViewModel = authViewModel,
         startOnRegister = false,
-        onAuthSuccess = onLoginSuccess
+        onAuthSuccess = onLoginSuccess,
+        onNavigateToOther = onNavigateToRegister
     )
 }
 
@@ -62,7 +63,8 @@ fun RegisterScreen(
     AuthScreen(
         authViewModel = authViewModel,
         startOnRegister = true,
-        onAuthSuccess = onRegisterSuccess
+        onAuthSuccess = onRegisterSuccess,
+        onNavigateToOther = onNavigateToLogin
     )
 }
 
@@ -70,7 +72,8 @@ fun RegisterScreen(
 fun AuthScreen(
     authViewModel: AuthViewModel,
     startOnRegister: Boolean = false,
-    onAuthSuccess: () -> Unit
+    onAuthSuccess: () -> Unit,
+    onNavigateToOther: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val authState by authViewModel.authState.collectAsState()
@@ -188,6 +191,7 @@ fun AuthScreen(
                                 if (isSignUp) {
                                     SoundManager.playClickSound()
                                     isSignUp = false
+                                    onNavigateToOther?.invoke()
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -213,6 +217,7 @@ fun AuthScreen(
                                 if (!isSignUp) {
                                     SoundManager.playClickSound()
                                     isSignUp = true
+                                    onNavigateToOther?.invoke()
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -383,6 +388,7 @@ fun AuthScreen(
                     onClick = {
                         SoundManager.playClickSound()
                         isSignUp = !isSignUp
+                        onNavigateToOther?.invoke()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

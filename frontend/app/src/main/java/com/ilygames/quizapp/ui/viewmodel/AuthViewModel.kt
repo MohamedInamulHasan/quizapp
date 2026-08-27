@@ -35,6 +35,40 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 
+    // Auto login check on app startup
+    fun tryAutoLogin(context: Context) {
+        val savedToken = getToken(context)
+        if (!savedToken.isNullOrBlank()) {
+            _token.value = savedToken
+            fetchProfileWithToken(savedToken)
+        } else {
+            _authState.value = AuthState.Idle
+        }
+    }
+
+    // Refresh current user profile
+    fun refreshProfile(context: Context? = null) {
+        val activeToken = _token.value ?: (context?.let { getToken(it) })
+        if (!activeToken.isNullOrBlank()) {
+            fetchProfileWithToken(activeToken)
+        }
+    }
+
+    private fun fetchProfileWithToken(tokenStr: String) {
+        viewModelScope.launch {
+            try {
+                val response = ApiClient.apiService.getProfile(tokenStr)
+                if (response.isSuccessful && response.body() != null) {
+                    val u = response.body()!!
+                    _user.value = u
+                    _authState.value = AuthState.Success(u)
+                }
+            } catch (e: Exception) {
+                // Silent catch for background profile refresh
+            }
+        }
+    }
+
     // Sign In method
     fun login(credential: String, passwordInput: String, context: Context) {
         _authState.value = AuthState.Loading
