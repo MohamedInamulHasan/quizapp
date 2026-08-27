@@ -52,6 +52,8 @@ fun RegisterScreen(
     var confirmPasswordInput by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
+    var validationError by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(Unit) {
         authViewModel.resetAuthState()
     }
@@ -67,19 +69,6 @@ fun RegisterScreen(
         fontSize = 15.sp,
         fontWeight = FontWeight.Normal
     )
-
-    val isGmailValid = emailInput.trim().endsWith("@gmail.com", ignoreCase = true) &&
-            emailInput.trim().length >= 11
-
-    val isPasswordValid = passwordInput.length >= 6
-    val isUsernameValid = usernameInput.trim().length >= 3
-    val isPasswordMatch = passwordInput == confirmPasswordInput
-
-    val isSubmitEnabled = isUsernameValid &&
-            isGmailValid &&
-            isPasswordValid &&
-            isPasswordMatch &&
-            authState !is AuthState.Loading
 
     val scrollState = rememberScrollState()
 
@@ -142,7 +131,11 @@ fun RegisterScreen(
                 // Field 1: Username
                 OutlinedTextField(
                     value = usernameInput,
-                    onValueChange = { usernameInput = it },
+                    onValueChange = {
+                        usernameInput = it
+                        validationError = null
+                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    },
                     label = { Text("Username (min 3 chars)", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
                     singleLine = true,
@@ -167,7 +160,11 @@ fun RegisterScreen(
                 // Field 2: Gmail Address
                 OutlinedTextField(
                     value = emailInput,
-                    onValueChange = { emailInput = it },
+                    onValueChange = {
+                        emailInput = it
+                        validationError = null
+                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    },
                     label = { Text("Email (@gmail.com)", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Email, null, tint = PrimaryGreen) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -191,10 +188,14 @@ fun RegisterScreen(
                 )
 
                 // Field 3: Password
-                val showPasswordError = passwordInput.isNotBlank() && !isPasswordValid
+                val showPasswordError = passwordInput.isNotBlank() && passwordInput.length < 6
                 OutlinedTextField(
                     value = passwordInput,
-                    onValueChange = { passwordInput = it },
+                    onValueChange = {
+                        passwordInput = it
+                        validationError = null
+                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    },
                     label = { Text("Password (min 6 chars)", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     trailingIcon = {
@@ -231,10 +232,14 @@ fun RegisterScreen(
                 )
 
                 // Field 4: Confirm Password
-                val showConfirmError = confirmPasswordInput.isNotBlank() && !isPasswordMatch
+                val showConfirmError = confirmPasswordInput.isNotBlank() && confirmPasswordInput != passwordInput
                 OutlinedTextField(
                     value = confirmPasswordInput,
-                    onValueChange = { confirmPasswordInput = it },
+                    onValueChange = {
+                        confirmPasswordInput = it
+                        validationError = null
+                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    },
                     label = { Text("Confirm Password", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
@@ -261,15 +266,16 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Live Error Message Display
+                // Live Error Message Display (below form fields)
+                val activeErrorMsg = validationError ?: (authState as? AuthState.Error)?.message
                 AnimatedVisibility(
-                    visible = authState is AuthState.Error,
+                    visible = activeErrorMsg != null,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    if (authState is AuthState.Error) {
+                    if (activeErrorMsg != null) {
                         Text(
-                            text = (authState as AuthState.Error).message,
+                            text = activeErrorMsg,
                             color = IncorrectRed,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -285,9 +291,36 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         SoundManager.playClickSound()
-                        authViewModel.register(usernameInput.trim(), emailInput.trim(), passwordInput, context)
+                        val uName = usernameInput.trim()
+                        val uEmail = emailInput.trim()
+                        val pInput = passwordInput.trim()
+                        val cInput = confirmPasswordInput.trim()
+
+                        if (uName.isBlank() || uEmail.isBlank() || pInput.isBlank()) {
+                            validationError = "Please fill in all fields"
+                            return@Button
+                        }
+                        if (uName.length < 3) {
+                            validationError = "Username must be at least 3 characters"
+                            return@Button
+                        }
+                        if (!uEmail.endsWith("@gmail.com", ignoreCase = true) || uEmail.length < 11) {
+                            validationError = "Invalid email"
+                            return@Button
+                        }
+                        if (pInput.length < 6) {
+                            validationError = "Password must be at least 6 characters"
+                            return@Button
+                        }
+                        if (pInput != cInput) {
+                            validationError = "Passwords do not match"
+                            return@Button
+                        }
+
+                        validationError = null
+                        authViewModel.register(uName, uEmail, pInput, context)
                     },
-                    enabled = isSubmitEnabled,
+                    enabled = authState !is AuthState.Loading,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryGreen,

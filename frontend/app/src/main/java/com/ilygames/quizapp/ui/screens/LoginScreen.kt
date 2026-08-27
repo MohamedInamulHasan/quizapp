@@ -62,6 +62,8 @@ fun LoginScreen(
     var passwordInput by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
+    var validationError by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(Unit) {
         authViewModel.resetAuthState()
     }
@@ -77,10 +79,6 @@ fun LoginScreen(
         fontSize = 15.sp,
         fontWeight = FontWeight.Normal
     )
-
-    val isSubmitEnabled = usernameOrEmailInput.trim().isNotBlank() &&
-            passwordInput.isNotBlank() &&
-            authState !is AuthState.Loading
 
     val scrollState = rememberScrollState()
 
@@ -143,7 +141,11 @@ fun LoginScreen(
                 // Field 1: Username or Email
                 OutlinedTextField(
                     value = usernameOrEmailInput,
-                    onValueChange = { usernameOrEmailInput = it },
+                    onValueChange = {
+                        usernameOrEmailInput = it
+                        validationError = null
+                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    },
                     label = { Text("Username or Email", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
                     singleLine = true,
@@ -165,10 +167,14 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Field 2: Password with SoftPasswordTransformation (smooth PC mirror support)
+                // Field 2: Password
                 OutlinedTextField(
                     value = passwordInput,
-                    onValueChange = { passwordInput = it },
+                    onValueChange = {
+                        passwordInput = it
+                        validationError = null
+                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    },
                     label = { Text("Password", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     trailingIcon = {
@@ -200,15 +206,16 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Live Error Message Display
+                // Live Error Message Display (below form fields)
+                val activeErrorMsg = validationError ?: (authState as? AuthState.Error)?.message
                 AnimatedVisibility(
-                    visible = authState is AuthState.Error,
+                    visible = activeErrorMsg != null,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    if (authState is AuthState.Error) {
+                    if (activeErrorMsg != null) {
                         Text(
-                            text = (authState as AuthState.Error).message,
+                            text = activeErrorMsg,
                             color = IncorrectRed,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -224,9 +231,28 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         SoundManager.playClickSound()
-                        authViewModel.login(usernameOrEmailInput.trim(), passwordInput, context)
+                        val uInput = usernameOrEmailInput.trim()
+                        val pInput = passwordInput.trim()
+
+                        if (uInput.isBlank()) {
+                            validationError = "Email or username is required"
+                            return@Button
+                        }
+                        if (pInput.isBlank()) {
+                            validationError = "Password is required"
+                            return@Button
+                        }
+
+                        // Check client format if email string
+                        if (uInput.contains("@") && (!uInput.contains(".") || uInput.length < 5)) {
+                            validationError = "Invalid email"
+                            return@Button
+                        }
+
+                        validationError = null
+                        authViewModel.login(uInput, pInput, context)
                     },
-                    enabled = isSubmitEnabled,
+                    enabled = authState !is AuthState.Loading,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryGreen,
