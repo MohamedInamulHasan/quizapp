@@ -161,7 +161,27 @@ fun LeaderboardScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     if (leaderboard.size > 3) {
                         Text("ALL RANKINGS", fontSize = 11.sp, fontWeight = FontWeight.Black,
-                            color = TextMuted, modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
+                            color = TextMuted, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
+
+                        // Table Header Bar
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = PrimaryGreen.copy(alpha = 0.12f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("RANK", fontWeight = FontWeight.Black, fontSize = 11.sp, color = PrimaryGreen, modifier = Modifier.width(42.dp))
+                                Text("PLAYER", fontWeight = FontWeight.Black, fontSize = 11.sp, color = PrimaryGreen, modifier = Modifier.weight(1f))
+                                Text("SCORE", fontWeight = FontWeight.Black, fontSize = 11.sp, color = PrimaryGreen, textAlign = TextAlign.End)
+                            }
+                        }
                     }
                 }
 

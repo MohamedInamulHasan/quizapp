@@ -224,6 +224,26 @@ router.get('/users', [auth, adminAuth], async (req, res) => {
   }
 });
 
+// @route    DELETE api/admin/users/:id
+// @desc     Delete a user account by ID
+// @access   Private (Admin)
+router.delete('/users/:id', [auth, adminAuth], async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    await DailyResult.deleteMany({ user: req.params.id });
+
+    res.json({ msg: 'User successfully deleted' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // @route    POST api/admin/seed
 // @desc     Re-seed database with questions
 // @access   Private (Admin)

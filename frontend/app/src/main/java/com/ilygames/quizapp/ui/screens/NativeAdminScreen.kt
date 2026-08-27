@@ -1054,8 +1054,10 @@ fun NativeAdminScreen(
                 }
             }
 
-            // TAB 4: USERS LIST
+            // TAB 4: USERS LIST & MANAGEMENT (TABLE FORMAT WITH DELETE ACTION)
             if (selectedTab == 3) {
+                var userToDelete by remember { mutableStateOf<com.ilygames.quizapp.data.model.User?>(null) }
+
                 LaunchedEffect(Unit) {
                     isLoadingUsers = true
                     try {
@@ -1072,7 +1074,7 @@ fun NativeAdminScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "All Users (${usersList.size})",
+                            text = "Registered Users Directory (${usersList.size})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
                             color = MaterialTheme.colorScheme.onSurface
@@ -1098,7 +1100,7 @@ fun NativeAdminScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     if (isLoadingUsers) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -1106,84 +1108,196 @@ fun NativeAdminScreen(
                         }
                     } else if (usersList.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("No users found", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
+                            Text("No registered users found", color = TextMuted, style = MaterialTheme.typography.bodyLarge)
                         }
                     } else {
+                        // Table Header Bar
+                        Surface(
+                            shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
+                            color = PrimaryGreen.copy(alpha = 0.12f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("#", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.width(32.dp))
+                                Text("USER & MOBILE DETAILS", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, modifier = Modifier.weight(1f))
+                                Text("ACTION", fontWeight = FontWeight.Black, fontSize = 12.sp, color = PrimaryGreen, textAlign = TextAlign.End)
+                            }
+                        }
+
+                        // Table Content Rows
                         LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(usersList.filter { !it.mobileNumber.isNullOrBlank() }.sortedBy { it.name ?: "" }) { user ->
+                            val validUsers = usersList.filter { !it.mobileNumber.isNullOrBlank() }.sortedBy { it.name ?: "" }
+                            itemsIndexed(validUsers) { index, user ->
                                 Surface(
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = RoundedCornerShape(12.dp),
                                     color = MaterialTheme.colorScheme.surface,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
+                                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                                 ) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(14.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        // Avatar circle
-                                        Box(
-                                            modifier = Modifier
-                                                .size(44.dp)
-                                                .background(
-                                                    if (user.isAdmin == true) PrimaryGreen.copy(alpha = 0.15f)
-                                                    else MaterialTheme.colorScheme.surfaceVariant,
-                                                    CircleShape
-                                                )
-                                                .border(1.5.dp, if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant, CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = (user.name?.firstOrNull()?.uppercaseChar() ?: '?').toString(),
-                                                fontWeight = FontWeight.Black,
-                                                fontSize = 18.sp,
-                                                color = if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
+                                        // Index #
+                                        Text(
+                                            text = "${index + 1}",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp,
+                                            color = TextMuted,
+                                            modifier = Modifier.width(32.dp)
+                                        )
 
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        // User Avatar & Info
+                                        Row(
+                                            modifier = Modifier.weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(38.dp)
+                                                    .background(
+                                                        if (user.isAdmin == true) PrimaryGreen.copy(alpha = 0.15f)
+                                                        else MaterialTheme.colorScheme.surfaceVariant,
+                                                        CircleShape
+                                                    )
+                                                    .border(1.5.dp, if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                                                contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = user.name ?: "Unknown",
+                                                    text = (user.name?.firstOrNull()?.uppercaseChar() ?: '?').toString(),
                                                     fontWeight = FontWeight.Black,
-                                                    fontSize = 15.sp,
-                                                    color = MaterialTheme.colorScheme.onSurface
+                                                    fontSize = 16.sp,
+                                                    color = if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.onSurface
                                                 )
-                                                if (user.isAdmin == true) {
-                                                    Surface(
-                                                        shape = RoundedCornerShape(6.dp),
-                                                        color = PrimaryGreen.copy(alpha = 0.15f)
-                                                    ) {
-                                                        Text(
-                                                            text = "ADMIN",
-                                                            fontSize = 9.sp,
-                                                            fontWeight = FontWeight.Black,
-                                                            color = PrimaryGreen,
-                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                        )
+                                            }
+
+                                            Column {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    Text(
+                                                        text = user.name ?: "Unknown",
+                                                        fontWeight = FontWeight.Black,
+                                                        fontSize = 14.sp,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                    if (user.isAdmin == true) {
+                                                        Surface(
+                                                            shape = RoundedCornerShape(6.dp),
+                                                            color = PrimaryGreen.copy(alpha = 0.15f)
+                                                        ) {
+                                                            Text(
+                                                                text = "ADMIN",
+                                                                fontSize = 9.sp,
+                                                                fontWeight = FontWeight.Black,
+                                                                color = PrimaryGreen,
+                                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                                            )
+                                                        }
                                                     }
                                                 }
+                                                Text(
+                                                    text = user.mobileNumber ?: "No phone",
+                                                    fontSize = 12.sp,
+                                                    color = TextMuted
+                                                )
                                             }
-                                            Text(
-                                                text = user.mobileNumber ?: "",
-                                                fontSize = 12.sp,
-                                                color = TextMuted
+                                        }
+
+                                        // Delete User Icon Button
+                                        IconButton(
+                                            onClick = {
+                                                SoundManager.playClickSound()
+                                                userToDelete = user
+                                            },
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .background(IncorrectRed.copy(alpha = 0.1f), CircleShape)
+                                                .border(1.dp, IncorrectRed.copy(alpha = 0.3f), CircleShape)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Delete User",
+                                                tint = IncorrectRed,
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
                                     }
                                 }
                             }
                         }
+                    }
+
+                    // Delete User Confirmation Modal
+                    if (userToDelete != null) {
+                        val targetUser = userToDelete!!
+                        AlertDialog(
+                            onDismissRequest = { userToDelete = null },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            shape = RoundedCornerShape(26.dp),
+                            title = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(Icons.Default.Warning, contentDescription = "Warning", tint = IncorrectRed)
+                                    Text("Delete User Account?", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                                }
+                            },
+                            text = {
+                                Text(
+                                    text = "Are you sure you want to permanently delete user \"${targetUser.name}\" (${targetUser.mobileNumber})? This action cannot be undone.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            try {
+                                                val res = ApiClient.apiService.deleteUser(token ?: "", targetUser.id)
+                                                if (res.isSuccessful) {
+                                                    usersList = usersList.filter { it.id != targetUser.id }
+                                                    Toast.makeText(context, "🗑️ User \"${targetUser.name}\" deleted!", Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    Toast.makeText(context, "❌ Delete failed", Toast.LENGTH_SHORT).show()
+                                                }
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                            } finally {
+                                                userToDelete = null
+                                            }
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Text("Delete Permanently", color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { userToDelete = null }) {
+                                    Text("Cancel", color = TextMuted)
+                                }
+                            }
+                        )
                     }
                 }
             }

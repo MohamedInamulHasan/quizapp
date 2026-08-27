@@ -118,6 +118,12 @@ interface ApiService {
         @Header("x-auth-token") token: String
     ): Response<List<User>>
 
+    @DELETE("admin/users/{id}")
+    suspend fun deleteUser(
+        @Header("x-auth-token") token: String,
+        @Path("id") id: String
+    ): Response<Unit>
+
     // Upload an image to the server → returns { imageUrl: "http://...", filename: "..." }
     @Multipart
     @POST("admin/upload-image")
