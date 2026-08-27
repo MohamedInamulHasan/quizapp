@@ -156,7 +156,12 @@ router.post('/login', async (req, res) => {
   const { name, email, password, mobileNumber } = req.body;
   const credential = ((email && email.trim()) || (name && name.trim()) || '').trim();
   const pass = (password || mobileNumber || '').trim();
-  const isEmailFormat = credential.includes('@') || (email && email.includes('@'));
+  
+  const isEmailFormat = Boolean(
+    (credential && credential.includes('@')) ||
+    (email && email.includes('@')) ||
+    (name && name.includes('@'))
+  );
 
   if (!credential) {
     return res.status(400).json({ msg: 'Username or Email is required' });
