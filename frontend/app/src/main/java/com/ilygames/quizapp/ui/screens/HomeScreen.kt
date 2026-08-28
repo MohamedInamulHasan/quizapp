@@ -132,27 +132,27 @@ fun HomeScreen(
                             globalProfileImageUri.value = imageUrl
                             Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                         } else {
-                            val localUriStr = selectedUri.toString()
+                            val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
                             val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                            prefs.edit().putString("saved_profile_img_url", localUriStr).apply()
-                            authViewModel.updateProfileState(profileImageUrl = localUriStr)
-                            globalProfileImageUri.value = localUriStr
+                            prefs.edit().putString("saved_profile_img_url", localPath).apply()
+                            authViewModel.updateProfileState(profileImageUrl = localPath)
+                            globalProfileImageUri.value = localPath
                             Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                         }
-                    } else if (token.isBlank()) {
-                        val localUriStr = selectedUri.toString()
+                    } else {
+                        val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
                         val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                        prefs.edit().putString("saved_profile_img_url", localUriStr).apply()
-                        authViewModel.updateProfileState(profileImageUrl = localUriStr)
-                        globalProfileImageUri.value = localUriStr
+                        prefs.edit().putString("saved_profile_img_url", localPath).apply()
+                        authViewModel.updateProfileState(profileImageUrl = localPath)
+                        globalProfileImageUri.value = localPath
                         Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
-                    val localUriStr = selectedUri.toString()
+                    val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
                     val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                    prefs.edit().putString("saved_profile_img_url", localUriStr).apply()
-                    authViewModel.updateProfileState(profileImageUrl = localUriStr)
-                    globalProfileImageUri.value = localUriStr
+                    prefs.edit().putString("saved_profile_img_url", localPath).apply()
+                    authViewModel.updateProfileState(profileImageUrl = localPath)
+                    globalProfileImageUri.value = localPath
                     Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                 }
             }

@@ -482,10 +482,10 @@ fun NativeAdminScreen(
         uri?.let { pickedUri ->
             questionImageUrl = "uploading..."
             coroutineScope.launch {
-                val url = uploadImageToServer(pickedUri, "quiz_img")
-                questionImageUrl = url ?: ""
-                if (url == null) Toast.makeText(context, "❌ Upload failed. Check server connection.", Toast.LENGTH_SHORT).show()
-                else Toast.makeText(context, "✅ Image uploaded to server!", Toast.LENGTH_SHORT).show()
+                val serverUrl = uploadImageToServer(pickedUri, "quiz_img")
+                val finalUrl = serverUrl ?: com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, pickedUri, "quiz_img") ?: pickedUri.toString()
+                questionImageUrl = finalUrl
+                Toast.makeText(context, "✅ Image saved!", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -495,15 +495,12 @@ fun NativeAdminScreen(
     ) { uri: Uri? ->
         uri?.let { pickedUri ->
             coroutineScope.launch {
-                val url = uploadImageToServer(pickedUri, "reward_img")
-                if (url != null) {
-                    inputRewardImgUrl = url
-                    globalRewardImageUrl.value = url
-                    saveRewardToPrefs(context, inputRewardTitle, inputRewardDesc, url)
-                    Toast.makeText(context, "🖼️ Reward Image Saved to Server!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "❌ Upload failed. Check server connection.", Toast.LENGTH_SHORT).show()
-                }
+                val serverUrl = uploadImageToServer(pickedUri, "reward_img")
+                val finalUrl = serverUrl ?: com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, pickedUri, "reward_img") ?: pickedUri.toString()
+                inputRewardImgUrl = finalUrl
+                globalRewardImageUrl.value = finalUrl
+                saveRewardToPrefs(context, inputRewardTitle, inputRewardDesc, finalUrl)
+                Toast.makeText(context, "🖼️ Reward Image Saved!", Toast.LENGTH_SHORT).show()
             }
         }
     }
