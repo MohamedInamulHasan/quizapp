@@ -169,7 +169,19 @@ object SoundManager {
         }
     }
 
-    fun playWhooshSound() {}
+    // 💨 Question transition sound effect
+    fun playWhooshSound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null) return
+        try {
+            if (slowWhooshSoundId != 0) {
+                soundPool?.play(slowWhooshSoundId, 0.9f, 0.9f, 1, 0, 1.0f)
+            } else if (clockTickId != 0) {
+                soundPool?.play(clockTickId, 0.7f, 0.7f, 1, 0, 1.4f)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
     fun playClickSound() {}
     fun playOptionPopSound() {}
     fun playSuccessChime() {}
