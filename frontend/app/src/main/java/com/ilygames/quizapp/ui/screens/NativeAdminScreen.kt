@@ -59,10 +59,10 @@ fun defaultAdminTextFieldColors() = OutlinedTextFieldDefaults.colors(
     unfocusedBorderColor = PrimaryGreen.copy(alpha = 0.6f),
     focusedLabelColor = PrimaryGreen,
     unfocusedLabelColor = PrimaryGreen.copy(alpha = 0.8f),
-    focusedTextColor = Color.White,
-    unfocusedTextColor = Color.White,
-    focusedPlaceholderColor = Color.White.copy(alpha = 0.6f),
-    unfocusedPlaceholderColor = Color.White.copy(alpha = 0.6f),
+    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+    focusedPlaceholderColor = TextMuted,
+    unfocusedPlaceholderColor = TextMuted,
     cursorColor = PrimaryGreen,
     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
@@ -1012,7 +1012,7 @@ fun NativeAdminScreen(
                                 onValueChange = { inputRewardTitle = it },
                                 label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
                                 placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted) },
-                                textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                                textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                                 colors = defaultAdminTextFieldColors(),
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
@@ -1025,7 +1025,7 @@ fun NativeAdminScreen(
                                 onValueChange = { inputRewardDesc = it },
                                 label = { Text("Prize Specifications & Value", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
                                 placeholder = { Text("e.g. 500ml Insulated Stainless Steel with LED Temp Display", color = TextMuted) },
-                                textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                                textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                                 colors = defaultAdminTextFieldColors(),
                                 modifier = Modifier.fillMaxWidth(),
                                 minLines = 3,
@@ -1445,7 +1445,7 @@ fun NativeAdminScreen(
                             value = bulkCategory,
                             onValueChange = { bulkCategory = it },
                             label = { Text("Questions Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1455,7 +1455,7 @@ fun NativeAdminScreen(
                             value = bulkTextRaw,
                             onValueChange = { bulkTextRaw = it },
                             label = { Text("Paste Formatted Questions Text Here...", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 14.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1575,7 +1575,7 @@ fun NativeAdminScreen(
                             value = questionText,
                             onValueChange = { questionText = it },
                             label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1584,7 +1584,7 @@ fun NativeAdminScreen(
                             value = categoryText,
                             onValueChange = { categoryText = it },
                             label = { Text("Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1593,7 +1593,7 @@ fun NativeAdminScreen(
                             value = optionA,
                             onValueChange = { optionA = it },
                             label = { Text("Option A", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1602,7 +1602,7 @@ fun NativeAdminScreen(
                             value = optionB,
                             onValueChange = { optionB = it },
                             label = { Text("Option B", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1611,7 +1611,7 @@ fun NativeAdminScreen(
                             value = optionC,
                             onValueChange = { optionC = it },
                             label = { Text("Option C", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1620,7 +1620,7 @@ fun NativeAdminScreen(
                             value = optionD,
                             onValueChange = { optionD = it },
                             label = { Text("Option D", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1745,7 +1745,7 @@ fun NativeAdminScreen(
                             value = passageCategory,
                             onValueChange = { passageCategory = it },
                             label = { Text("Passage Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1755,7 +1755,7 @@ fun NativeAdminScreen(
                             value = passageTitle,
                             onValueChange = { passageTitle = it },
                             label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1765,7 +1765,7 @@ fun NativeAdminScreen(
                             value = passageParagraph,
                             onValueChange = { passageParagraph = it },
                             label = { Text("Passage Reading Content", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier
                                 .fillMaxWidth()
