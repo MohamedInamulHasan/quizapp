@@ -63,9 +63,9 @@ fun QuizScreen(
         isContentVisible = true
     }
 
-    // Fast urgent clock ticking sound when timer <= 6s
+    // Fast urgent clock ticking sound when timer <= 5s
     LaunchedEffect(timerSeconds) {
-        if (timerSeconds in 1..6 && selectedOption == null && quizState is QuizState.Active) {
+        if (timerSeconds in 1..5 && selectedOption == null && quizState is QuizState.Active) {
             SoundManager.playFastUrgentTick()
         }
     }
