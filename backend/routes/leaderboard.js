@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 
 // @route    GET api/leaderboard/daily & /weekly
-// @desc     Get top 100 players with score > 0
+// @desc     Get top 100 players sorted strictly by highest score descending
 // @access   Private
 router.get('/daily', auth, async (req, res) => {
   try {
@@ -12,17 +12,20 @@ router.get('/daily', auth, async (req, res) => {
       $or: [{ todayScore: { $gt: 0 } }, { totalScore: { $gt: 0 } }]
     })
       .select('name totalScore todayScore coins profileImageUrl')
-      .sort({ todayScore: -1, totalScore: -1 })
-      .limit(100);
+      .lean();
 
-    const rankedPlayers = players.map((player, index) => ({
-      rank: index + 1,
-      id: player._id.toString(),
-      name: player.name,
-      score: Math.max(player.todayScore || 0, player.totalScore || 0),
-      coins: player.coins || 0,
-      profileImageUrl: player.profileImageUrl || null
-    }));
+    const rankedPlayers = players
+      .map(player => ({
+        id: player._id.toString(),
+        name: player.name,
+        score: Math.max(player.todayScore || 0, player.totalScore || 0),
+        coins: player.coins || 0,
+        profileImageUrl: player.profileImageUrl || null
+      }))
+      .filter(p => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 100)
+      .map((p, index) => ({ ...p, rank: index + 1 }));
 
     res.json(rankedPlayers);
   } catch (err) {
@@ -37,17 +40,20 @@ router.get('/weekly', auth, async (req, res) => {
       $or: [{ totalScore: { $gt: 0 } }, { todayScore: { $gt: 0 } }]
     })
       .select('name totalScore todayScore coins profileImageUrl')
-      .sort({ totalScore: -1, todayScore: -1 })
-      .limit(100);
+      .lean();
 
-    const rankedPlayers = players.map((player, index) => ({
-      rank: index + 1,
-      id: player._id.toString(),
-      name: player.name,
-      score: Math.max(player.totalScore || 0, player.todayScore || 0),
-      coins: player.coins || 0,
-      profileImageUrl: player.profileImageUrl || null
-    }));
+    const rankedPlayers = players
+      .map(player => ({
+        id: player._id.toString(),
+        name: player.name,
+        score: Math.max(player.totalScore || 0, player.todayScore || 0),
+        coins: player.coins || 0,
+        profileImageUrl: player.profileImageUrl || null
+      }))
+      .filter(p => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 100)
+      .map((p, index) => ({ ...p, rank: index + 1 }));
 
     res.json(rankedPlayers);
   } catch (err) {
