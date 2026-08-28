@@ -97,7 +97,6 @@ fun loadPersistedAdminData(context: Context) {
         }
     } else {
         globalPassagesList.clear()
-        globalPassagesList.addAll(studyArticlesList)
     }
 
     // Load Saved Rewards
@@ -2018,5 +2017,4 @@ fun NativeAdminScreen(
             )
         }
     }
-}
 }

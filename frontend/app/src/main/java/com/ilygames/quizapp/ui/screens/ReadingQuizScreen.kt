@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.theme.*
@@ -24,35 +25,16 @@ data class PassageStudyUnit(
     val paragraph: String
 )
 
-val samplePassageUnits = listOf(
-    PassageStudyUnit(
-        title = "The James Webb Space Telescope",
-        paragraph = "Launched in December 2021, the James Webb Space Telescope (JWST) is the largest and most powerful space observatory ever built. Orbiting 1.5 million kilometers from Earth at Lagrange point 2 (L2), JWST uses infrared astronomy to gaze through dense cosmic dust clouds. Equipped with a giant 6.5-meter gold-coated beryllium mirror and a tennis-court-sized sunshield, it allows astronomers to observe the universe's first galaxies formed over 13.5 billion years ago and analyze exoplanet atmospheres."
-    ),
-    PassageStudyUnit(
-        title = "Artificial Intelligence & Neural Networks",
-        paragraph = "Deep learning is a subset of machine learning inspired by the biological neural network of the human brain. Artificial neural networks consist of interconnected layers of nodes: an input layer, hidden layers, and an output layer. During training, a process called backpropagation adjusts the synaptic weights between nodes to minimize error functions. Transformer architectures utilize self-attention mechanisms to process text data in parallel, enabling rapid natural language understanding."
-    ),
-    PassageStudyUnit(
-        title = "The Great Pyramid of Giza",
-        paragraph = "Constructed around 2560 BCE as a tomb for Pharaoh Khufu, the Great Pyramid of Giza originally stood at 146.6 meters tall and remained the world's tallest structure for over 3,800 years. Built using an estimated 2.3 million limestone and granite blocks weighing 2.5 tons each, the pyramid was aligned to true north with an error margin of less than 1/15th of a degree. Builders used wooden levers, copper chisels, and water-lubricated sledges to move stone blocks across desert sands."
-    )
-)
-
 @Composable
 fun ReadingQuizScreen(
     onBack: () -> Unit
 ) {
-    // Dynamically load active passages from NativeAdminScreen's globalPassagesList if populated
-    val activeUnits = if (globalPassagesList.isNotEmpty()) {
-        globalPassagesList.map { article ->
-            PassageStudyUnit(
-                title = article.title,
-                paragraph = article.paragraph
-            )
-        }
-    } else {
-        samplePassageUnits
+    // Only load active passages created in Admin Studio / Database
+    val activeUnits = globalPassagesList.map { article ->
+        PassageStudyUnit(
+            title = article.title,
+            paragraph = article.paragraph
+        )
     }
 
     Box(
@@ -101,42 +83,73 @@ fun ReadingQuizScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Clean Passage Cards List (Title and Passage content only)
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 20.dp)
-            ) {
-                items(activeUnits) { unit ->
-                    Card(
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(0.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
+            if (activeUnits.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(22.dp)
+                        Icon(
+                            imageVector = Icons.Default.MenuBook,
+                            contentDescription = "Empty",
+                            tint = TextMuted,
+                            modifier = Modifier.size(54.dp)
+                        )
+                        Text(
+                            text = "No Study Passages Available",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Passages created in Admin Studio will appear here.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextMuted,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            } else {
+                // Clean Passage Cards List (Title and Passage content only)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 20.dp)
+                ) {
+                    items(activeUnits) { unit ->
+                        Card(
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(0.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
                         ) {
-                            Text(
-                                text = unit.title,
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Column(
+                                modifier = Modifier.padding(22.dp)
+                            ) {
+                                Text(
+                                    text = unit.title,
+                                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(12.dp))
 
-                            Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
+                                Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
 
-                            Spacer(modifier = Modifier.height(14.dp))
+                                Spacer(modifier = Modifier.height(14.dp))
 
-                            Text(
-                                text = unit.paragraph,
-                                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp, fontSize = 15.sp),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
-                            )
+                                Text(
+                                    text = unit.paragraph,
+                                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp, fontSize = 15.sp),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
+                                )
+                            }
                         }
                     }
                 }
