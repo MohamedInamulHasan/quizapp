@@ -379,8 +379,32 @@ fun NativeAdminScreen(
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Questions, 1: Passages, 2: Rewards, 3: Users
 
+    val defaultAdminUsers = listOf(
+        com.ilygames.quizapp.data.model.User(
+            id = "admin_user_001",
+            name = "Hasan",
+            email = "mohamedinamulhasan0@gmail.com",
+            coins = 100,
+            isAdmin = true
+        ),
+        com.ilygames.quizapp.data.model.User(
+            id = "admin_user_002",
+            name = "Mohamed Inamul Hasan",
+            email = "mphamedinamulhasan0@gmail.com",
+            coins = 85,
+            isAdmin = true
+        ),
+        com.ilygames.quizapp.data.model.User(
+            id = "admin_user_003",
+            name = "Nohamed Inamul Hasan",
+            email = "nohamedinamulhasan0@gmail.com",
+            coins = 60,
+            isAdmin = true
+        )
+    )
+
     // Users State
-    var usersList by remember { mutableStateOf<List<com.ilygames.quizapp.data.model.User>>(emptyList()) }
+    var usersList by remember { mutableStateOf<List<com.ilygames.quizapp.data.model.User>>(defaultAdminUsers) }
     var isLoadingUsers by remember { mutableStateOf(false) }
 
     // Quiz Question Limit & Timing Settings Modal State
@@ -1154,43 +1178,21 @@ fun NativeAdminScreen(
             if (selectedTab == 3) {
                 var userToDelete by remember { mutableStateOf<com.ilygames.quizapp.data.model.User?>(null) }
 
-                val defaultAdminUsers = listOf(
-                    com.ilygames.quizapp.data.model.User(
-                        id = "admin_user_001",
-                        name = "Hasan",
-                        email = "mohamedinamulhasan0@gmail.com",
-                        coins = 100,
-                        isAdmin = true
-                    ),
-                    com.ilygames.quizapp.data.model.User(
-                        id = "admin_user_002",
-                        name = "Mohamed Inamul Hasan",
-                        email = "mphamedinamulhasan0@gmail.com",
-                        coins = 85,
-                        isAdmin = true
-                    ),
-                    com.ilygames.quizapp.data.model.User(
-                        id = "admin_user_003",
-                        name = "Nohamed Inamul Hasan",
-                        email = "nohamedinamulhasan0@gmail.com",
-                        coins = 60,
-                        isAdmin = true
-                    )
-                )
-
-                LaunchedEffect(Unit) {
-                    isLoadingUsers = true
-                    try {
-                        val res = ApiClient.apiService.getAdminUsers(token ?: "")
-                        if (res.isSuccessful && !res.body().isNullOrEmpty()) {
-                            usersList = res.body()!!
-                        } else {
+                LaunchedEffect(selectedTab) {
+                    if (selectedTab == 3) {
+                        isLoadingUsers = true
+                        try {
+                            val res = ApiClient.apiService.getAdminUsers(token ?: "")
+                            if (res.isSuccessful && !res.body().isNullOrEmpty()) {
+                                usersList = res.body()!!
+                            } else {
+                                usersList = defaultAdminUsers
+                            }
+                        } catch (_: Exception) {
                             usersList = defaultAdminUsers
                         }
-                    } catch (_: Exception) {
-                        usersList = defaultAdminUsers
+                        isLoadingUsers = false
                     }
-                    isLoadingUsers = false
                 }
 
                 Column(modifier = Modifier.fillMaxSize()) {

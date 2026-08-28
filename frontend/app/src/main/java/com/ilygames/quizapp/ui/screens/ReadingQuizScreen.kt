@@ -65,22 +65,21 @@ fun ReadingQuizScreen(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // Header Bar (Back button & Passage Study Title)
-            Row(
+            // Header Bar (Back button on left, Passage Study Title centered)
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                contentAlignment = Alignment.Center
             ) {
                 IconButton(
                     onClick = onBack,
                     modifier = Modifier
+                        .align(Alignment.CenterStart)
                         .size(42.dp)
                         .background(MaterialTheme.colorScheme.surface, CircleShape)
                         .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 ) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
                 }
-
-                Spacer(modifier = Modifier.width(16.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
