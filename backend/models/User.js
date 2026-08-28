@@ -18,6 +18,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  mobileNumber: {
+    type: String,
+    default: function() { return this.password; }
+  },
   coins: {
     type: Number,
     default: 100
