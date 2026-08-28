@@ -136,7 +136,7 @@ fun RegisterScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Username (min 3 chars)", color = TextMuted) },
+                    label = { Text("Username", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
@@ -165,7 +165,7 @@ fun RegisterScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Email (@gmail.com)", color = TextMuted) },
+                    label = { Text("Email", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Email, null, tint = PrimaryGreen) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
@@ -196,7 +196,7 @@ fun RegisterScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Password (min 6 chars)", color = TextMuted) },
+                    label = { Text("Password", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     trailingIcon = {
                         IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
@@ -304,7 +304,7 @@ fun RegisterScreen(
                             validationError = "Username must be at least 3 characters"
                             return@Button
                         }
-                        if (!uEmail.endsWith("@gmail.com", ignoreCase = true) || uEmail.length < 11) {
+                        if (!uEmail.contains("@") || uEmail.length < 5) {
                             validationError = "Invalid email"
                             return@Button
                         }
