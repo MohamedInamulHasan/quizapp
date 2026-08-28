@@ -134,7 +134,7 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    val parsedMsg = parseSignInError(code, rawBody)
+                    val parsedMsg = parseSignInError(code, rawBody, trimmed)
                     println("[LOGIN_RESPONSE_DEBUG] Displaying Sign In Error Message: '$parsedMsg'")
                     _authState.value = AuthState.Error(parsedMsg)
                 }
@@ -152,7 +152,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    private fun parseSignInError(httpCode: Int, rawBody: String?): String {
+    private fun parseSignInError(httpCode: Int, rawBody: String?, credentialInput: String = ""): String {
         var errCode = ""
         var msg = ""
         if (!rawBody.isNullOrBlank()) {
@@ -165,11 +165,15 @@ class AuthViewModel : ViewModel() {
 
         println("[LOGIN_RESPONSE_DEBUG] Extracted response code: '$errCode', message: '$msg'")
 
+        val isEmailInput = credentialInput.contains("@")
+
         return when {
-            errCode == "INVALID_PASSWORD" || msg.contains("password", ignoreCase = true) -> "Invalid password"
-            errCode == "USER_NOT_FOUND" || msg.contains("user", ignoreCase = true) || msg.contains("email", ignoreCase = true) -> "Invalid email or username"
-            msg.isNotBlank() -> msg
-            else -> "Invalid password"
+            errCode == "INVALID_PASSWORD" || msg.equals("Invalid password", ignoreCase = true) -> "Invalid password"
+            errCode == "INVALID_EMAIL" || (isEmailInput && (errCode == "USER_NOT_FOUND" || msg.contains("email", ignoreCase = true) || msg.contains("user", ignoreCase = true))) -> "Invalid email"
+            errCode == "INVALID_USERNAME" || (!isEmailInput && (errCode == "USER_NOT_FOUND" || msg.contains("username", ignoreCase = true) || msg.contains("user", ignoreCase = true))) -> "Invalid username"
+            msg.isNotBlank() && !msg.contains("or username", ignoreCase = true) -> msg
+            isEmailInput -> "Invalid email"
+            else -> "Invalid username"
         }
     }
 
@@ -285,6 +289,6 @@ class AuthViewModel : ViewModel() {
 
     private fun clearToken(context: Context) {
         val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-        sharedPrefs.edit().remove("auth_token").apply()
+        sharedPrefs.edit().remove("auth_token").remove("saved_profile_img_url").apply()
     }
 }

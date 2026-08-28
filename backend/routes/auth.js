@@ -242,11 +242,12 @@ router.post('/login', async (req, res) => {
     // 2. If user does NOT exist -> Return HTTP 401 { success: false, code: "USER_NOT_FOUND", message: "Invalid email or username" }
     if (!user) {
       console.log(`[LOGIN_DEBUG] Returning HTTP 401 USER_NOT_FOUND for "${rawInput}"`);
+      const isEmailInput = rawInput.includes('@');
       return res.status(401).json({
         success: false,
-        code: 'USER_NOT_FOUND',
-        message: 'Invalid email or username',
-        msg: 'Invalid email or username'
+        code: isEmailInput ? 'INVALID_EMAIL' : 'INVALID_USERNAME',
+        message: isEmailInput ? 'Invalid email' : 'Invalid username',
+        msg: isEmailInput ? 'Invalid email' : 'Invalid username'
       });
     }
 

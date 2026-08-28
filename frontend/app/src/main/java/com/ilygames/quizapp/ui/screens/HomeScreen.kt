@@ -164,23 +164,18 @@ fun HomeScreen(
 
     // Refresh profile every time the screen is entered or user changes
     LaunchedEffect(Unit) {
-        val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-        val localProfileImg = prefs.getString("saved_profile_img_url", null)
-        if (!localProfileImg.isNullOrBlank()) {
-            globalProfileImageUri.value = localProfileImg
-        }
         loadPersistedAdminData(context)
         authViewModel.refreshProfile()
     }
 
     LaunchedEffect(user) {
-        // Load profile image URL from user object (saved in MongoDB)
-        user?.profileImageUrl?.let {
-            if (it.isNotBlank()) {
-                globalProfileImageUri.value = it
-                val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                prefs.edit().putString("saved_profile_img_url", it).apply()
-            }
+        val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        if (!user?.profileImageUrl.isNullOrBlank()) {
+            globalProfileImageUri.value = user?.profileImageUrl
+            prefs.edit().putString("saved_profile_img_url", user?.profileImageUrl).apply()
+        } else {
+            globalProfileImageUri.value = null
+            prefs.edit().remove("saved_profile_img_url").apply()
         }
         val savedName = user?.name ?: "Player"
         customUserNameState.value = savedName
@@ -218,10 +213,10 @@ fun HomeScreen(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = PrimaryGreen.copy(alpha = 0.15f),
                             modifier = Modifier
                                 .size(48.dp)
-                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                .border(1.5.dp, PrimaryGreen, CircleShape)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 if (!globalProfileImageUri.value.isNullOrBlank()) {
@@ -232,11 +227,12 @@ fun HomeScreen(
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 } else {
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = "Profile",
-                                        tint = PrimaryGreen,
-                                        modifier = Modifier.size(26.dp)
+                                    val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                    Text(
+                                        text = userInitial,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+                                        fontWeight = FontWeight.Black,
+                                        color = PrimaryGreen
                                     )
                                 }
                             }
@@ -801,10 +797,10 @@ fun HomeScreen(
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface,
+                                color = PrimaryGreen.copy(alpha = 0.15f),
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .border(2.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                    .border(2.dp, PrimaryGreen, CircleShape)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     if (!globalProfileImageUri.value.isNullOrBlank()) {
@@ -815,11 +811,12 @@ fun HomeScreen(
                                             modifier = Modifier.fillMaxSize()
                                         )
                                     } else {
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
-                                            contentDescription = "Profile",
-                                            tint = PrimaryGreen,
-                                            modifier = Modifier.size(44.dp)
+                                        val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                        Text(
+                                            text = userInitial,
+                                            style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                                            fontWeight = FontWeight.Black,
+                                            color = PrimaryGreen
                                         )
                                     }
                                 }
