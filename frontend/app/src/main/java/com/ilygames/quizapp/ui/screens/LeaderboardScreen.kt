@@ -253,18 +253,8 @@ fun PodiumColumn(
     val firstName = player.name.split(" ").firstOrNull() ?: player.name
     val displayName = if (isMe) "$firstName (You)" else firstName
 
-    // Dynamic Theme Aware UI/UX Brushes and Badges (No yellow/brown/grey!)
-    val pillarBrush = when (rank) {
-        1 -> Brush.verticalGradient(listOf(PrimaryGreen, EmeraldGlow))
-        2 -> Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surfaceVariant, PrimaryGreen.copy(alpha = 0.7f)))
-        else -> Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surfaceVariant, PrimaryGreen.copy(alpha = 0.4f)))
-    }
-
-    val badgeRingColor = when (rank) {
-        1 -> PrimaryGreen
-        2 -> ElectricMint
-        else -> TextMuted
-    }
+    // Uniform PrimaryGreen gradient for all 3 podium pillars
+    val pillarBrush = Brush.verticalGradient(listOf(PrimaryGreen, EmeraldGlow))
 
     Column(
         modifier = modifier,
@@ -280,12 +270,11 @@ fun PodiumColumn(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Avatar Ring Container
+        // Avatar Container (Border outline removed)
         Box(
             modifier = Modifier
                 .size(avatarSize)
-                .background(MaterialTheme.colorScheme.surface, CircleShape)
-                .border(2.dp, badgeRingColor, CircleShape),
+                .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
@@ -406,8 +395,7 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
                 Box(
                     modifier = Modifier
                         .size(38.dp)
-                        .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape)
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), CircleShape),
+                        .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {

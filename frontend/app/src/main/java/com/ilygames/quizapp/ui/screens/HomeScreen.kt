@@ -214,9 +214,7 @@ fun HomeScreen(
                         Surface(
                             shape = CircleShape,
                             color = PrimaryGreen.copy(alpha = 0.15f),
-                            modifier = Modifier
-                                .size(48.dp)
-                                .border(1.5.dp, PrimaryGreen, CircleShape)
+                            modifier = Modifier.size(48.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 if (!globalProfileImageUri.value.isNullOrBlank()) {
