@@ -46,8 +46,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 // Global Shared State for Passages, Rewards & Question Limit across screens
 var globalPassagesList = mutableStateListOf<StudyArticle>()
-var globalRewardTitle = mutableStateOf("Smart Temperature Water Bottle")
-var globalRewardDescription = mutableStateOf("500ml Insulated Stainless Steel Smart Thermal Bottle with LED Temperature Display.")
+var globalRewardTitle = mutableStateOf("")
+var globalRewardDescription = mutableStateOf("")
 var globalRewardImageUrl = mutableStateOf<String?>(null)
 var globalQuizQuestionLimit = mutableStateOf(20)
 var globalQuizTimerSeconds = mutableStateOf(20)
@@ -420,9 +420,9 @@ fun NativeAdminScreen(
     var showPassageModal by remember { mutableStateOf(false) }
 
     // Rewards State
-    var inputRewardTitle by remember { mutableStateOf(globalRewardTitle.value) }
-    var inputRewardDesc by remember { mutableStateOf(globalRewardDescription.value) }
-    var inputRewardImgUrl by remember { mutableStateOf(globalRewardImageUrl.value ?: "") }
+    var inputRewardTitle by remember { mutableStateOf("") }
+    var inputRewardDesc by remember { mutableStateOf("") }
+    var inputRewardImgUrl by remember { mutableStateOf("") }
 
     // Helper: Upload image file to backend server → returns full http:// URL stored on server
     suspend fun uploadImageToServer(uri: Uri, prefix: String): String? {
@@ -1032,27 +1032,122 @@ fun NativeAdminScreen(
                                 shape = RoundedCornerShape(14.dp)
                             )
 
-                            Button(
-                                onClick = {
-                                    if (inputRewardTitle.isNotBlank()) {
-                                        globalRewardTitle.value = inputRewardTitle
-                                        globalRewardDescription.value = inputRewardDesc
-                                        globalRewardImageUrl.value = inputRewardImgUrl.ifBlank { null }
-                                        saveRewardToPrefs(context, inputRewardTitle, inputRewardDesc, globalRewardImageUrl.value)
-                                        Toast.makeText(context, "🏆 Today's Reward Prize Published!", Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        Toast.makeText(context, "⚠️ Please enter a Prize Title!", Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Text("💾 PUBLISH TODAY'S REWARD PRIZE", color = Color.White, fontWeight = FontWeight.Black)
+                                Button(
+                                    onClick = {
+                                        if (inputRewardTitle.isNotBlank()) {
+                                            globalRewardTitle.value = inputRewardTitle
+                                            globalRewardDescription.value = inputRewardDesc
+                                            globalRewardImageUrl.value = inputRewardImgUrl.ifBlank { null }
+                                            saveRewardToPrefs(context, inputRewardTitle, inputRewardDesc, globalRewardImageUrl.value)
+                                            Toast.makeText(context, "🏆 Today's Reward Prize Published!", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, "⚠️ Please enter a Prize Title!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Text("💾 PUBLISH TODAY'S REWARD PRIZE", color = Color.White, fontWeight = FontWeight.Black)
+                                }
                             }
                         }
-                    }
-                }
+
+                        // PUBLISHED REWARD PRIZE CARD (Shows when a reward is published)
+                        if (globalRewardTitle.value.isNotBlank()) {
+                            Card(
+                                shape = RoundedCornerShape(24.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(1.dp, PrimaryGreen.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(18.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            color = PrimaryGreen.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            Text(
+                                                text = "🏆 PUBLISHED REWARD",
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = PrimaryGreen,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
+                                        }
+
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            // Edit Button
+                                            IconButton(
+                                                onClick = {
+                                                    SoundManager.playClickSound()
+                                                    inputRewardTitle = globalRewardTitle.value
+                                                    inputRewardDesc = globalRewardDescription.value
+                                                    inputRewardImgUrl = globalRewardImageUrl.value ?: ""
+                                                    Toast.makeText(context, "✏️ Loaded into form for editing!", Toast.LENGTH_SHORT).show()
+                                                },
+                                                modifier = Modifier.size(34.dp)
+                                            ) {
+                                                Icon(Icons.Default.Edit, contentDescription = "Edit Reward", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                                            }
+
+                                            // Delete Button
+                                            IconButton(
+                                                onClick = {
+                                                    SoundManager.playClickSound()
+                                                    inputRewardTitle = ""
+                                                    inputRewardDesc = ""
+                                                    inputRewardImgUrl = ""
+                                                    globalRewardTitle.value = ""
+                                                    globalRewardDescription.value = ""
+                                                    globalRewardImageUrl.value = null
+                                                    saveRewardToPrefs(context, "", "", null)
+                                                    Toast.makeText(context, "🗑️ Published Reward Deleted!", Toast.LENGTH_SHORT).show()
+                                                },
+                                                modifier = Modifier.size(34.dp)
+                                            ) {
+                                                Icon(Icons.Default.Delete, contentDescription = "Delete Reward", tint = IncorrectRed, modifier = Modifier.size(18.dp))
+                                            }
+                                        }
+                                    }
+
+                                    if (!globalRewardImageUrl.value.isNullOrBlank()) {
+                                        AsyncImage(
+                                            model = globalRewardImageUrl.value,
+                                            contentDescription = "Reward Image",
+                                            contentScale = ContentScale.Fit,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(140.dp)
+                                                .clip(RoundedCornerShape(14.dp))
+                                        )
+                                    }
+
+                                    Text(
+                                        text = globalRewardTitle.value,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                                        fontWeight = FontWeight.Black,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    if (globalRewardDescription.value.isNotBlank()) {
+                                        Text(
+                                            text = globalRewardDescription.value,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 18.sp),
+                                            color = TextMuted
+                                        )
+                                    }
+                                }
+                            }
+                        }
             }
 
             // TAB 4: USERS LIST & MANAGEMENT (TABLE FORMAT WITH DELETE ACTION)
