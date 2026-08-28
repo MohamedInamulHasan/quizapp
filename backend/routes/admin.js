@@ -205,13 +205,12 @@ router.delete('/questions/:id', [auth, adminAuth], async (req, res) => {
 router.get('/users', [auth, adminAuth], async (req, res) => {
   try {
     const users = await User.find()
-      .select('name mobileDisplay coins totalScore todayScore isAdmin profileImageUrl createdAt')
+      .select('name email coins totalScore todayScore isAdmin profileImageUrl createdAt')
       .sort({ name: 1 });
-    // Map mobileDisplay → mobileNumber so the Android client receives it under the expected key
     const result = users.map(u => ({
       id: u._id,
       name: u.name,
-      mobileNumber: u.mobileDisplay || null,
+      email: u.email,
       coins: u.coins,
       totalScore: u.totalScore,
       isAdmin: u.isAdmin,

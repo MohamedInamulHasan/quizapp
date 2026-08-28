@@ -26,7 +26,7 @@ async function test() {
   console.log('FOUND USER:', user);
 
   if (user) {
-    const storedHash = user.password || user.mobileNumber;
+    const storedHash = user.password;
     console.log('STORED HASH:', storedHash);
     const isMatch = await bcrypt.compare(pass, storedHash);
     console.log('PASSWORD MATCH:', isMatch);

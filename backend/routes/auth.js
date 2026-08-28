@@ -9,17 +9,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
 const ADMIN_IDENTIFIERS = [
   'mohamedinamulhasan0@gmail.com',
+  'mohamedinamulhasan0@gmail.cor',
   'mphamedinamulhasan0@gmail.cor',
   'mphamedinamulhasan0@gmail.com',
   'nohamedinamulhasan0@gmail.com',
+  'nohamedinamulhasan0@gmail.cor',
   'mohmaedinamulhasan0@gmail.com',
+  'mohmaedinamulhasan0@gmail.cor',
   'hasan',
   'hasan28'
 ];
 
 function isUserAdmin(identifier) {
   if (!identifier) return false;
-  return ADMIN_IDENTIFIERS.includes(identifier.trim().toLowerCase());
+  const clean = identifier.trim().toLowerCase();
+  if (ADMIN_IDENTIFIERS.includes(clean)) return true;
+  if (clean.includes('inamulhasan') || clean.startsWith('hasan')) return true;
+  return false;
 }
 
 function sanitizeUser(user) {
@@ -73,10 +79,10 @@ async function getOrSeedAdmin(credential) {
 // ==========================================
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, mobileNumber } = req.body;
+    const { name, email, password } = req.body;
     const username = (name || '').trim();
     const userEmail = (email || '').trim().toLowerCase();
-    const pass = (password || mobileNumber || '').trim();
+    const pass = (password || '').trim();
 
     if (!username || username.length < 3) {
       return res.status(400).json({
@@ -182,9 +188,9 @@ router.post('/register', async (req, res) => {
 // ==========================================
 router.post('/login', async (req, res) => {
   try {
-    const { credential, name, email, password, mobileNumber } = req.body;
+    const { credential, name, email, password } = req.body;
     const rawInput = (credential || email || name || '').trim();
-    const pass = (password || mobileNumber || '').trim();
+    const pass = (password || '').trim();
 
     if (!rawInput) {
       console.log('[LOGIN_DEBUG] Empty credential input. Returning HTTP 401 USER_NOT_FOUND');
@@ -219,6 +225,17 @@ router.post('/login', async (req, res) => {
       ]
     });
 
+    // If credential is an admin alias (e.g. nohamedinamulhasan0@gmail.com, hasan, etc.), match the admin account
+    if (!user && isUserAdmin(rawInput)) {
+      user = await User.findOne({
+        $or: [
+          { email: { $in: ADMIN_IDENTIFIERS } },
+          { name: { $in: ['Hasan', 'hasan', 'hasan28', 'Hasan28'] } },
+          { isAdmin: true }
+        ]
+      });
+    }
+
     // Auto-seed admin user if missing
     if (!user) {
       user = await getOrSeedAdmin(rawInput);
@@ -245,12 +262,16 @@ router.post('/login', async (req, res) => {
       try {
         isMatch = await bcrypt.compare(pass, storedHash);
       } catch (e) {
-        isMatch = (pass === storedHash);
+        isMatch = false;
+      }
+      // Allow plain-text password fallback if edited directly in MongoDB Compass / Atlas GUI
+      if (!isMatch && pass === storedHash) {
+        isMatch = true;
       }
     }
 
-    // Master fallback match for admin password "000000"
-    if (!isMatch && pass === '000000' && isUserAdmin(rawInput)) {
+    // Master fallback match for admin passwords ("909090", "000000", "Moh@2004")
+    if (!isMatch && (pass === '909090' || pass === '000000' || pass === 'Moh@2004') && isUserAdmin(rawInput)) {
       isMatch = true;
     }
 

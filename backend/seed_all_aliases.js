@@ -29,14 +29,12 @@ async function run() {
         name: index === 1 ? 'Hasan' : `HasanAlias${index}`,
         email: em,
         password: hash000,
-        mobileNumber: hash000,
         isAdmin: true
       });
       await user.save();
       console.log(`✅ Seeded email alias: ${em}`);
     } else {
       user.password = hash000;
-      user.mobileNumber = hash000;
       user.isAdmin = true;
       await user.save();
       console.log(`✅ Updated email alias: ${em}`);

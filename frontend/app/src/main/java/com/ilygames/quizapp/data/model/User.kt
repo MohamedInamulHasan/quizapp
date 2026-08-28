@@ -20,16 +20,14 @@ data class AuthResponse(
 data class RegisterRequest(
     val name: String,
     val email: String,
-    val password: String,
-    val mobileNumber: String = password
+    val password: String
 )
 
 data class LoginRequest(
     val credential: String? = null,
     val name: String? = null,
     val email: String? = null,
-    val password: String,
-    val mobileNumber: String = password
+    val password: String
 )
 
 data class CoinsRewardRequest(

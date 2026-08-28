@@ -22,7 +22,6 @@ async function run() {
 
   for (let u of users) {
     u.password = hash;
-    u.mobileNumber = hash;
     u.isAdmin = true;
     await u.save();
     console.log(`✅ SYNCED DOCUMENT FOR USER "${u.name}" (${u.email})!`);

@@ -117,8 +117,7 @@ class AuthViewModel : ViewModel() {
                         credential = trimmed,
                         name = trimmed,
                         email = if (isEmailInput) trimmed else null,
-                        password = passwordInput,
-                        mobileNumber = passwordInput
+                        password = passwordInput
                     )
                 )
 
@@ -167,11 +166,10 @@ class AuthViewModel : ViewModel() {
         println("[LOGIN_RESPONSE_DEBUG] Extracted response code: '$errCode', message: '$msg'")
 
         return when {
-            errCode == "INVALID_PASSWORD" || msg.equals("Invalid password", ignoreCase = true) -> "Invalid password"
-            errCode == "USER_NOT_FOUND" || msg.equals("Invalid email or username", ignoreCase = true) -> "Invalid email or username"
-            httpCode == 401 && errCode.isBlank() && msg.contains("password", ignoreCase = true) -> "Invalid password"
-            httpCode == 401 && errCode.isBlank() -> "Invalid email or username"
-            else -> "Invalid email or username"
+            errCode == "INVALID_PASSWORD" || msg.contains("password", ignoreCase = true) -> "Invalid password"
+            errCode == "USER_NOT_FOUND" || msg.contains("user", ignoreCase = true) || msg.contains("email", ignoreCase = true) -> "Invalid email or username"
+            msg.isNotBlank() -> msg
+            else -> "Invalid password"
         }
     }
 
@@ -194,8 +192,7 @@ class AuthViewModel : ViewModel() {
                     RegisterRequest(
                         name = uName,
                         email = uEmail,
-                        password = passwordInput,
-                        mobileNumber = passwordInput
+                        password = passwordInput
                     )
                 )
 
@@ -216,7 +213,13 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error(parsedMsg)
                 }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error("Registration failed. Please try again.")
+                println("[REGISTER_RESPONSE_DEBUG] Exception caught: ${e.localizedMessage}")
+                val errMsg = e.localizedMessage ?: "Registration failed"
+                if (errMsg.contains("connect", ignoreCase = true) || errMsg.contains("host", ignoreCase = true)) {
+                    _authState.value = AuthState.Error("Unable to connect to server. Please check your connection.")
+                } else {
+                    _authState.value = AuthState.Error("Registration failed. Please try again.")
+                }
             }
         }
     }
@@ -233,12 +236,13 @@ class AuthViewModel : ViewModel() {
         }
 
         return when {
-            errCode == "EMAIL_EXISTS" -> "Email already in use"
-            errCode == "USERNAME_EXISTS" || errCode == "USER_ALREADY_EXISTS" -> "Username already in use"
+            errCode == "EMAIL_EXISTS" || msg.contains("email already", ignoreCase = true) -> "Email already in use"
+            errCode == "USERNAME_EXISTS" || errCode == "USER_ALREADY_EXISTS" || msg.contains("username already", ignoreCase = true) -> "Username already in use"
             httpCode == 409 && msg.contains("email", ignoreCase = true) -> "Email already in use"
             httpCode == 409 && msg.contains("username", ignoreCase = true) -> "Username already in use"
-            errCode == "INVALID_EMAIL" || msg.contains("email", ignoreCase = true) -> "Invalid email"
-            errCode == "INVALID_PASSWORD_FORMAT" -> "Password must be at least 6 characters"
+            httpCode == 409 -> "Username or email already in use"
+            errCode == "INVALID_EMAIL" || msg.contains("invalid email", ignoreCase = true) -> "Invalid email"
+            errCode == "INVALID_PASSWORD_FORMAT" || msg.contains("password", ignoreCase = true) -> "Password must be at least 6 characters"
             msg.isNotBlank() -> msg
             else -> "Registration failed"
         }

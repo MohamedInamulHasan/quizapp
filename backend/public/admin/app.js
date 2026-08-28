@@ -99,7 +99,7 @@ loginForm.addEventListener('submit', async (e) => {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: email, mobileNumber: password })
+      body: JSON.stringify({ credential: email, password })
     });
     
     const data = await res.json();
@@ -415,7 +415,7 @@ async function loadUsers() {
         <tr>
           <td><span class="small-text font-monospace">${u._id}</span></td>
           <td><strong style="color: #10B981; font-size: 15px;">${escapeHtml(u.name)}</strong></td>
-          <td><span class="small-text text-muted">${u.mobileNumber ? '🔒 Encrypted (Bcrypt)' : 'N/A'}</span></td>
+          <td><span class="small-text text-muted">${escapeHtml(u.email || 'N/A')}</span></td>
           <td><span class="standing-score">${u.coins} <i class="fa-solid fa-coins text-warning"></i></span></td>
           <td>${u.todayScore}</td>
           <td>${u.totalScore}</td>
