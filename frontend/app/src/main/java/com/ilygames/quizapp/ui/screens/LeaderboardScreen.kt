@@ -94,56 +94,18 @@ fun LeaderboardScreen(
                 fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onBackground)
         }
 
-        // ── Tab Selector ──────────────────────────────────────────────────────
-        val dailyInteraction = remember { MutableInteractionSource() }
-        val weeklyInteraction = remember { MutableInteractionSource() }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(50.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(50.dp))
-                .padding(4.dp)
-        ) {
-            // Daily tab
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(if (isDaily) PrimaryGreen else Color.Transparent)
-                    .clickable(interactionSource = dailyInteraction, indication = null) { isDaily = true }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Daily Rank", fontWeight = FontWeight.Bold, fontSize = 14.sp,
-                    color = if (isDaily) Color.White else TextMuted)
-            }
-            // Weekly tab
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(50.dp))
-                    .background(if (!isDaily) PrimaryGreen else Color.Transparent)
-                    .clickable(interactionSource = weeklyInteraction, indication = null) { isDaily = false }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Weekly Rank", fontWeight = FontWeight.Bold, fontSize = 14.sp,
-                    color = if (!isDaily) Color.White else TextMuted)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
+        // Filter out any players with 0 points
+        val validLeaderboard = remember(leaderboard) { leaderboard.filter { it.score > 0 } }
 
         // ── Content ───────────────────────────────────────────────────────────
-        if (leaderboard.isEmpty()) {
+        if (validLeaderboard.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("🏆", fontSize = 52.sp)
-                    Text("No rankings yet!", fontWeight = FontWeight.Black, fontSize = 18.sp,
+                    Text("No rankings recorded yet!", fontWeight = FontWeight.Black, fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.onBackground)
-                    Text("Be the first to play today!", color = TextMuted, fontSize = 14.sp)
+                    Text("Play a quiz to claim the #1 rank!", color = TextMuted, fontSize = 14.sp)
                 }
             }
         } else {
@@ -154,7 +116,7 @@ fun LeaderboardScreen(
                 // Podium for top 3
                 item {
                     LeaderboardPodium(
-                        entries = leaderboard.take(3),
+                        entries = validLeaderboard.take(3),
                         currentUserId = currentUserId,
                         currentUserName = currentUserName
                     )
@@ -162,13 +124,13 @@ fun LeaderboardScreen(
                 }
 
                 item {
-                    if (leaderboard.size > 3) {
+                    if (validLeaderboard.size > 3) {
                         Text("ALL RANKINGS", fontSize = 11.sp, fontWeight = FontWeight.Black,
                             color = TextMuted, modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
                     }
                 }
 
-                itemsIndexed(leaderboard) { index, player ->
+                itemsIndexed(validLeaderboard) { index, player ->
                     LeaderboardRow(player = player, currentUserId = currentUserId, currentUserName = currentUserName)
                 }
             }
