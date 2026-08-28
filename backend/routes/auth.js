@@ -179,7 +179,7 @@ router.post('/register', async (req, res) => {
         });
       }
     }
-    return res.status(500).json({ success: false, code: 'SERVER_ERROR', message: 'Registration failed', msg: 'Registration failed' });
+    return res.status(500).json({ success: false, code: 'SERVER_ERROR', message: err.message || 'Registration failed', msg: err.message || 'Registration failed' });
   }
 });
 
