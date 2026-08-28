@@ -7,9 +7,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // Live production server on Render
-    const val BASE_URL = "https://quizapp-8jh3.onrender.com/api/"
-    const val WS_URL   = "wss://quizapp-8jh3.onrender.com"
+    // Local laptop backend server (START SERVER.bat) connected to MongoDB Atlas
+    const val BASE_URL = "http://localhost:3000/api/"
+    const val WS_URL   = "ws://localhost:3000"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
