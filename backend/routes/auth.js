@@ -23,9 +23,7 @@ const ADMIN_IDENTIFIERS = [
 function isUserAdmin(identifier) {
   if (!identifier) return false;
   const clean = identifier.trim().toLowerCase();
-  if (ADMIN_IDENTIFIERS.includes(clean)) return true;
-  if (clean.includes('inamulhasan') || clean.startsWith('hasan')) return true;
-  return false;
+  return ADMIN_IDENTIFIERS.includes(clean);
 }
 
 function sanitizeUser(user) {
