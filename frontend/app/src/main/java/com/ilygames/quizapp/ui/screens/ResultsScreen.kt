@@ -13,7 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +34,7 @@ fun ResultsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkSlateBg),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         if (quizState is QuizState.Complete) {
@@ -65,7 +65,7 @@ fun ResultsScreen(
                     text = "Quiz Complete!",
                     style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
                     fontWeight = FontWeight.Black,
-                    color = TextWhite
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Text(
@@ -76,7 +76,7 @@ fun ResultsScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Stats Cards Row
+                // Stats Cards Row (Supports Light Mode & Dark Mode)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -85,8 +85,8 @@ fun ResultsScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .border(1.dp, GlassBorder, RoundedCornerShape(22.dp)),
-                        colors = CardDefaults.cardColors(containerColor = GlassSurface),
+                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(0.dp),
                         shape = RoundedCornerShape(22.dp)
                     ) {
@@ -98,7 +98,7 @@ fun ResultsScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = "${completeState.score}",
-                                color = ElectricMint,
+                                color = PrimaryGreen,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black
                             )
@@ -109,8 +109,8 @@ fun ResultsScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .border(1.dp, GlassBorder, RoundedCornerShape(22.dp)),
-                        colors = CardDefaults.cardColors(containerColor = GlassSurface),
+                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(0.dp),
                         shape = RoundedCornerShape(22.dp)
                     ) {
@@ -148,9 +148,9 @@ fun ResultsScreen(
                         .fillMaxWidth()
                         .height(52.dp)
                 ) {
-                    Icon(Icons.Default.Home, contentDescription = "Home", tint = TextWhite)
+                    Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Return Home", fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text("Return Home", fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
