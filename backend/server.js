@@ -27,7 +27,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/quizapp';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mohamedinamulhasan28052004_db_user:yVQWDNmvC8XnFfbC@cluster0.e7wehmw.mongodb.net/quizapp?retryWrites=true&w=majority';
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
 // Force Render deployment sync v1.0.4
