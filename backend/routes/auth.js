@@ -113,8 +113,7 @@ router.post('/register', async (req, res) => {
     }
 
     // A. Check if Username already exists
-    const nameRegex = new RegExp('^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-    const existingName = await User.findOne({ name: nameRegex });
+    const existingName = await User.findOne({ name: { $regex: new RegExp(`^${username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } });
     if (existingName) {
       return res.status(409).json({
         success: false,
@@ -125,8 +124,7 @@ router.post('/register', async (req, res) => {
     }
 
     // B. Check if Email already exists
-    const emailRegex = new RegExp('^' + userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-    const existingEmail = await User.findOne({ email: emailRegex });
+    const existingEmail = await User.findOne({ email: userEmail });
     if (existingEmail) {
       return res.status(409).json({
         success: false,
