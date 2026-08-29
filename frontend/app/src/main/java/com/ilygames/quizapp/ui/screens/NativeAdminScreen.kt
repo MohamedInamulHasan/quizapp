@@ -1662,11 +1662,14 @@ fun NativeAdminScreen(
                                 if (dynamicOptions.size > 2 && idx >= 2) {
                                     IconButton(
                                         onClick = { dynamicOptions.removeAt(idx) },
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .background(IncorrectRed.copy(alpha = 0.15f), CircleShape)
+                                        modifier = Modifier.size(36.dp)
                                     ) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Delete Option", tint = IncorrectRed, modifier = Modifier.size(15.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete Option",
+                                            tint = IncorrectRed,
+                                            modifier = Modifier.size(20.dp)
+                                        )
                                     }
                                 }
                             }
@@ -1688,22 +1691,42 @@ fun NativeAdminScreen(
                         }
 
                         Text("Correct Answer Option:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp)
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        val optionLetters = dynamicOptions.indices.map { idx ->
+                            if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
+                        }
+                        val chunkedOptions = optionLetters.chunked(5)
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            dynamicOptions.indices.forEach { idx ->
-                                val letter = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
-                                FilterChip(
-                                    selected = correctAnswer == letter,
-                                    onClick = { correctAnswer = letter },
-                                    label = { Text(letter, fontWeight = FontWeight.Black, fontSize = 13.sp) },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = PrimaryGreen.copy(alpha = 0.2f),
-                                        selectedLabelColor = PrimaryGreen
-                                    ),
-                                    modifier = Modifier.weight(1f)
-                                )
+                            chunkedOptions.forEach { rowLetters ->
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    rowLetters.forEach { letter ->
+                                        FilterChip(
+                                            selected = correctAnswer == letter,
+                                            onClick = { correctAnswer = letter },
+                                            label = {
+                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                                                    Text(letter, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                                                }
+                                            },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = PrimaryGreen.copy(alpha = 0.25f),
+                                                selectedLabelColor = PrimaryGreen
+                                            ),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    if (rowLetters.size < 5) {
+                                        repeat(5 - rowLetters.size) {
+                                            Spacer(modifier = Modifier.weight(1f))
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
