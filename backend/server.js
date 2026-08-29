@@ -18,6 +18,7 @@ const authRoutes = require('./routes/auth');
 const quizRoutes = require('./routes/quiz');
 const leaderboardRoutes = require('./routes/leaderboard');
 const adminRoutes = require('./routes/admin');
+const uploadRoutes = require('./routes/upload');
 
 const User = require('./models/User');
 const Question = require('./models/Question');
@@ -48,6 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/quiz', (req, res, next) => { req.broadcast = broadcast; next(); }, quizRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Ping / Health check route
 app.get('/api/ping', (req, res) => {

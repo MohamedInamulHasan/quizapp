@@ -8,23 +8,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// ─── MULTER: Image Upload to /uploads folder ─────────────────────────────────
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const { uploadToCloudinary } = require('../config/cloudinary');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `quiz_img_${Date.now()}${ext}`);
-  }
-});
+// ─── MULTER: Image Upload to Cloudinary ─────────────────────────────────
+const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|webp/;
-    cb(null, allowed.test(file.mimetype));
+    cb(null, allowed.test(file.mimetype) || allowed.test(file.originalname.toLowerCase()));
   }
 });
 
@@ -223,6 +216,29 @@ router.delete('/questions/:id', [auth, adminAuth], async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// @route    POST api/admin/upload-image
+// @desc     Upload image to Cloudinary CDN
+// @access   Private (Admin)
+router.post('/upload-image', [auth, upload.single('image')], async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, msg: 'No file uploaded' });
+    }
+    const mimeType = req.file.mimetype || 'image/jpeg';
+    const imageUrl = await uploadToCloudinary(req.file.buffer, mimeType, 'quizapp_uploads');
+
+    res.json({
+      success: true,
+      imageUrl: imageUrl,
+      url: imageUrl,
+      msg: 'Image uploaded successfully to Cloudinary'
+    });
+  } catch (err) {
+    console.error('Upload image error:', err);
+    res.status(500).json({ success: false, msg: 'Failed to upload image' });
   }
 });
 
