@@ -1,5 +1,7 @@
 package com.ilygames.quizapp.ui.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -11,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.OndemandVideo
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
@@ -20,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,7 +42,12 @@ fun ResultsScreen(
     onBackToHome: () -> Unit
 ) {
     val quizState by quizViewModel.quizState.collectAsState()
+    val context = LocalContext.current
     var isVisible by remember { mutableStateOf(false) }
+
+    // Read and track persisted hearts
+    val heartsPrefs = remember { context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE) }
+    var currentHearts by remember { mutableStateOf(heartsPrefs.getInt("saved_hearts_count", 3)) }
 
     LaunchedEffect(Unit) {
         isVisible = true
@@ -76,14 +85,14 @@ fun ResultsScreen(
                 visible = isVisible,
                 enter = fadeIn(tween(600)) + slideInVertically(tween(600, easing = FastOutSlowInEasing)) { 80 }
             ) {
-                // Single Unified Animated Quiz Summary Card
+                // Single Unified Outline Quiz Summary Card (0.dp elevation shadow, clean border)
                 Card(
                     shape = RoundedCornerShape(26.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(2.dp),
+                    elevation = CardDefaults.cardElevation(0.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(26.dp))
+                        .border(1.5.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(26.dp))
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -190,21 +199,40 @@ fun ResultsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Retry / Play Again
+                            // Retry / Play Again / Watch Ad Button
                             OutlinedButton(
                                 onClick = {
                                     SoundManager.playClickSound()
-                                    onPlayAgain()
+                                    if (currentHearts > 0) {
+                                        onPlayAgain()
+                                    } else {
+                                        // Watch Ad to gain 1 heart and play again
+                                        currentHearts++
+                                        heartsPrefs.edit().putInt("saved_hearts_count", currentHearts).apply()
+                                        authViewModel.addAdReward(context)
+                                        Toast.makeText(context, "🎬 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                        onPlayAgain()
+                                    }
                                 },
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .weight(1.1f)
                                     .height(48.dp),
                                 shape = RoundedCornerShape(14.dp),
                                 border = BorderStroke(1.dp, PrimaryGreen)
                             ) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Retry", tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Icon(
+                                    imageVector = if (currentHearts > 0) Icons.Default.Refresh else Icons.Default.OndemandVideo,
+                                    contentDescription = "Action",
+                                    tint = PrimaryGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Play Again", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = PrimaryGreen)
+                                Text(
+                                    text = if (currentHearts > 0) "Play Again" else "Watch Ad (+1 ❤️)",
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    color = PrimaryGreen
+                                )
                             }
 
                             // Home Button
@@ -217,7 +245,7 @@ fun ResultsScreen(
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
                                 shape = RoundedCornerShape(14.dp),
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .weight(0.9f)
                                     .height(48.dp)
                             ) {
                                 Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White, modifier = Modifier.size(16.dp))
