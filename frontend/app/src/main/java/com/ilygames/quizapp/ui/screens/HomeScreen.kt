@@ -140,12 +140,11 @@ fun HomeScreen(
                             requestBody
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
-                        val cloudUrl = response.body()?.imageUrl ?: response.body()?.url
-                        val isValidUrl = !cloudUrl.isNullOrBlank() && 
-                            (cloudUrl.startsWith("http://") || cloudUrl.startsWith("https://") || cloudUrl.startsWith("data:image/")) &&
-                            !cloudUrl.endsWith("/undefined") && !cloudUrl.endsWith("/null")
+                        val body = response.body()
+                        val rawUrl = body?.imageUrl ?: body?.url
+                        val cloudUrl = rawUrl?.trim()?.removeSurrounding("\"")
 
-                        if (response.isSuccessful && isValidUrl) {
+                        if (response.isSuccessful && !cloudUrl.isNullOrBlank() && cloudUrl != "undefined" && cloudUrl != "null" && !cloudUrl.endsWith("/undefined")) {
                             val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
 
@@ -155,9 +154,10 @@ fun HomeScreen(
                             )
                             authViewModel.updateProfileState(profileImageUrl = cloudUrl)
                             globalProfileImageUri.value = cloudUrl
-                            Toast.makeText(context, "📸 Profile saved to Cloudinary!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "📸 Profile photo saved!", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "❌ Upload error (Status ${response.code()})", Toast.LENGTH_SHORT).show()
+                            val errDetails = if (!response.isSuccessful) "HTTP ${response.code()}" else (rawUrl ?: "Empty body")
+                            Toast.makeText(context, "❌ Upload error: $errDetails", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
