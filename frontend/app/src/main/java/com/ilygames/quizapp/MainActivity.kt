@@ -52,6 +52,7 @@ fun AppNavigation() {
 
     // Check for auto-login on startup
     LaunchedEffect(Unit) {
+        com.ilygames.quizapp.ui.theme.ThemeState.init(context)
         com.ilygames.quizapp.ui.screens.loadPersistedAdminData(context)
         SoundManager.init(context)
         authViewModel.tryAutoLogin(context)

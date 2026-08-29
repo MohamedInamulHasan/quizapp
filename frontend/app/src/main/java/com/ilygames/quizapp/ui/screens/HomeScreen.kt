@@ -379,7 +379,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     .clickable(
                                                         interactionSource = remember { MutableInteractionSource() },
                                                         indication = null
-                                                    ) { ThemeState.isDarkMode = !ThemeState.isDarkMode }
+                                                    ) { ThemeState.setDarkMode(context, !ThemeState.isDarkMode) }
                                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
@@ -402,7 +402,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                 }
                                                 Switch(
                                                     checked = ThemeState.isDarkMode,
-                                                    onCheckedChange = { ThemeState.isDarkMode = it },
+                                                    onCheckedChange = { ThemeState.setDarkMode(context, it) },
                                                     colors = SwitchDefaults.colors(
                                                         checkedThumbColor = Color.White,
                                                         checkedTrackColor = PrimaryGreen,
@@ -420,7 +420,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     .clickable(
                                                         interactionSource = remember { MutableInteractionSource() },
                                                         indication = null
-                                                    ) { ThemeState.isSoundEnabled = !ThemeState.isSoundEnabled }
+                                                    ) { ThemeState.setSoundEnabled(context, !ThemeState.isSoundEnabled) }
                                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
@@ -434,7 +434,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     )
                                                     Spacer(modifier = Modifier.width(8.dp))
                                                     Text(
-                                                        text = "Sound FX",
+                                                        text = if (ThemeState.isSoundEnabled) "Sound FX On" else "Sound Muted",
                                                         style = MaterialTheme.typography.bodyMedium,
                                                         fontWeight = FontWeight.Bold,
                                                         color = MaterialTheme.colorScheme.onSurface,
@@ -443,7 +443,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                 }
                                                 Switch(
                                                     checked = ThemeState.isSoundEnabled,
-                                                    onCheckedChange = { ThemeState.isSoundEnabled = it },
+                                                    onCheckedChange = { ThemeState.setSoundEnabled(context, it) },
                                                     colors = SwitchDefaults.colors(
                                                         checkedThumbColor = Color.White,
                                                         checkedTrackColor = PrimaryGreen,

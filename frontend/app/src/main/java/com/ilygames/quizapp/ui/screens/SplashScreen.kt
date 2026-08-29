@@ -52,10 +52,15 @@ fun SplashScreen(
         }
     }
 
+    val isDark = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+    val bgColor = if (isDark) Color(0xFF0F172A) else OffWhiteBg
+    val titleColor = if (isDark) Color(0xFF10B981) else QuizzyGreen
+    val trackColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E2DC)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OffWhiteBg),
+            .background(bgColor),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -65,8 +70,8 @@ fun SplashScreen(
             Box(
                 modifier = Modifier
                     .size(110.dp)
-                    .shadow(12.dp, RoundedCornerShape(32.dp), spotColor = QuizzyGreen.copy(alpha = 0.3f))
-                    .background(QuizzyGreen, RoundedCornerShape(32.dp)),
+                    .shadow(12.dp, RoundedCornerShape(32.dp), spotColor = titleColor.copy(alpha = 0.3f))
+                    .background(titleColor, RoundedCornerShape(32.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -83,7 +88,7 @@ fun SplashScreen(
                 text = "Quizzy",
                 fontSize = 46.sp,
                 fontWeight = FontWeight.Black,
-                color = QuizzyGreen,
+                color = titleColor,
                 letterSpacing = (-1).sp
             )
 
@@ -95,8 +100,8 @@ fun SplashScreen(
                     .width(140.dp)
                     .height(5.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = QuizzyGreen,
-                trackColor = Color(0xFFE2E2DC)
+                color = titleColor,
+                trackColor = trackColor
             )
         }
     }
