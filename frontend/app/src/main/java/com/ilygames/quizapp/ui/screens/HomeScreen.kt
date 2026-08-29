@@ -252,39 +252,47 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             ?: savedLocally
                         val avatarModel = getFullProfileImageUrl(rawProfileUrl)
 
-                        Surface(
-                            shape = CircleShape,
-                            color = avatarBg,
-                            shadowElevation = 0.dp,
-                            modifier = Modifier.size(48.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .border(2.5.dp, PrimaryGreen, CircleShape)
+                                .padding(3.dp)
+                                .clip(CircleShape)
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (avatarModel != null) {
-                                    coil.compose.SubcomposeAsyncImage(
-                                        model = avatarModel,
-                                        contentDescription = "Profile Photo",
-                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize().clip(CircleShape),
-                                        error = {
-                                            val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
-                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().background(avatarBg)) {
-                                                Text(
-                                                    text = userInitial,
-                                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
-                                                    fontWeight = FontWeight.Black,
-                                                    color = Color.White
-                                                )
+                            Surface(
+                                shape = CircleShape,
+                                color = avatarBg,
+                                shadowElevation = 0.dp,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    if (avatarModel != null) {
+                                        coil.compose.SubcomposeAsyncImage(
+                                            model = avatarModel,
+                                            contentDescription = "Profile Photo",
+                                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                            error = {
+                                                val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().background(avatarBg)) {
+                                                    Text(
+                                                        text = userInitial,
+                                                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                                                        fontWeight = FontWeight.Black,
+                                                        color = Color.White
+                                                    )
+                                                }
                                             }
-                                        }
-                                    )
-                                } else {
-                                    val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
-                                    Text(
-                                        text = userInitial,
-                                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
-                                        fontWeight = FontWeight.Black,
-                                        color = Color.White
-                                    )
+                                        )
+                                    } else {
+                                        val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                        Text(
+                                            text = userInitial,
+                                            style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                                            fontWeight = FontWeight.Black,
+                                            color = Color.White
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -894,46 +902,52 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             ?: modalSavedLocally
                         val modalAvatarModel = getFullProfileImageUrl(modalRawProfileUrl)
 
-                        // Profile avatar with camera upload badge (Restored)
+                        // Profile avatar with camera upload badge (Gaped outline style)
                         Box(
                             modifier = Modifier
-                                .size(90.dp)
+                                .size(96.dp)
                                 .clickable { profileImagePicker.launch("image/*") }
                         ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = PrimaryGreen.copy(alpha = 0.15f),
+                            Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .border(2.dp, PrimaryGreen, CircleShape)
+                                    .border(3.dp, PrimaryGreen, CircleShape)
+                                    .padding(4.dp)
+                                    .clip(CircleShape)
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    if (modalAvatarModel != null) {
-                                        coil.compose.SubcomposeAsyncImage(
-                                            model = modalAvatarModel,
-                                            contentDescription = "Profile Photo",
-                                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize().clip(CircleShape),
-                                            error = {
-                                                val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
-                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                                    Text(
-                                                        text = userInitial,
-                                                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
-                                                        fontWeight = FontWeight.Black,
-                                                        color = PrimaryGreen
-                                                    )
+                                Surface(
+                                    shape = CircleShape,
+                                    color = PrimaryGreen.copy(alpha = 0.15f),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        if (modalAvatarModel != null) {
+                                            coil.compose.SubcomposeAsyncImage(
+                                                model = modalAvatarModel,
+                                                contentDescription = "Profile Photo",
+                                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                                error = {
+                                                    val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                                        Text(
+                                                            text = userInitial,
+                                                            style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                                                            fontWeight = FontWeight.Black,
+                                                            color = PrimaryGreen
+                                                        )
+                                                    }
                                                 }
-                                            }
-                                        )
-                                    } else {
-                                        val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
-                                        Text(
-                                            text = userInitial,
-                                            style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
-                                            fontWeight = FontWeight.Black,
-                                            color = PrimaryGreen
-                                        )
+                                            )
+                                        } else {
+                                            val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                            Text(
+                                                text = userInitial,
+                                                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                                                fontWeight = FontWeight.Black,
+                                                color = PrimaryGreen
+                                            )
+                                        }
                                     }
                                 }
                             }
