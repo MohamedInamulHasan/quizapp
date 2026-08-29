@@ -114,6 +114,7 @@ fun HomeScreen(
         contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         uri?.let { selectedUri ->
+            globalProfileImageUri.value = selectedUri.toString()
             Toast.makeText(context, "Saving profile photo...", Toast.LENGTH_SHORT).show()
             kotlinx.coroutines.MainScope().launch {
                 try {
@@ -231,17 +232,28 @@ fun HomeScreen(
 
                         Surface(
                             shape = CircleShape,
-                            color = if (avatarModel != null) Color.Transparent else avatarBg,
+                            color = avatarBg,
                             shadowElevation = 0.dp,
                             modifier = Modifier.size(48.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 if (avatarModel != null) {
-                                    coil.compose.AsyncImage(
+                                    coil.compose.SubcomposeAsyncImage(
                                         model = avatarModel,
                                         contentDescription = "Profile Photo",
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                        error = {
+                                            val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().background(avatarBg)) {
+                                                Text(
+                                                    text = userInitial,
+                                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+                                                    fontWeight = FontWeight.Black,
+                                                    color = Color.White
+                                                )
+                                            }
+                                        }
                                     )
                                 } else {
                                     val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
@@ -868,18 +880,27 @@ fun HomeScreen(
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = if (modalAvatarModel != null) Color.Transparent else PrimaryGreen.copy(alpha = 0.15f),
+                                color = PrimaryGreen.copy(alpha = 0.15f),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .border(2.dp, PrimaryGreen, CircleShape)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     if (modalAvatarModel != null) {
-                                        coil.compose.AsyncImage(
+                                        coil.compose.SubcomposeAsyncImage(
                                             model = modalAvatarModel,
                                             contentDescription = "Profile Photo",
                                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                            error = {
+                                                val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
+                                                Text(
+                                                    text = userInitial,
+                                                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                                                    fontWeight = FontWeight.Black,
+                                                    color = PrimaryGreen
+                                                )
+                                            }
                                         )
                                     } else {
                                         val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
