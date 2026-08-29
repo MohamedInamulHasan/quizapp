@@ -873,12 +873,15 @@ fun HomeScreen(
                                     .border(2.dp, PrimaryGreen, CircleShape)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    if (!globalProfileImageUri.value.isNullOrBlank()) {
+                                    val modalRawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl } ?: user?.profileImageUrl
+                                    val modalAvatarModel = getFullProfileImageUrl(modalRawProfileUrl)
+
+                                    if (modalAvatarModel != null) {
                                         coil.compose.AsyncImage(
-                                            model = globalProfileImageUri.value,
+                                            model = modalAvatarModel,
                                             contentDescription = "Profile Photo",
                                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
+                                            modifier = Modifier.fillMaxSize().clip(CircleShape)
                                         )
                                     } else {
                                         val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
