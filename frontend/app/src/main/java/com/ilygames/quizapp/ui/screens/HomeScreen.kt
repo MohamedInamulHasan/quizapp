@@ -109,6 +109,32 @@ fun HomeScreen(
         }
     }
 
+fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: Int = 500): ByteArray? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val originalBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+        if (originalBitmap == null) return null
+
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+        val bitmapRatio = width.toFloat() / height.toFloat()
+        val (targetWidth, targetHeight) = if (bitmapRatio > 1) {
+            maxSizePx to (maxSizePx / bitmapRatio).toInt()
+        } else {
+            (maxSizePx * bitmapRatio).toInt() to maxSizePx
+        }
+
+        val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(originalBitmap, Math.max(targetWidth, 1), Math.max(targetHeight, 1), true)
+        val outputStream = java.io.ByteArrayOutputStream()
+        scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+        outputStream.toByteArray()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
     // Profile Photo Picker Launcher — uploads strictly to Cloudinary and saves URL in MongoDB
     val profileImagePicker = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
@@ -121,23 +147,15 @@ fun HomeScreen(
                     val token = authViewModel.token.value
                         ?: context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             .getString("auth_token", "") ?: ""
-                    val stream = context.contentResolver.openInputStream(selectedUri)
-                    val mimeType = context.contentResolver.getType(selectedUri) ?: "image/jpeg"
-                    val ext = when {
-                        mimeType.contains("png") -> ".png"
-                        mimeType.contains("gif") -> ".gif"
-                        mimeType.contains("webp") -> ".webp"
-                        else -> ".jpg"
-                    }
-                    val bytes = stream?.readBytes()
-                    stream?.close()
+                    val bytes = compressImageUriToBytes(context, selectedUri, 500)
+                        ?: context.contentResolver.openInputStream(selectedUri)?.use { it.readBytes() }
 
                     if (bytes != null && token.isNotBlank()) {
-                        val mediaType = mimeType.toMediaTypeOrNull()
+                        val mediaType = "image/jpeg".toMediaTypeOrNull()
                         val requestBody = bytes.toRequestBody(mediaType)
                         val part = okhttp3.MultipartBody.Part.createFormData(
                             "image",
-                            "profile_${System.currentTimeMillis()}$ext",
+                            "profile_${System.currentTimeMillis()}.jpg",
                             requestBody
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
