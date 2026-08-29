@@ -374,16 +374,26 @@ class QuizViewModel : ViewModel() {
                                 _liveQuizTimer.value = json.get("duration").asInt
 
                                 val qJson = json.getAsJsonObject("question")
+                                val optionsList = mutableListOf<String>()
+                                if (qJson.has("options") && qJson.get("options").isJsonArray) {
+                                    qJson.getAsJsonArray("options").forEach { optionsList.add(it.asString) }
+                                }
+                                val optA = if (qJson.has("optionA")) qJson.get("optionA").asString else ""
+                                val optB = if (qJson.has("optionB")) qJson.get("optionB").asString else ""
+                                val optC = if (qJson.has("optionC")) qJson.get("optionC").asString else ""
+                                val optD = if (qJson.has("optionD")) qJson.get("optionD").asString else ""
+
                                 val q = Question(
-                                    id = qJson.get("id").asString,
+                                    id = if (qJson.has("id")) qJson.get("id").asString else null,
                                     question = qJson.get("question").asString,
-                                    optionA = qJson.get("optionA").asString,
-                                    optionB = qJson.get("optionB").asString,
-                                    optionC = qJson.get("optionC").asString,
-                                    optionD = qJson.get("optionD").asString,
+                                    optionA = optA,
+                                    optionB = optB,
+                                    optionC = optC,
+                                    optionD = optD,
+                                    options = if (optionsList.isNotEmpty()) optionsList else null,
                                     correctAnswer = "",
-                                    category = qJson.get("category").asString,
-                                    difficulty = qJson.get("difficulty").asString
+                                    category = if (qJson.has("category")) qJson.get("category").asString else "General",
+                                    difficulty = if (qJson.has("difficulty")) qJson.get("difficulty").asString else "easy"
                                 )
                                 _liveQuizQuestion.value = q
                                 addLog("Question ${questionIndex + 1}: ${q.question}")

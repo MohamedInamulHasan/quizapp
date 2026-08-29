@@ -245,49 +245,24 @@ fun LiveQuizScreen(
                                     }
                                 }
 
-                                // Animated Cylindrical Option Rows Stack
+                                // Animated Cylindrical Option Rows Stack (Dynamic Options Support)
                                 LazyColumn(
                                     modifier = Modifier.fillMaxWidth().weight(1.5f),
                                     verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    item {
+                                    val activeOptions = q.getOptionsList()
+                                    val letterLabels = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+
+                                    items(activeOptions.indices.toList()) { index ->
+                                        val key = letterLabels.getOrElse(index) { (index + 1).toString() }
+                                        val optText = activeOptions[index]
                                         AnimatedLiveOptionRow(
-                                            text = q.optionA,
-                                            label = "A",
-                                            isSelected = liveQuizSelectedAnswer == "A",
-                                            isCorrect = liveQuizCorrectAnswer == "A",
+                                            text = optText,
+                                            label = key,
+                                            isSelected = liveQuizSelectedAnswer == key,
+                                            isCorrect = liveQuizCorrectAnswer == key,
                                             isDisabled = liveQuizSelectedAnswer != null || liveQuizCorrectAnswer != null,
-                                            onClick = { quizViewModel.submitLiveAnswer("A") }
-                                        )
-                                    }
-                                    item {
-                                        AnimatedLiveOptionRow(
-                                            text = q.optionB,
-                                            label = "B",
-                                            isSelected = liveQuizSelectedAnswer == "B",
-                                            isCorrect = liveQuizCorrectAnswer == "B",
-                                            isDisabled = liveQuizSelectedAnswer != null || liveQuizCorrectAnswer != null,
-                                            onClick = { quizViewModel.submitLiveAnswer("B") }
-                                        )
-                                    }
-                                    item {
-                                        AnimatedLiveOptionRow(
-                                            text = q.optionC,
-                                            label = "C",
-                                            isSelected = liveQuizSelectedAnswer == "C",
-                                            isCorrect = liveQuizCorrectAnswer == "C",
-                                            isDisabled = liveQuizSelectedAnswer != null || liveQuizCorrectAnswer != null,
-                                            onClick = { quizViewModel.submitLiveAnswer("C") }
-                                        )
-                                    }
-                                    item {
-                                        AnimatedLiveOptionRow(
-                                            text = q.optionD,
-                                            label = "D",
-                                            isSelected = liveQuizSelectedAnswer == "D",
-                                            isCorrect = liveQuizCorrectAnswer == "D",
-                                            isDisabled = liveQuizSelectedAnswer != null || liveQuizCorrectAnswer != null,
-                                            onClick = { quizViewModel.submitLiveAnswer("D") }
+                                            onClick = { quizViewModel.submitLiveAnswer(key) }
                                         )
                                     }
                                 }

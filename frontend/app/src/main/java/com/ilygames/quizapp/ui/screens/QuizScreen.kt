@@ -313,124 +313,42 @@ fun QuizScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // Option A
-                                AnimatedVisibility(
-                                    visible = isContentVisible,
-                                    enter = fadeIn(tween(400, delayMillis = 100, easing = FastOutSlowInEasing)) + 
-                                            slideInVertically(tween(400, delayMillis = 100, easing = FastOutSlowInEasing)) { 45 }
-                                ) {
-                                    CleanHighlightOptionRow(
-                                        text = question.optionA,
-                                        label = "A",
-                                        optionKey = "A",
-                                        selectedOption = selectedOption,
-                                        correctAnswer = question.correctAnswer,
-                                        onClick = {
-                                            if (selectedOption == null) {
-                                                selectedOption = "A"
-                                                if ("A" == question.correctAnswer) {
-                                                    SoundManager.playCorrectSound()
-                                                } else {
-                                                    SoundManager.playWrongSound()
-                                                    wrongCount++
-                                                }
-                                                coroutineScope.launch {
-                                                    delay(550)
-                                                    quizViewModel.submitAnswer(token, "A")
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
+                                // Dynamic Options List
+                                val activeOptions = question.getOptionsList()
+                                val letterLabels = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
 
-                                // Option B
-                                AnimatedVisibility(
-                                    visible = isContentVisible,
-                                    enter = fadeIn(tween(400, delayMillis = 200, easing = FastOutSlowInEasing)) + 
-                                            slideInVertically(tween(400, delayMillis = 200, easing = FastOutSlowInEasing)) { 45 }
-                                ) {
-                                    CleanHighlightOptionRow(
-                                        text = question.optionB,
-                                        label = "B",
-                                        optionKey = "B",
-                                        selectedOption = selectedOption,
-                                        correctAnswer = question.correctAnswer,
-                                        onClick = {
-                                            if (selectedOption == null) {
-                                                selectedOption = "B"
-                                                if ("B" == question.correctAnswer) {
-                                                    SoundManager.playCorrectSound()
-                                                } else {
-                                                    SoundManager.playWrongSound()
-                                                    wrongCount++
-                                                }
-                                                coroutineScope.launch {
-                                                    delay(550)
-                                                    quizViewModel.submitAnswer(token, "B")
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
+                                activeOptions.forEachIndexed { index, optionText ->
+                                    val key = letterLabels.getOrElse(index) { (index + 1).toString() }
+                                    val delayMs = (index + 1) * 100
 
-                                // Option C
-                                AnimatedVisibility(
-                                    visible = isContentVisible,
-                                    enter = fadeIn(tween(400, delayMillis = 300, easing = FastOutSlowInEasing)) + 
-                                            slideInVertically(tween(400, delayMillis = 300, easing = FastOutSlowInEasing)) { 45 }
-                                ) {
-                                    CleanHighlightOptionRow(
-                                        text = question.optionC,
-                                        label = "C",
-                                        optionKey = "C",
-                                        selectedOption = selectedOption,
-                                        correctAnswer = question.correctAnswer,
-                                        onClick = {
-                                            if (selectedOption == null) {
-                                                selectedOption = "C"
-                                                if ("C" == question.correctAnswer) {
-                                                    SoundManager.playCorrectSound()
-                                                } else {
-                                                    SoundManager.playWrongSound()
-                                                    wrongCount++
-                                                }
-                                                coroutineScope.launch {
-                                                    delay(550)
-                                                    quizViewModel.submitAnswer(token, "C")
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
-
-                                // Option D
-                                AnimatedVisibility(
-                                    visible = isContentVisible,
-                                    enter = fadeIn(tween(400, delayMillis = 400, easing = FastOutSlowInEasing)) + 
-                                            slideInVertically(tween(400, delayMillis = 400, easing = FastOutSlowInEasing)) { 45 }
-                                ) {
-                                    CleanHighlightOptionRow(
-                                        text = question.optionD,
-                                        label = "D",
-                                        optionKey = "D",
-                                        selectedOption = selectedOption,
-                                        correctAnswer = question.correctAnswer,
-                                        onClick = {
-                                            if (selectedOption == null) {
-                                                selectedOption = "D"
-                                                if ("D" == question.correctAnswer) {
-                                                    SoundManager.playCorrectSound()
-                                                } else {
-                                                    SoundManager.playWrongSound()
-                                                    wrongCount++
-                                                }
-                                                coroutineScope.launch {
-                                                    delay(550)
-                                                    quizViewModel.submitAnswer(token, "D")
+                                    AnimatedVisibility(
+                                        visible = isContentVisible,
+                                        enter = fadeIn(tween(400, delayMillis = delayMs, easing = FastOutSlowInEasing)) + 
+                                                slideInVertically(tween(400, delayMillis = delayMs, easing = FastOutSlowInEasing)) { 45 }
+                                    ) {
+                                        CleanHighlightOptionRow(
+                                            text = optionText,
+                                            label = key,
+                                            optionKey = key,
+                                            selectedOption = selectedOption,
+                                            correctAnswer = question.correctAnswer,
+                                            onClick = {
+                                                if (selectedOption == null) {
+                                                    selectedOption = key
+                                                    if (key == question.correctAnswer) {
+                                                        SoundManager.playCorrectSound()
+                                                    } else {
+                                                        SoundManager.playWrongSound()
+                                                        wrongCount++
+                                                    }
+                                                    coroutineScope.launch {
+                                                        delay(550)
+                                                        quizViewModel.submitAnswer(token, key)
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
 
