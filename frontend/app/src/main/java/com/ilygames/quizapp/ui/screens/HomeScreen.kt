@@ -850,7 +850,8 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        val modalSavedLocally = prefs.getString("saved_profile_img_url", null)
+                        val modalPrefs = remember { context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE) }
+                        val modalSavedLocally = modalPrefs.getString("saved_profile_img_url", null)
                         val modalRawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl ?: modalSavedLocally }
                             ?: user?.profileImageUrl
                             ?: modalSavedLocally
