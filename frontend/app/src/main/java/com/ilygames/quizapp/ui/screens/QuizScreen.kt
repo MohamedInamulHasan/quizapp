@@ -58,7 +58,6 @@ fun QuizScreen(
 
     LaunchedEffect(currentQuestionIndex) {
         isContentVisible = false
-        SoundManager.playWhooshSound() // Swish / Whoosh sound effect for each new question!
         delay(50)
         isContentVisible = true
     }
