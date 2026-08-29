@@ -1,13 +1,10 @@
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
 const cloudinary = require('cloudinary').v2;
 
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'bp7vmiht';
 const API_KEY    = process.env.CLOUDINARY_API_KEY    || '414693825442831';
 const API_SECRET = process.env.CLOUDINARY_API_SECRET || 'l4-LQriPGUwZREr2wI6DChZqGPs';
 
-// Configure Cloudinary SDK with user's credentials
+// Configure Cloudinary SDK strictly with exact account keys
 cloudinary.config({
   cloud_name: CLOUD_NAME,
   api_key: API_KEY,
@@ -16,7 +13,7 @@ cloudinary.config({
 });
 
 /**
- * Standard Cloudinary SDK Upload helper using temporary file path
+ * Standard Data URI Upload helper using Cloudinary SDK
  * @param {Buffer} fileBuffer - Image file buffer from Multer memory storage
  * @param {String} mimeType - Image mime type
  * @param {String} folder - Cloudinary folder name
@@ -27,34 +24,24 @@ const uploadToCloudinary = async (fileBuffer, mimeType = 'image/jpeg', folder = 
     throw new Error('No image buffer received by server');
   }
 
-  const tempFilePath = path.join(os.tmpdir(), `upload_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`);
-
   try {
-    // Save image buffer to OS temporary folder
-    fs.writeFileSync(tempFilePath, fileBuffer);
+    const base64 = fileBuffer.toString('base64');
+    const dataUri = `data:${mimeType};base64,${base64}`;
 
-    // Call standard Cloudinary SDK uploader
-    const result = await cloudinary.uploader.upload(tempFilePath, {
+    console.log(`[CLOUDINARY_DEBUG] Uploading Data URI to Cloudinary cloud "${CLOUD_NAME}"...`);
+
+    const result = await cloudinary.uploader.upload(dataUri, {
       folder: folder,
       resource_type: 'image'
     });
 
-    // Delete temporary file after upload
-    if (fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-    }
-
     if (result && result.secure_url) {
-      console.log('✅ Cloudinary Standard SDK Upload Success! URL:', result.secure_url);
+      console.log('✅ Cloudinary Upload Success! URL:', result.secure_url);
       return result.secure_url;
     } else {
-      throw new Error('No secure_url returned from Cloudinary SDK');
+      throw new Error('No secure_url returned from Cloudinary');
     }
   } catch (err) {
-    // Ensure temp file is cleaned up on error
-    if (fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-    }
     console.error('❌ Cloudinary SDK Error:', err.message);
     throw new Error(`Cloudinary Error: ${err.message}`);
   }
