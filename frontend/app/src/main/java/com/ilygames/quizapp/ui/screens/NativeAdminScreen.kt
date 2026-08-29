@@ -453,11 +453,8 @@ fun NativeAdminScreen(
     var questionImageUrl by remember { mutableStateOf("") }
 
     var questionText by remember { mutableStateOf("") }
-    var categoryText by remember { mutableStateOf("Passage Study") }
-    var optionA by remember { mutableStateOf("") }
-    var optionB by remember { mutableStateOf("") }
-    var optionC by remember { mutableStateOf("") }
-    var optionD by remember { mutableStateOf("") }
+    var categoryText by remember { mutableStateOf("General") }
+    val dynamicOptions = remember { mutableStateListOf("", "") }
     var correctAnswer by remember { mutableStateOf("A") }
     var difficulty by remember { mutableStateOf("easy") }
 
@@ -670,13 +667,11 @@ fun NativeAdminScreen(
                                 SoundManager.playClickSound()
                                 editingQuestion = null
                                 questionText = ""
+                                dynamicOptions.clear()
+                                dynamicOptions.addAll(listOf("", ""))
+                                correctAnswer = "A"
                                 isImageQuiz = false
                                 questionImageUrl = ""
-                                optionA = ""
-                                optionB = ""
-                                optionC = ""
-                                optionD = ""
-                                correctAnswer = "A"
                                 showQuestionModal = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
@@ -803,11 +798,14 @@ fun NativeAdminScreen(
                                                         SoundManager.playClickSound()
                                                         editingQuestion = q
                                                         questionText = q.question
-                                                        categoryText = q.category
-                                                        optionA = q.optionA
-                                                        optionB = q.optionB
-                                                        optionC = q.optionC
-                                                        optionD = q.optionD
+                                                        categoryText = "General"
+                                                        dynamicOptions.clear()
+                                                        val opts = listOf(q.optionA, q.optionB, q.optionC, q.optionD).filter { it.isNotBlank() }
+                                                        if (opts.size >= 2) {
+                                                            dynamicOptions.addAll(opts)
+                                                        } else {
+                                                            dynamicOptions.addAll(listOf("", ""))
+                                                        }
                                                         correctAnswer = q.correctAnswer
                                                         isImageQuiz = !q.imageUrl.isNullOrBlank()
                                                         questionImageUrl = q.imageUrl ?: ""
@@ -1641,61 +1639,72 @@ fun NativeAdminScreen(
                             shape = RoundedCornerShape(12.dp)
                         )
                         OutlinedTextField(
-                            value = categoryText,
-                            onValueChange = { categoryText = it },
-                            label = { Text("Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        OutlinedTextField(
-                            value = optionA,
-                            onValueChange = { optionA = it },
-                            label = { Text("Option A", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        OutlinedTextField(
-                            value = optionB,
-                            onValueChange = { optionB = it },
-                            label = { Text("Option B", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        OutlinedTextField(
-                            value = optionC,
-                            onValueChange = { optionC = it },
-                            label = { Text("Option C", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        OutlinedTextField(
-                            value = optionD,
-                            onValueChange = { optionD = it },
-                            label = { Text("Option D", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
+                            value = questionText,
+                            onValueChange = { questionText = it },
+                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         )
 
+                        // DYNAMIC OPTIONS HEADER
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Options (Minimum 2 Required)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
+                            TextButton(
+                                onClick = { dynamicOptions.add("") }
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "Add Option", tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                        }
+
+                        // DYNAMIC OPTION FIELDS WITH TRASH DELETE BUTTON
+                        dynamicOptions.forEachIndexed { idx, optVal ->
+                            val letterLabel = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = optVal,
+                                    onValueChange = { newValue -> dynamicOptions[idx] = newValue },
+                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                if (dynamicOptions.size > 2) {
+                                    IconButton(
+                                        onClick = { dynamicOptions.removeAt(idx) },
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(IncorrectRed.copy(alpha = 0.15f), CircleShape)
+                                    ) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Delete Option", tint = IncorrectRed, modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                            }
+                        }
+
                         Text("Correct Answer Option:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            listOf("A", "B", "C", "D").forEach { opt ->
+                            dynamicOptions.indices.forEach { idx ->
+                                val letter = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
                                 FilterChip(
-                                    selected = correctAnswer == opt,
-                                    onClick = { correctAnswer = opt },
-                                    label = { Text("Opt $opt", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1) },
+                                    selected = correctAnswer == letter,
+                                    onClick = { correctAnswer = letter },
+                                    label = { Text("Opt $letter", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1) },
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = PrimaryGreen.copy(alpha = 0.2f),
                                         selectedLabelColor = PrimaryGreen
@@ -1709,17 +1718,21 @@ fun NativeAdminScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            if (questionText.isBlank() || optionA.isBlank() || optionB.isBlank()) return@Button
+                            val optA = dynamicOptions.getOrNull(0) ?: ""
+                            val optB = dynamicOptions.getOrNull(1) ?: ""
+                            val optC = dynamicOptions.getOrNull(2) ?: ""
+                            val optD = dynamicOptions.getOrNull(3) ?: ""
+                            if (questionText.isBlank() || optA.isBlank() || optB.isBlank()) return@Button
                             val targetId = editingQuestion?.id
                             val newQ = Question(
                                 id = targetId,
                                 question = questionText,
-                                optionA = optionA,
-                                optionB = optionB,
-                                optionC = optionC,
-                                optionD = optionD,
+                                optionA = optA,
+                                optionB = optB,
+                                optionC = optC,
+                                optionD = optD,
                                 correctAnswer = correctAnswer,
-                                category = categoryText,
+                                category = "General",
                                 difficulty = difficulty,
                                 imageUrl = if (isImageQuiz && questionImageUrl.isNotBlank()) questionImageUrl else null
                             )
