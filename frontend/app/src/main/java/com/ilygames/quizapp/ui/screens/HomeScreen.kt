@@ -255,8 +255,9 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
-                                .clip(CircleShape)
-                                .border(2.dp, Color.White, CircleShape),
+                                .border(2.dp, Color.White, CircleShape)
+                                .padding(2.dp)
+                                .clip(CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             if (avatarModel != null) {
@@ -910,8 +911,9 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clip(CircleShape)
                                     .border(2.5.dp, Color.White, CircleShape)
+                                    .padding(2.5.dp)
+                                    .clip(CircleShape)
                                     .background(PrimaryGreen.copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {

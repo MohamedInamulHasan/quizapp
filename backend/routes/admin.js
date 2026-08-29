@@ -115,15 +115,26 @@ router.post('/upload-image', [auth, upload.single('image')], async (req, res) =>
 // @desc     Create a new question
 // @access   Private (Admin)
 router.post('/questions', [auth, adminAuth], async (req, res) => {
-  const { question, optionA, optionB, optionC, optionD, correctAnswer, category, difficulty, imageUrl } = req.body;
+  let { question, optionA, optionB, optionC, optionD, options, correctAnswer, category, difficulty, imageUrl } = req.body;
 
   try {
+    if (!options || !Array.isArray(options) || options.length === 0) {
+      options = [optionA, optionB, optionC, optionD].filter(opt => opt && opt.trim() !== '');
+    } else {
+      options = options.map(opt => opt ? opt.trim() : '').filter(opt => opt !== '');
+    }
+
+    if (options.length < 2) {
+      return res.status(400).json({ msg: 'Minimum 2 options are required for a question.' });
+    }
+
     const newQuestion = new Question({
       question,
-      optionA,
-      optionB,
-      optionC,
-      optionD,
+      optionA: options[0] || '',
+      optionB: options[1] || '',
+      optionC: options[2] || '',
+      optionD: options[3] || '',
+      options: options,
       correctAnswer,
       category,
       difficulty,
@@ -142,21 +153,32 @@ router.post('/questions', [auth, adminAuth], async (req, res) => {
 // @desc     Update a question
 // @access   Private (Admin)
 router.put('/questions/:id', [auth, adminAuth], async (req, res) => {
-  const { question, optionA, optionB, optionC, optionD, correctAnswer, category, difficulty, imageUrl } = req.body;
-
-  const questionFields = {
-    question,
-    optionA,
-    optionB,
-    optionC,
-    optionD,
-    correctAnswer,
-    category,
-    difficulty,
-    imageUrl: imageUrl || null
-  };
+  let { question, optionA, optionB, optionC, optionD, options, correctAnswer, category, difficulty, imageUrl } = req.body;
 
   try {
+    if (!options || !Array.isArray(options) || options.length === 0) {
+      options = [optionA, optionB, optionC, optionD].filter(opt => opt && opt.trim() !== '');
+    } else {
+      options = options.map(opt => opt ? opt.trim() : '').filter(opt => opt !== '');
+    }
+
+    if (options.length < 2) {
+      return res.status(400).json({ msg: 'Minimum 2 options are required for a question.' });
+    }
+
+    const questionFields = {
+      question,
+      optionA: options[0] || '',
+      optionB: options[1] || '',
+      optionC: options[2] || '',
+      optionD: options[3] || '',
+      options: options,
+      correctAnswer,
+      category,
+      difficulty,
+      imageUrl: imageUrl || null
+    };
+
     let questionObj = await Question.findById(req.params.id);
 
     if (!questionObj) {
