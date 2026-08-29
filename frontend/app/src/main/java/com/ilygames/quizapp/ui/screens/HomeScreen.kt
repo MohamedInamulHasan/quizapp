@@ -894,12 +894,14 @@ fun HomeScreen(
                                             modifier = Modifier.fillMaxSize().clip(CircleShape),
                                             error = {
                                                 val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
-                                                Text(
-                                                    text = userInitial,
-                                                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
-                                                    fontWeight = FontWeight.Black,
-                                                    color = PrimaryGreen
-                                                )
+                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                                    Text(
+                                                        text = userInitial,
+                                                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                                                        fontWeight = FontWeight.Black,
+                                                        color = PrimaryGreen
+                                                    )
+                                                }
                                             }
                                         )
                                     } else {
