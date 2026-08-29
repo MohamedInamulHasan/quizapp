@@ -64,10 +64,12 @@ fun RegisterScreen(
         }
     }
 
+    val labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+
     val inputTextStyle = TextStyle(
         color = MaterialTheme.colorScheme.onSurface,
         fontSize = 15.sp,
-        fontWeight = FontWeight.Normal
+        fontWeight = FontWeight.SemiBold
     )
 
     val scrollState = rememberScrollState()
@@ -122,13 +124,13 @@ fun RegisterScreen(
                 Text(
                     text = "Join Quizzy to play & earn rewards",
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = TextMuted
+                    fontWeight = FontWeight.Medium,
+                    color = labelColor
                 )
 
                 Spacer(Modifier.height(2.dp))
 
-                // Field 1: Username
+                // Field 1: Username (Max 10 chars)
                 OutlinedTextField(
                     value = usernameInput,
                     onValueChange = { input ->
@@ -138,7 +140,7 @@ fun RegisterScreen(
                             if (authState is AuthState.Error) authViewModel.resetAuthState()
                         }
                     },
-                    label = { Text("Username", color = TextMuted) },
+                    label = { Text("Username", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
@@ -148,7 +150,7 @@ fun RegisterScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                         errorBorderColor = IncorrectRed,
                         focusedLabelColor = PrimaryGreen,
-                        unfocusedLabelColor = TextMuted,
+                        unfocusedLabelColor = labelColor,
                         cursorColor = PrimaryGreen,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -167,7 +169,7 @@ fun RegisterScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Email", color = TextMuted) },
+                    label = { Text("Email", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Email, null, tint = PrimaryGreen) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
@@ -178,7 +180,7 @@ fun RegisterScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                         errorBorderColor = IncorrectRed,
                         focusedLabelColor = PrimaryGreen,
-                        unfocusedLabelColor = TextMuted,
+                        unfocusedLabelColor = labelColor,
                         cursorColor = PrimaryGreen,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -198,14 +200,14 @@ fun RegisterScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Password", color = TextMuted) },
+                    label = { Text("Password", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     trailingIcon = {
                         IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                             Icon(
                                 imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = if (isPasswordVisible) "Hide Password" else "Show Password",
-                                tint = TextMuted
+                                tint = labelColor
                             )
                         }
                     },
@@ -222,7 +224,7 @@ fun RegisterScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                         errorBorderColor = IncorrectRed,
                         focusedLabelColor = PrimaryGreen,
-                        unfocusedLabelColor = TextMuted,
+                        unfocusedLabelColor = labelColor,
                         cursorColor = PrimaryGreen,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -242,7 +244,7 @@ fun RegisterScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Confirm Password", color = TextMuted) },
+                    label = { Text("Confirm Password", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
                     isError = showConfirmError,
@@ -257,7 +259,7 @@ fun RegisterScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                         errorBorderColor = IncorrectRed,
                         focusedLabelColor = PrimaryGreen,
-                        unfocusedLabelColor = TextMuted,
+                        unfocusedLabelColor = labelColor,
                         cursorColor = PrimaryGreen,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -359,7 +361,7 @@ fun RegisterScreen(
                 ) {
                     Text(
                         text = "Already have an account? ",
-                        color = TextMuted,
+                        color = labelColor,
                         fontSize = 13.sp
                     )
                     Text(

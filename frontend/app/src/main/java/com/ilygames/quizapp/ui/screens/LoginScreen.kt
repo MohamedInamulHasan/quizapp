@@ -10,7 +10,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -24,11 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,17 +33,6 @@ import com.ilygames.quizapp.ui.theme.*
 import com.ilygames.quizapp.ui.viewmodel.AuthState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
-
-// Custom Soft Password Transformation: Renders dot mask (••••••) without triggering Android IME screen-mirror freeze
-class SoftPasswordTransformation(private val maskChar: Char = '•') : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        val masked = maskChar.toString().repeat(text.text.length)
-        return TransformedText(
-            text = AnnotatedString(masked),
-            offsetMapping = OffsetMapping.Identity
-        )
-    }
-}
 
 @Composable
 fun LoginScreen(
@@ -74,10 +59,12 @@ fun LoginScreen(
         }
     }
 
+    val labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+
     val inputTextStyle = TextStyle(
         color = MaterialTheme.colorScheme.onSurface,
         fontSize = 15.sp,
-        fontWeight = FontWeight.Normal
+        fontWeight = FontWeight.SemiBold
     )
 
     val scrollState = rememberScrollState()
@@ -132,8 +119,8 @@ fun LoginScreen(
                 Text(
                     text = "Sign in to continue to Quizzy",
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = TextMuted
+                    fontWeight = FontWeight.Medium,
+                    color = labelColor
                 )
 
                 Spacer(Modifier.height(4.dp))
@@ -146,7 +133,7 @@ fun LoginScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Username or Email", color = TextMuted) },
+                    label = { Text("Username or Email", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
@@ -156,7 +143,7 @@ fun LoginScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                         errorBorderColor = IncorrectRed,
                         focusedLabelColor = PrimaryGreen,
-                        unfocusedLabelColor = TextMuted,
+                        unfocusedLabelColor = labelColor,
                         cursorColor = PrimaryGreen,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -175,14 +162,14 @@ fun LoginScreen(
                         validationError = null
                         if (authState is AuthState.Error) authViewModel.resetAuthState()
                     },
-                    label = { Text("Password", color = TextMuted) },
+                    label = { Text("Password", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
                     trailingIcon = {
                         IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                             Icon(
                                 imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = if (isPasswordVisible) "Hide Password" else "Show Password",
-                                tint = TextMuted
+                                tint = labelColor
                             )
                         }
                     },
@@ -195,7 +182,7 @@ fun LoginScreen(
                         unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                         errorBorderColor = IncorrectRed,
                         focusedLabelColor = PrimaryGreen,
-                        unfocusedLabelColor = TextMuted,
+                        unfocusedLabelColor = labelColor,
                         cursorColor = PrimaryGreen,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -234,18 +221,8 @@ fun LoginScreen(
                         val uInput = usernameOrEmailInput.trim()
                         val pInput = passwordInput.trim()
 
-                        if (uInput.isBlank()) {
-                            validationError = "Email or username is required"
-                            return@Button
-                        }
-                        if (pInput.isBlank()) {
-                            validationError = "Password is required"
-                            return@Button
-                        }
-
-                        // Check client format if email string
-                        if (uInput.contains("@") && (!uInput.contains(".") || uInput.length < 5)) {
-                            validationError = "Invalid email"
+                        if (uInput.isBlank() || pInput.isBlank()) {
+                            validationError = "Please fill in all fields"
                             return@Button
                         }
 
@@ -279,7 +256,7 @@ fun LoginScreen(
                     }
                 }
 
-                // Footer Switch to Sign Up
+                // Footer Switch to Register
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -289,7 +266,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Don't have an account? ",
-                        color = TextMuted,
+                        color = labelColor,
                         fontSize = 13.sp
                     )
                     Text(
