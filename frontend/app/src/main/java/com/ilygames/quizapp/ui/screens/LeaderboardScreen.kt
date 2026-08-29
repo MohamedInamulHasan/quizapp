@@ -58,8 +58,15 @@ fun getFullProfileImageUrl(rawUrl: String?): Any? {
     return when {
         trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:image/") -> trimmed
         trimmed.startsWith("content://") || trimmed.startsWith("file://") -> Uri.parse(trimmed)
-        trimmed.startsWith("/") || trimmed.startsWith("c:\\", ignoreCase = true) || trimmed.startsWith("C:\\") -> File(trimmed)
-        else -> "${ApiClient.BASE_URL.removeSuffix("/api/")}/uploads/$trimmed"
+        trimmed.startsWith("/") || trimmed.startsWith("c:\\", ignoreCase = true) || trimmed.startsWith("C:\\") -> {
+            val f = File(trimmed)
+            if (f.exists() && f.length() > 0) f else null
+        }
+        else -> {
+            if (trimmed.contains(".") || trimmed.length > 5) {
+                "${ApiClient.BASE_URL.removeSuffix("/api/")}/uploads/$trimmed"
+            } else null
+        }
     }
 }
 
