@@ -140,7 +140,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
         contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         uri?.let { selectedUri ->
-            globalProfileImageUri.value = selectedUri.toString()
             Toast.makeText(context, "Saving profile photo...", Toast.LENGTH_SHORT).show()
             kotlinx.coroutines.MainScope().launch {
                 try {

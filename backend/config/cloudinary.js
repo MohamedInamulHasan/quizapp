@@ -1,10 +1,10 @@
 const cloudinary = require('cloudinary').v2;
 
-const CLOUD_NAME = (process.env.CLOUDINARY_CLOUD_NAME || 'bp7vmiht').trim();
-const API_KEY    = (process.env.CLOUDINARY_API_KEY    || '414693825442831').trim();
-const API_SECRET = (process.env.CLOUDINARY_API_SECRET || 'I4-LQriPGUwZREr2wl6DChZqGPs').trim();
+const CLOUD_NAME = 'bp7vmiht';
+const API_KEY    = '414693825442831';
+const API_SECRET = 'I4-LQriPGUwZREr2wl6DChZqGPs';
 
-// Configure Cloudinary strictly with user credentials
+// Configure Cloudinary explicitly with user credentials
 cloudinary.config({
   cloud_name: CLOUD_NAME,
   api_key: API_KEY,
@@ -33,13 +33,13 @@ const uploadToCloudinary = async (fileBuffer, mimeType = 'image/jpeg', folder = 
         dataUri,
         {
           folder: folder,
-          resource_type: 'image'
+          resource_type: 'auto'
         },
         (error, result) => {
           if (error || !result || !result.secure_url) {
             console.error('❌ Cloudinary Upload Error:', error);
             const msg = error ? (error.message || JSON.stringify(error)) : 'No secure_url returned';
-            return reject(new Error(`Cloudinary Error: ${msg}`));
+            return reject(new Error(`Cloudinary API Error: ${msg}`));
           }
           console.log('✅ Cloudinary Upload Success! URL:', result.secure_url);
           resolve(result.secure_url);
