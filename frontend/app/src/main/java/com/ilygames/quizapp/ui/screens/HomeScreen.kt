@@ -172,7 +172,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             )
                             authViewModel.updateProfileState(profileImageUrl = cloudUrl)
                             globalProfileImageUri.value = cloudUrl
-                            Toast.makeText(context, "📸 Profile saved to Cloudinary!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "📸 Profile photo saved!", Toast.LENGTH_SHORT).show()
                         } else {
                             val errBody = try { response.errorBody()?.string() } catch (_: Exception) { null }
                             val errDetails = if (!response.isSuccessful) {
