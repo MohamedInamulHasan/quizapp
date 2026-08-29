@@ -163,7 +163,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         val rawUrl = body?.imageUrl ?: body?.url
                         val cloudUrl = rawUrl?.trim()?.removeSurrounding("\"")
 
-                        if (response.isSuccessful && !cloudUrl.isNullOrBlank() && cloudUrl != "undefined" && cloudUrl != "null" && !cloudUrl.endsWith("/undefined")) {
+                        if (response.isSuccessful && !cloudUrl.isNullOrBlank() && cloudUrl.startsWith("https://res.cloudinary.com/")) {
                             val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
 
@@ -173,10 +173,15 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             )
                             authViewModel.updateProfileState(profileImageUrl = cloudUrl)
                             globalProfileImageUri.value = cloudUrl
-                            Toast.makeText(context, "📸 Profile photo saved!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "📸 Profile saved to Cloudinary!", Toast.LENGTH_SHORT).show()
                         } else {
-                            val errDetails = if (!response.isSuccessful) "HTTP ${response.code()}" else (rawUrl ?: "Empty body")
-                            Toast.makeText(context, "❌ Upload error: $errDetails", Toast.LENGTH_SHORT).show()
+                            val errBody = try { response.errorBody()?.string() } catch (_: Exception) { null }
+                            val errDetails = if (!response.isSuccessful) {
+                                "HTTP ${response.code()}${if (!errBody.isNullOrBlank()) ": $errBody" else ""}"
+                            } else {
+                                (rawUrl ?: "Invalid Cloudinary URL")
+                            }
+                            Toast.makeText(context, "❌ $errDetails", Toast.LENGTH_LONG).show()
                         }
                     }
                 } catch (e: Exception) {
