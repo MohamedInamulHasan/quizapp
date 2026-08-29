@@ -89,14 +89,26 @@ router.get('/questions', [auth, adminAuth], async (req, res) => {
 });
 
 // @route    POST api/admin/upload-image
-// @desc     Upload an image (profile, question, or reward) to the server, returns hosted URL
+// @desc     Upload image to Cloudinary CDN
 // @access   Private
-router.post('/upload-image', auth, upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ msg: 'No image file received' });
-  // Build the hosted URL (works via adb reverse port forwarding)
-  const host = `${req.protocol}://${req.get('host')}`;
-  const imageUrl = `${host}/uploads/${req.file.filename}`;
-  res.json({ imageUrl, filename: req.file.filename });
+router.post('/upload-image', [auth, upload.single('image')], async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, msg: 'No file uploaded' });
+    }
+    const mimeType = req.file.mimetype || 'image/jpeg';
+    const imageUrl = await uploadToCloudinary(req.file.buffer, mimeType, 'quizapp_uploads');
+
+    res.json({
+      success: true,
+      imageUrl: imageUrl,
+      url: imageUrl,
+      msg: 'Image uploaded successfully to Cloudinary'
+    });
+  } catch (err) {
+    console.error('Upload image error:', err);
+    res.status(500).json({ success: false, msg: 'Failed to upload image' });
+  }
 });
 
 // @route    POST api/admin/questions
@@ -215,28 +227,7 @@ router.delete('/questions/:id', [auth, adminAuth], async (req, res) => {
   }
 });
 
-// @route    POST api/admin/upload-image
-// @desc     Upload image to Cloudinary CDN
-// @access   Private (Admin)
-router.post('/upload-image', [auth, upload.single('image')], async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, msg: 'No file uploaded' });
-    }
-    const mimeType = req.file.mimetype || 'image/jpeg';
-    const imageUrl = await uploadToCloudinary(req.file.buffer, mimeType, 'quizapp_uploads');
 
-    res.json({
-      success: true,
-      imageUrl: imageUrl,
-      url: imageUrl,
-      msg: 'Image uploaded successfully to Cloudinary'
-    });
-  } catch (err) {
-    console.error('Upload image error:', err);
-    res.status(500).json({ success: false, msg: 'Failed to upload image' });
-  }
-});
 
 // @route    GET api/admin/users
 // @desc     Get all users list
