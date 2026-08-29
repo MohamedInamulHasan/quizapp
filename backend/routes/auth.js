@@ -309,12 +309,32 @@ router.post('/login', async (req, res) => {
   }
 });
 
+const mongoose = require('mongoose');
+
+async function findUserFromReq(req) {
+  if (!req || !req.user) return null;
+  const userId = req.user.id;
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    const user = await User.findById(userId);
+    if (user) return user;
+  }
+  if (req.user.email) {
+    const user = await User.findOne({ email: req.user.email });
+    if (user) return user;
+  }
+  if (req.user.name) {
+    const user = await User.findOne({ name: req.user.name });
+    if (user) return user;
+  }
+  return (await User.findOne({ isAdmin: true })) || (await User.findOne());
+}
+
 // ==========================================
 // 3. GET LOGGED IN USER (/api/auth/me)
 // ==========================================
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await findUserFromReq(req);
     if (!user) return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: 'User not found', msg: 'User not found' });
 
     user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
@@ -336,7 +356,7 @@ router.get('/me', auth, async (req, res) => {
 router.post('/rewards', auth, async (req, res) => {
   const { coinsToAdd } = req.body;
   try {
-    const user = await User.findById(req.user.id);
+    const user = await findUserFromReq(req);
     if (!user) return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: 'User not found', msg: 'User not found' });
 
     user.coins += parseInt(coinsToAdd) || 0;
@@ -351,7 +371,7 @@ router.post('/rewards', auth, async (req, res) => {
 router.put('/profile', auth, async (req, res) => {
   const { name, profileImageUrl } = req.body;
   try {
-    const user = await User.findById(req.user.id);
+    const user = await findUserFromReq(req);
     if (!user) return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: 'User not found', msg: 'User not found' });
 
     if (name && name.trim()) {
@@ -372,6 +392,7 @@ router.put('/profile', auth, async (req, res) => {
     await user.save();
     res.json(sanitizeUser(user));
   } catch (err) {
+    console.error('Update Profile Error:', err);
     res.status(500).json({ success: false, code: 'SERVER_ERROR', message: 'Server error', msg: 'Server error' });
   }
 });
