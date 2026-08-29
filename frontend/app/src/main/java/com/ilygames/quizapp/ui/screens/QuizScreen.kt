@@ -77,18 +77,7 @@ fun QuizScreen(
         when (val state = quizState) {
             is QuizState.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CircularProgressIndicator(color = PrimaryGreen, strokeWidth = 3.dp)
-                        Text(
-                            text = "Preparing Questions...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = TextMuted
-                        )
-                    }
+                    CircularProgressIndicator(color = PrimaryGreen, strokeWidth = 3.dp, modifier = Modifier.size(36.dp))
                 }
             }
             is QuizState.Error -> {

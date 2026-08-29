@@ -275,6 +275,7 @@ class AuthViewModel : ViewModel() {
         _token.value = null
         _user.value = null
         _authState.value = AuthState.Idle
+        com.ilygames.quizapp.ui.screens.globalProfileImageUri.value = null
     }
 
     private fun saveToken(context: Context, token: String) {
@@ -289,6 +290,6 @@ class AuthViewModel : ViewModel() {
 
     private fun clearToken(context: Context) {
         val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-        sharedPrefs.edit().remove("auth_token").remove("saved_profile_img_url").apply()
+        sharedPrefs.edit().clear().apply()
     }
 }

@@ -202,25 +202,27 @@ class QuizViewModel : ViewModel() {
     }
 
     private fun submitResultsToBackend(token: String, score: Int, timeTaken: Int) {
-        _quizState.value = QuizState.Loading
+        // Instant transition to Complete screen without loading screen
+        _quizState.value = QuizState.Complete(
+            score = score,
+            timeTaken = timeTaken,
+            coinsEarned = score
+        )
         viewModelScope.launch {
             val activeToken = if (token.isNotBlank()) token else currentToken
             try {
-                val response = if (activeToken.isNotBlank()) ApiClient.apiService.submitQuiz(activeToken, QuizSubmissionRequest(score, timeTaken)) else null
-                val coins = if (response?.isSuccessful == true && response.body() != null) response.body()!!.coinsEarned else 0
-                _quizState.value = QuizState.Complete(
-                    score = score,
-                    timeTaken = timeTaken,
-                    coinsEarned = coins
-                )
-            } catch (e: Exception) {
-                // Ensure state always transitions to Complete even if network is offline
-                _quizState.value = QuizState.Complete(
-                    score = score,
-                    timeTaken = timeTaken,
-                    coinsEarned = 0
-                )
-            }
+                if (activeToken.isNotBlank()) {
+                    val response = ApiClient.apiService.submitQuiz(activeToken, QuizSubmissionRequest(score, timeTaken))
+                    if (response.isSuccessful && response.body() != null) {
+                        val coins = response.body()!!.coinsEarned
+                        _quizState.value = QuizState.Complete(
+                            score = score,
+                            timeTaken = timeTaken,
+                            coinsEarned = coins
+                        )
+                    }
+                }
+            } catch (_: Exception) {}
         }
     }
 

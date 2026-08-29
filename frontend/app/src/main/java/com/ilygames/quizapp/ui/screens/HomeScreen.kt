@@ -204,14 +204,22 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
     LaunchedEffect(user) {
         val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
         val savedLocally = prefs.getString("saved_profile_img_url", null)
-        if (!user?.profileImageUrl.isNullOrBlank()) {
-            globalProfileImageUri.value = user?.profileImageUrl
-            prefs.edit().putString("saved_profile_img_url", user?.profileImageUrl).apply()
-        } else if (!savedLocally.isNullOrBlank()) {
-            globalProfileImageUri.value = savedLocally
+        if (user != null) {
+            if (!user.profileImageUrl.isNullOrBlank()) {
+                globalProfileImageUri.value = user.profileImageUrl
+                prefs.edit().putString("saved_profile_img_url", user.profileImageUrl).apply()
+            } else if (!savedLocally.isNullOrBlank()) {
+                globalProfileImageUri.value = savedLocally
+            } else {
+                globalProfileImageUri.value = null
+                prefs.edit().remove("saved_profile_img_url").apply()
+            }
+            val savedName = user.name ?: "Player"
+            customUserNameState.value = savedName
+        } else {
+            globalProfileImageUri.value = null
+            prefs.edit().remove("saved_profile_img_url").apply()
         }
-        val savedName = user?.name ?: "Player"
-        customUserNameState.value = savedName
     }
 
     Box(
