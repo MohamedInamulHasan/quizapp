@@ -87,6 +87,7 @@ fun HomeScreen(
     var isUpdatingName by remember { mutableStateOf(false) }
 
     var customUserNameState = remember { mutableStateOf(user?.name ?: "Player") }
+    var tempNameInput by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     // Sync active daily reward from backend for all users on startup
