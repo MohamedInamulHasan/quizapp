@@ -141,7 +141,11 @@ fun HomeScreen(
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
                         val cloudUrl = response.body()?.imageUrl ?: response.body()?.url
-                        if (response.isSuccessful && !cloudUrl.isNullOrBlank() && !cloudUrl.contains("undefined") && !cloudUrl.contains("null")) {
+                        val isValidUrl = !cloudUrl.isNullOrBlank() && 
+                            (cloudUrl.startsWith("http://") || cloudUrl.startsWith("https://") || cloudUrl.startsWith("data:image/")) &&
+                            !cloudUrl.endsWith("/undefined") && !cloudUrl.endsWith("/null")
+
+                        if (response.isSuccessful && isValidUrl) {
                             val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
 
@@ -153,7 +157,7 @@ fun HomeScreen(
                             globalProfileImageUri.value = cloudUrl
                             Toast.makeText(context, "📸 Profile saved to Cloudinary!", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "❌ Upload failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "❌ Upload error (Status ${response.code()})", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
