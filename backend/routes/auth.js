@@ -318,6 +318,9 @@ router.get('/me', auth, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: 'User not found', msg: 'User not found' });
 
     user.isAdmin = isUserAdmin(user.email) || isUserAdmin(user.name);
+    if (user.profileImageUrl && (user.profileImageUrl.includes('undefined') || user.profileImageUrl.includes('null'))) {
+      user.profileImageUrl = null;
+    }
     await user.save();
 
     res.json(sanitizeUser(user));
