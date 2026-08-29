@@ -870,9 +870,13 @@ fun NativeAdminScreen(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
 
+                                        val opts = q.getOptionsList()
+                                        val letterLabels = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+                                        val optionsText = opts.mapIndexed { idx, opt -> "${letterLabels.getOrElse(idx) { (idx + 1).toString() }}: $opt" }.joinToString(" | ")
+
                                         Spacer(modifier = Modifier.height(8.dp))
                                         Text(
-                                            text = "A: ${q.optionA} | B: ${q.optionB}\nC: ${q.optionC} | D: ${q.optionD}\nCorrect Option: ${q.correctAnswer}",
+                                            text = "$optionsText\nCorrect Option: ${q.correctAnswer}",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = TextMuted
                                         )
@@ -1734,58 +1738,59 @@ fun NativeAdminScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            val optA = dynamicOptions.getOrNull(0) ?: ""
-                            val optB = dynamicOptions.getOrNull(1) ?: ""
-                            val optC = dynamicOptions.getOrNull(2) ?: ""
-                            val optD = dynamicOptions.getOrNull(3) ?: ""
-                            if (questionText.isBlank() || optA.isBlank() || optB.isBlank()) return@Button
+                            val cleanOptions = dynamicOptions.map { it.trim() }.filter { it.isNotBlank() }
+                            if (questionText.isBlank() || cleanOptions.size < 2) {
+                                Toast.makeText(context, "Please enter question text and at least 2 options!", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            val optA = cleanOptions.getOrElse(0) { "" }
+                            val optB = cleanOptions.getOrElse(1) { "" }
+                            val optC = cleanOptions.getOrElse(2) { "" }
+                            val optD = cleanOptions.getOrElse(3) { "" }
                             val targetId = editingQuestion?.id
+
                             val newQ = Question(
                                 id = targetId,
-                                question = questionText,
+                                question = questionText.trim(),
                                 optionA = optA,
                                 optionB = optB,
                                 optionC = optC,
                                 optionD = optD,
+                                options = cleanOptions,
                                 correctAnswer = correctAnswer,
                                 category = "General",
                                 difficulty = difficulty,
                                 imageUrl = if (isImageQuiz && questionImageUrl.isNotBlank()) questionImageUrl else null
                             )
 
-                            // Always put saved/updated question at the TOP of the visible list
-                            if (editingQuestion != null && targetId != null) {
-                                // Remove old entry and push updated one to top
-                                questionsStateList = listOf(newQ) + questionsStateList.filter { it.id != targetId }
-                            } else {
-                                // New question goes to top
-                                questionsStateList = listOf(newQ) + questionsStateList
-                            }
+                            showQuestionModal = false
 
                             token?.let { authToken ->
                                 coroutineScope.launch {
                                     try {
                                         if (editingQuestion != null && !targetId.isNullOrBlank()) {
                                             val updated = ApiClient.apiService.updateQuestion(authToken, targetId, newQ)
-                                            // If server returns the updated question, use it (it'll have correct _id)
                                             if (updated.isSuccessful && updated.body() != null) {
                                                 val serverQ = updated.body()!!
-                                                questionsStateList = listOf(serverQ) + questionsStateList.filter { it.id != targetId }
+                                                questionsStateList = questionsStateList.map { if (it.id == targetId) serverQ else it }
+                                            } else {
+                                                loadExistingQuestions()
                                             }
                                         } else {
                                             val created = ApiClient.apiService.createQuestion(authToken, newQ)
-                                            // If server returns created question with real _id, put it at top
                                             if (created.isSuccessful && created.body() != null) {
                                                 val serverQ = created.body()!!
-                                                questionsStateList = listOf(serverQ) + questionsStateList.filter { it.id == null }
+                                                questionsStateList = listOf(serverQ) + questionsStateList.filter { it.id != serverQ.id }
+                                            } else {
+                                                loadExistingQuestions()
                                             }
                                         }
-                                        // NOTE: No reload — edited question is already at top
-                                    } catch (e: Exception) {}
+                                    } catch (e: Exception) {
+                                        loadExistingQuestions()
+                                    }
                                 }
                             }
-
-                            showQuestionModal = false
                             Toast.makeText(context, "🎉 Question Saved!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
