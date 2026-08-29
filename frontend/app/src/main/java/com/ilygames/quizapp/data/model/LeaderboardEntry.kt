@@ -5,5 +5,6 @@ data class LeaderboardEntry(
     val id: String,
     val name: String,
     val score: Int,
-    val coins: Int
+    val coins: Int,
+    val profileImageUrl: String? = null
 )
