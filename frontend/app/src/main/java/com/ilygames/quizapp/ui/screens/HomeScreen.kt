@@ -485,7 +485,7 @@ fun HomeScreen(
                 }
             }
 
-            // 2. RESTRUCTURED SCORE & CHANCES CARD (Left: 3 Hearts & Watch Ad, Right: High Score Above Latest Score)
+            // 2. RESTRUCTURED SCORE & CHANCES CARD (Attractive Hearts & High score : above Latest score :)
             item {
                 Card(
                     shape = RoundedCornerShape(24.dp),
@@ -502,7 +502,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // LEFT SIDE: CHANCES (3 HEARTS SYMBOLS & WATCH AD REGAIN)
+                        // LEFT SIDE: CHANCES (3 ATTRACTIVE HEARTS / BROKEN HEARTS)
                         Column(
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -515,56 +515,35 @@ fun HomeScreen(
                                 letterSpacing = 1.sp
                             )
 
-                            // 3 Heart Symbols (Red filled for active, Gray outline for broken)
+                            // 3 Attractive Heart Badges (Active Red Heart ❤️ vs Lost Broken Heart 💔)
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 for (i in 0 until 3) {
-                                    if (i < dailyAttemptsLeft) {
-                                        Icon(
-                                            imageVector = Icons.Default.Favorite,
-                                            contentDescription = "Active Heart",
-                                            tint = Color(0xFFE53935),
-                                            modifier = Modifier.size(22.dp)
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Default.FavoriteBorder,
-                                            contentDescription = "Broken Heart",
-                                            tint = MaterialTheme.colorScheme.surfaceVariant,
-                                            modifier = Modifier.size(22.dp)
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Watch Ad button to regain 1 broken heart (Max 3 hearts in game)
-                            if (dailyAttemptsLeft < 3) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            SoundManager.playClickSound()
-                                            dailyAttemptsLeft = minOf(3, dailyAttemptsLeft + 1)
-                                            Toast.makeText(context, "🎬 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                    val isActive = i < dailyAttemptsLeft
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = if (isActive) Color(0xFFFF2B56).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                        border = BorderStroke(1.dp, if (isActive) Color(0xFFFF2B56).copy(alpha = 0.3f) else Color.Transparent),
+                                        modifier = Modifier.size(34.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            if (isActive) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Favorite,
+                                                    contentDescription = "Active Heart",
+                                                    tint = Color(0xFFFF2B56),
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = "💔",
+                                                    fontSize = 16.sp
+                                                )
+                                            }
                                         }
-                                        .padding(top = 2.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayCircle,
-                                        contentDescription = "Watch Ad",
-                                        tint = PrimaryGreen,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Text(
-                                        text = "+ Watch Ad (+1 ❤️)",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = PrimaryGreen
-                                    )
+                                    }
                                 }
                             }
                         }
@@ -573,46 +552,48 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
-                                .height(56.dp)
+                                .height(54.dp)
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                         )
 
                         // RIGHT SIDE: HIGH SCORE ABOVE LATEST SCORE
                         Column(
                             horizontalAlignment = Alignment.End,
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // High Score (Larger, Prominent PrimaryGreen)
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "HIGH SCORE",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = PrimaryGreen,
-                                    fontWeight = FontWeight.Black,
-                                    letterSpacing = 1.sp
-                                )
-                                Text(
-                                    text = "${user?.highScore ?: 0} pts",
-                                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
-                                    fontWeight = FontWeight.Black,
-                                    color = PrimaryGreen
-                                )
-                            }
-
-                            // Latest Score (Below High Score)
+                            // High Score : 199 pts
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = "Latest Score:",
-                                    fontSize = 12.sp,
+                                    text = "High Score :",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen
+                                )
+                                Text(
+                                    text = "${user?.highScore ?: 0} pts",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen
+                                )
+                            }
+
+                            // Latest Score : 19 pts
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "Latest Score :",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                                     fontWeight = FontWeight.Bold,
                                     color = TextMuted
                                 )
                                 Text(
                                     text = "${user?.todayScore ?: 0} pts",
-                                    fontSize = 13.sp,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -759,14 +740,18 @@ fun HomeScreen(
 
                         UnifiedEmeraldCard(
                             title = "Extra Chance",
-                            description = "Watch video ad for +1 extra chance",
+                            description = "Watch video ad to restore 1 broken heart",
                             icon = Icons.Default.OndemandVideo,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClickSound()
-                                dailyAttemptsLeft++
-                                authViewModel.addAdReward(context)
-                                Toast.makeText(context, "📺 Video Complete! +1 Extra Attempt Granted!", Toast.LENGTH_SHORT).show()
+                                if (dailyAttemptsLeft < 3) {
+                                    dailyAttemptsLeft++
+                                    authViewModel.addAdReward(context)
+                                    Toast.makeText(context, "📺 Video Complete! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "❤️ Hearts are already full! (3/3)", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         )
                     }
