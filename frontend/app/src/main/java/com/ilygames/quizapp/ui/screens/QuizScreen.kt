@@ -459,28 +459,25 @@ fun CleanHighlightOptionRow(
     val isCorrectOption = optionKey == correctAnswer
 
     val backgroundColor = when {
-        isAnswered && isCorrectOption -> CorrectGreen.copy(alpha = 0.15f)
-        isAnswered && isSelected && !isCorrectOption -> IncorrectRed.copy(alpha = 0.15f)
-        isSelected -> PrimaryGreen.copy(alpha = 0.12f)
+        isSelected && isCorrectOption -> CorrectGreen.copy(alpha = 0.15f)
+        isSelected && !isCorrectOption -> IncorrectRed.copy(alpha = 0.15f)
         else -> MaterialTheme.colorScheme.surface
     }
 
     val borderColor = when {
-        isAnswered && isCorrectOption -> CorrectGreen
-        isAnswered && isSelected && !isCorrectOption -> IncorrectRed
-        isSelected -> PrimaryGreen
+        isSelected && isCorrectOption -> CorrectGreen
+        isSelected && !isCorrectOption -> IncorrectRed
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
     val labelBgColor = when {
-        isAnswered && isCorrectOption -> CorrectGreen
-        isAnswered && isSelected && !isCorrectOption -> IncorrectRed
-        isSelected -> PrimaryGreen
+        isSelected && isCorrectOption -> CorrectGreen
+        isSelected && !isCorrectOption -> IncorrectRed
         else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
     }
 
     val labelTextColor = when {
-        isAnswered || isSelected -> Color.White
+        isSelected -> Color.White
         else -> MaterialTheme.colorScheme.onSurface
     }
 

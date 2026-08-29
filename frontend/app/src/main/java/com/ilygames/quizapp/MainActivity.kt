@@ -175,6 +175,14 @@ fun AppNavigation() {
             ResultsScreen(
                 authViewModel = authViewModel,
                 quizViewModel = quizViewModel,
+                onPlayAgain = {
+                    token?.let { currentToken ->
+                        quizViewModel.startQuiz(currentToken)
+                        navController.navigate("quiz") {
+                            popUpTo("result") { inclusive = true }
+                        }
+                    }
+                },
                 onBackToHome = {
                     navController.navigate("home") {
                         popUpTo("result") { inclusive = true }

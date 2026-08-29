@@ -566,13 +566,6 @@ fun HomeScreen(
                                         color = PrimaryGreen
                                     )
                                 }
-                            } else {
-                                Text(
-                                    text = "3/3 Max Hearts",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextMuted
-                                )
                             }
                         }
 
@@ -644,7 +637,7 @@ fun HomeScreen(
                                 dailyAttemptsLeft--
                                 onStartQuiz()
                             } else {
-                                Toast.makeText(context, "No quiz attempts left today! Tap 'Watch for Extra Chance' below to unlock +1 play.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "💔 No chances left! Tap '+ Watch Ad (+1 ❤️)' above to regain a heart.", Toast.LENGTH_LONG).show()
                             }
                         }
                 ) {

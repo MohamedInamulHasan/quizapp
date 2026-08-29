@@ -31,10 +31,10 @@ import com.ilygames.quizapp.utils.SoundManager
 fun ResultsScreen(
     authViewModel: AuthViewModel,
     quizViewModel: QuizViewModel,
+    onPlayAgain: () -> Unit = {},
     onBackToHome: () -> Unit
 ) {
     val quizState by quizViewModel.quizState.collectAsState()
-    val token = authViewModel.token.value ?: ""
 
     Box(
         modifier = Modifier
@@ -52,7 +52,7 @@ fun ResultsScreen(
                 else -> "Good try! Practice more to boost your score!"
             }
 
-            // Single Unified Clean Quiz Summary Card for Maximum User Clarity & Understanding
+            // Single Unified Clean Quiz Summary Card
             Card(
                 shape = RoundedCornerShape(26.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -159,7 +159,7 @@ fun ResultsScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Buttons Row
+                    // Action Buttons Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -168,7 +168,7 @@ fun ResultsScreen(
                         OutlinedButton(
                             onClick = {
                                 SoundManager.playClickSound()
-                                quizViewModel.startQuiz(token)
+                                onPlayAgain()
                             },
                             modifier = Modifier
                                 .weight(1f)
