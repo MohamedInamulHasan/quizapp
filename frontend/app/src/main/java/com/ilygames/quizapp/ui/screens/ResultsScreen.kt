@@ -83,7 +83,7 @@ fun ResultsScreen(
 
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(600)) + slideInVertically(tween(600, easing = FastOutSlowInEasing)) { 80 }
+                enter = fadeIn(tween(100)) + slideInVertically(tween(100, easing = FastOutSlowInEasing)) { 30 }
             ) {
                 // Single Unified Outline Quiz Summary Card (0.dp elevation shadow, clean border)
                 Card(

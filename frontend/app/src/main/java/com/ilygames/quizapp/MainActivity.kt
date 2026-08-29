@@ -3,6 +3,9 @@ package com.ilygames.quizapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -63,7 +66,11 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "splash",
+        enterTransition = { fadeIn(animationSpec = tween(80)) },
+        exitTransition = { fadeOut(animationSpec = tween(80)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(80)) },
+        popExitTransition = { fadeOut(animationSpec = tween(80)) }
     ) {
         composable("splash") {
             SplashScreen(
