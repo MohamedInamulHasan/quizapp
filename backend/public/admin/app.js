@@ -271,44 +271,110 @@ async function loadQuestions() {
 
 function displayQuestions(questions) {
   if (questions.length === 0) {
-    questionsList.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No questions found. Add some!</td></tr>`;
+    questionsList.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No questions found. Add some!</td></tr>`;
     return;
   }
 
-  questionsList.innerHTML = questions.map(q => `
-    <tr>
-      <td><strong>${escapeHtml(q.question)}</strong></td>
-      <td><span class="badge">${escapeHtml(q.category)}</span></td>
-      <td><span class="badge badge-${escapeHtml(q.difficulty)}">${escapeHtml(q.difficulty)}</span></td>
-      <td>
-        <div class="small-text">A: ${escapeHtml(q.optionA)}</div>
-        <div class="small-text">B: ${escapeHtml(q.optionB)}</div>
-        <div class="small-text">C: ${escapeHtml(q.optionC)}</div>
-        <div class="small-text">D: ${escapeHtml(q.optionD)}</div>
-        <div class="standing-score m-t-5">Correct: Option ${q.correctAnswer}</div>
-      </td>
-      <td>
-        <div class="action-buttons">
-          <button class="btn-icon edit" onclick="editQuestion('${q._id}')" title="Edit Question">
-            <i class="fa-solid fa-pen-to-square"></i>
-          </button>
-          <button class="btn-icon delete" onclick="deleteQuestion('${q._id}')" title="Delete Question">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  const letterLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+  questionsList.innerHTML = questions.map(q => {
+    const opts = (q.options && q.options.length > 0)
+      ? q.options
+      : [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean);
+
+    const optionsHtml = opts.map((opt, idx) => `
+      <div class="small-text">${letterLabels[idx] || (idx + 1)}: ${escapeHtml(opt)}</div>
+    `).join('');
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(q.question)}</strong></td>
+        <td><span class="badge badge-${escapeHtml(q.difficulty)}">${escapeHtml(q.difficulty)}</span></td>
+        <td>
+          ${optionsHtml}
+          <div class="standing-score m-t-5">Correct: Option ${q.correctAnswer}</div>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-icon edit" onclick="editQuestion('${q._id}')" title="Edit Question">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn-icon delete" onclick="deleteQuestion('${q._id}')" title="Delete Question">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // Simple search filter
 questionSearch.addEventListener('input', (e) => {
   const query = e.target.value.toLowerCase();
   const filtered = allQuestions.filter(q => 
-    q.question.toLowerCase().includes(query) || 
-    q.category.toLowerCase().includes(query)
+    q.question.toLowerCase().includes(query)
   );
   displayQuestions(filtered);
+});
+
+// Dynamic Options Logic
+let currentModalOptions = ['', ''];
+
+function renderOptionRows(selectedCorrect = 'A') {
+  const container = document.getElementById('dynamic-options-container');
+  const correctSelect = document.getElementById('q-correct');
+  if (!container) return;
+
+  const letterLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  container.innerHTML = currentModalOptions.map((optVal, idx) => {
+    const letter = letterLabels[idx] || (idx + 1).toString();
+    const isDeletable = currentModalOptions.length > 2;
+    return `
+      <div class="dynamic-option-row" data-index="${idx}">
+        <span class="badge badge-a" style="min-width: 75px; text-align: center;">Option ${letter}</span>
+        <input type="text" class="q-opt-input" data-index="${idx}" value="${escapeHtml(optVal)}" placeholder="Enter Option ${letter} text" required>
+        ${isDeletable ? `
+          <button type="button" class="btn-delete-option" onclick="deleteOptionRow(${idx})" title="Delete Option">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  correctSelect.innerHTML = currentModalOptions.map((_, idx) => {
+    const letter = letterLabels[idx] || (idx + 1).toString();
+    return `<option value="${letter}">Option ${letter}</option>`;
+  }).join('');
+
+  if (currentModalOptions.length > 0) {
+    correctSelect.value = selectedCorrect;
+  }
+
+  const inputs = container.querySelectorAll('.q-opt-input');
+  inputs.forEach(input => {
+    input.addEventListener('input', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      currentModalOptions[index] = e.target.value;
+    });
+  });
+}
+
+window.deleteOptionRow = function(index) {
+  if (currentModalOptions.length <= 2) {
+    alert('Minimum 2 options are required for a question.');
+    return;
+  }
+  currentModalOptions.splice(index, 1);
+  const currentCorrect = document.getElementById('q-correct').value;
+  renderOptionRows(currentCorrect);
+};
+
+document.getElementById('btn-add-option-row').addEventListener('click', () => {
+  currentModalOptions.push('');
+  const currentCorrect = document.getElementById('q-correct').value;
+  renderOptionRows(currentCorrect);
 });
 
 // Modal Actions
@@ -316,6 +382,8 @@ btnAddQuestion.addEventListener('click', () => {
   modalTitle.textContent = 'Add New Question';
   questionForm.reset();
   document.getElementById('q-id').value = '';
+  currentModalOptions = ['', ''];
+  renderOptionRows('A');
   questionModal.classList.remove('d-none');
 });
 
@@ -325,28 +393,35 @@ btnCancelModal.addEventListener('click', () => questionModal.classList.add('d-no
 questionForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const id = document.getElementById('q-id').value;
+  const inputs = document.querySelectorAll('#dynamic-options-container .q-opt-input');
+  const finalOptions = Array.from(inputs).map(inp => inp.value.trim()).filter(Boolean);
+
+  if (finalOptions.length < 2) {
+    alert('At least 2 options are required.');
+    return;
+  }
+
   const payload = {
     question: document.getElementById('q-text').value,
-    category: document.getElementById('q-category').value,
     difficulty: document.getElementById('q-difficulty').value,
-    optionA: document.getElementById('q-optA').value,
-    optionB: document.getElementById('q-optB').value,
-    optionC: document.getElementById('q-optC').value,
-    optionD: document.getElementById('q-optD').value,
+    category: 'General',
+    options: finalOptions,
+    optionA: finalOptions[0] || '',
+    optionB: finalOptions[1] || '',
+    optionC: finalOptions[2] || '',
+    optionD: finalOptions[3] || '',
     correctAnswer: document.getElementById('q-correct').value
   };
 
   try {
     let res;
     if (id) {
-      // Edit
       res = await fetch(`${API_URL}/admin/questions/${id}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(payload)
       });
     } else {
-      // Add
       res = await fetch(`${API_URL}/admin/questions`, {
         method: 'POST',
         headers: getHeaders(),
@@ -359,7 +434,7 @@ questionForm.addEventListener('submit', async (e) => {
       loadQuestions();
     } else {
       const data = await res.json();
-      alert('Failed: ' + data.msg);
+      alert('Failed: ' + (data.msg || data.message || 'Error'));
     }
   } catch (err) {
     alert('Error saving question.');
@@ -373,13 +448,14 @@ window.editQuestion = function (id) {
   modalTitle.textContent = 'Edit Question';
   document.getElementById('q-id').value = q._id;
   document.getElementById('q-text').value = q.question;
-  document.getElementById('q-category').value = q.category;
   document.getElementById('q-difficulty').value = q.difficulty;
-  document.getElementById('q-optA').value = q.optionA;
-  document.getElementById('q-optB').value = q.optionB;
-  document.getElementById('q-optC').value = q.optionC;
-  document.getElementById('q-optD').value = q.optionD;
-  document.getElementById('q-correct').value = q.correctAnswer;
+
+  const opts = (q.options && q.options.length > 0)
+    ? [...q.options]
+    : [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean);
+
+  currentModalOptions = opts.length >= 2 ? opts : ['', ''];
+  renderOptionRows(q.correctAnswer || 'A');
 
   questionModal.classList.remove('d-none');
 };

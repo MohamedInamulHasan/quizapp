@@ -637,6 +637,43 @@ body {
   gap: 15px;
   margin-bottom: 20px;
 }
+.dynamic-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.dynamic-option-row input {
+  flex-grow: 1;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.95rem;
+  outline: none;
+}
+.dynamic-option-row input:focus {
+  border-color: var(--primary-color);
+}
+.btn-delete-option {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--danger-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.btn-delete-option:hover {
+  background: var(--danger-color);
+  color: white;
+}
 .option-field label {
   margin-bottom: 4px;
 }

@@ -209,7 +209,6 @@
               <thead>
                 <tr>
                   <th>Question Text</th>
-                  <th>Category</th>
                   <th>Difficulty</th>
                   <th>Options (Correct)</th>
                   <th>Actions</th>
@@ -217,7 +216,7 @@
               </thead>
               <tbody id="questions-list">
                 <tr>
-                  <td colspan="5" class="text-center">Loading questions...</td>
+                  <td colspan="4" class="text-center">Loading questions...</td>
                 </tr>
               </tbody>
             </table>
@@ -324,47 +323,30 @@
           <textarea id="q-text" required placeholder="e.g. What is the capital of France?"></textarea>
         </div>
         
-        <div class="form-row">
-          <div class="input-group col-6">
-            <label for="q-category">Category</label>
-            <input type="text" id="q-category" required placeholder="Geography">
-          </div>
-          <div class="input-group col-6">
-            <label for="q-difficulty">Difficulty</label>
-            <select id="q-difficulty" required>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
+        <div class="input-group">
+          <label for="q-difficulty">Difficulty</label>
+          <select id="q-difficulty" required>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
         </div>
 
-        <div class="options-grid">
-          <div class="input-group option-field">
-            <label for="q-optA"><span class="badge badge-a">Option A</span></label>
-            <input type="text" id="q-optA" required placeholder="Option A text">
-          </div>
-          <div class="input-group option-field">
-            <label for="q-optB"><span class="badge badge-b">Option B</span></label>
-            <input type="text" id="q-optB" required placeholder="Option B text">
-          </div>
-          <div class="input-group option-field">
-            <label for="q-optC"><span class="badge badge-c">Option C</span></label>
-            <input type="text" id="q-optC" required placeholder="Option C text">
-          </div>
-          <div class="input-group option-field">
-            <label for="q-optD"><span class="badge badge-d">Option D</span></label>
-            <input type="text" id="q-optD" required placeholder="Option D text">
-          </div>
+        <div class="options-header-row m-t-15 m-b-10" style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-weight: 600; color: var(--text-main);">Options <span style="font-size: 0.75rem; color: var(--text-muted);">(Minimum 2 Required)</span></label>
+          <button type="button" id="btn-add-option-row" class="btn btn-sm btn-outline">
+            <i class="fa-solid fa-plus"></i> Add Option
+          </button>
+        </div>
+
+        <div id="dynamic-options-container" class="m-b-20">
+          <!-- Dynamic Option Rows Rendered Here by JS -->
         </div>
 
         <div class="input-group">
           <label for="q-correct">Correct Answer</label>
           <select id="q-correct" required>
-            <option value="A">Option A</option>
-            <option value="B">Option B</option>
-            <option value="C">Option C</option>
-            <option value="D">Option D</option>
+            <!-- Dynamically populated based on active options -->
           </select>
         </div>
 
