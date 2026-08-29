@@ -503,9 +503,26 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // LEFT SIDE: CHANCES (3 ATTRACTIVE HEARTS / BROKEN HEARTS)
+            // 2. RESTRUCTURED SCORE & CHANCES CARD (Centered CHANCES title, matching heart emojis, Latest score above High score)
+            item {
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // LEFT SIDE: CHANCES (CENTERED TITLE OVER MATCHING ❤️ & 💔 EMOJIS)
                         Column(
-                            horizontalAlignment = Alignment.Start,
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
@@ -516,26 +533,17 @@ fun HomeScreen(
                                 letterSpacing = 1.sp
                             )
 
-                            // 3 Raw Heart Symbols (Red Favorite Icon ❤️ vs Lost Broken Heart 💔)
+                            // 3 Matching Heart Emojis (❤️ Active vs 💔 Broken)
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 for (i in 0 until 3) {
                                     val isActive = i < dailyAttemptsLeft
-                                    if (isActive) {
-                                        Icon(
-                                            imageVector = Icons.Default.Favorite,
-                                            contentDescription = "Active Heart",
-                                            tint = Color(0xFFFF2B56),
-                                            modifier = Modifier.size(26.dp)
-                                        )
-                                    } else {
-                                        Text(
-                                            text = "💔",
-                                            fontSize = 20.sp
-                                        )
-                                    }
+                                    Text(
+                                        text = if (isActive) "❤️" else "💔",
+                                        fontSize = 20.sp
+                                    )
                                 }
                             }
                         }
@@ -548,31 +556,12 @@ fun HomeScreen(
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                         )
 
-                        // RIGHT SIDE: HIGH SCORE ABOVE LATEST SCORE
+                        // RIGHT SIDE: LATEST SCORE ABOVE HIGH SCORE
                         Column(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // High Score : 199 pts
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = "High Score :",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
-                                    fontWeight = FontWeight.Black,
-                                    color = PrimaryGreen
-                                )
-                                Text(
-                                    text = "${user?.highScore ?: 0} pts",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
-                                    fontWeight = FontWeight.Black,
-                                    color = PrimaryGreen
-                                )
-                            }
-
-                            // Latest Score : 19 pts
+                            // Latest Score : 0 pts (Top)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -588,6 +577,25 @@ fun HomeScreen(
                                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            // High Score : 199 pts (Bottom)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "High Score :",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen
+                                )
+                                Text(
+                                    text = "${user?.highScore ?: 0} pts",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen
                                 )
                             }
                         }
@@ -611,7 +619,10 @@ fun HomeScreen(
                                 heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
                                 onStartQuiz()
                             } else {
-                                Toast.makeText(context, "💔 No chances left! Tap 'Extra Chance' in Explore & Rewards below to regain a heart.", Toast.LENGTH_LONG).show()
+                                dailyAttemptsLeft++
+                                heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
+                                authViewModel.addAdReward(context)
+                                Toast.makeText(context, "🎬 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
                             }
                         }
                 ) {
@@ -657,17 +668,17 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = if (dailyAttemptsLeft > 0) "START QUIZ NOW" else "OUT OF ATTEMPTS TODAY",
-                                        style = MaterialTheme.typography.titleMedium,
+                                        text = if (dailyAttemptsLeft > 0) "START QUIZ NOW" else "WATCH AD TO GET CHANCE (+1 ❤️)",
+                                        style = MaterialTheme.typography.titleSmall.copy(fontSize = 13.sp),
                                         fontWeight = FontWeight.Black,
-                                        color = if (dailyAttemptsLeft > 0) DarkGreen else IncorrectRed
+                                        color = if (dailyAttemptsLeft > 0) DarkGreen else PrimaryGreen
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
                                     Icon(
-                                        imageVector = if (dailyAttemptsLeft > 0) Icons.Default.PlayArrow else Icons.Default.Lock,
+                                        imageVector = if (dailyAttemptsLeft > 0) Icons.Default.PlayArrow else Icons.Default.OndemandVideo,
                                         contentDescription = "Action",
-                                        tint = if (dailyAttemptsLeft > 0) DarkGreen else IncorrectRed,
-                                        modifier = Modifier.size(20.dp)
+                                        tint = if (dailyAttemptsLeft > 0) DarkGreen else PrimaryGreen,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
                             }
