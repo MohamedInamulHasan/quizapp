@@ -177,12 +177,12 @@ fun HomeScreen(
 
     LaunchedEffect(user) {
         val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        val savedLocally = prefs.getString("saved_profile_img_url", null)
         if (!user?.profileImageUrl.isNullOrBlank()) {
             globalProfileImageUri.value = user?.profileImageUrl
             prefs.edit().putString("saved_profile_img_url", user?.profileImageUrl).apply()
-        } else {
-            globalProfileImageUri.value = null
-            prefs.edit().remove("saved_profile_img_url").apply()
+        } else if (!savedLocally.isNullOrBlank()) {
+            globalProfileImageUri.value = savedLocally
         }
         val savedName = user?.name ?: "Player"
         customUserNameState.value = savedName
@@ -219,7 +219,11 @@ fun HomeScreen(
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
                         val avatarBg = getGoogleProfileColor(customUserNameState.value)
-                        val rawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl } ?: user?.profileImageUrl
+                        val prefs = remember { context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE) }
+                        val savedLocally = prefs.getString("saved_profile_img_url", null)
+                        val rawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl ?: savedLocally }
+                            ?: user?.profileImageUrl
+                            ?: savedLocally
                         val avatarModel = getFullProfileImageUrl(rawProfileUrl)
 
                         Surface(
@@ -846,7 +850,10 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        val modalRawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl } ?: user?.profileImageUrl
+                        val modalSavedLocally = prefs.getString("saved_profile_img_url", null)
+                        val modalRawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl ?: modalSavedLocally }
+                            ?: user?.profileImageUrl
+                            ?: modalSavedLocally
                         val modalAvatarModel = getFullProfileImageUrl(modalRawProfileUrl)
 
                         // Profile avatar with camera upload badge (Restored)
