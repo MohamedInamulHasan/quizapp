@@ -3,9 +3,9 @@ const os = require('os');
 const path = require('path');
 const cloudinary = require('cloudinary').v2;
 
-const CLOUD_NAME = 'bp7vmiht';
-const API_KEY    = '414693825442831';
-const API_SECRET = 'I4-LQriPGUwZREr2wl6DChZqGPs';
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'bp7vmiht';
+const API_KEY    = process.env.CLOUDINARY_API_KEY    || '414693825442831';
+const API_SECRET = process.env.CLOUDINARY_API_SECRET || 'l4-LQriPGUwZREr2wI6DChZqGPs';
 
 // Configure Cloudinary SDK with user's credentials
 cloudinary.config({
