@@ -109,15 +109,24 @@ fun HomeScreen(
         }
     }
 
-    // Profile Photo Picker Launcher — uploads to server and saves URL in MongoDB
+    // Profile Photo Picker Launcher — uploads to Cloudinary server and saves URL in MongoDB
     val profileImagePicker = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         uri?.let { selectedUri ->
+            // 1. Save local copy immediately & update UI so picture appears INSTANTLY
+            val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
+            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putString("saved_profile_img_url", localPath).apply()
+            authViewModel.updateProfileState(profileImageUrl = localPath)
+            globalProfileImageUri.value = localPath
+            Toast.makeText(context, "📸 Profile photo saved!", Toast.LENGTH_SHORT).show()
+
+            // 2. Upload to Cloudinary & update MongoDB backend in background
             kotlinx.coroutines.MainScope().launch {
                 try {
                     val token = authViewModel.token.value
-                        ?: context.getSharedPreferences("quiz_prefs", android.content.Context.MODE_PRIVATE)
+                        ?: context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             .getString("auth_token", "") ?: ""
                     val stream = context.contentResolver.openInputStream(selectedUri)
                     val mimeType = context.contentResolver.getType(selectedUri) ?: "image/jpeg"
@@ -139,40 +148,18 @@ fun HomeScreen(
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
                         if (response.isSuccessful && response.body()?.imageUrl != null) {
-                            val imageUrl = response.body()!!.imageUrl
-                            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                            prefs.edit().putString("saved_profile_img_url", imageUrl).apply()
-
+                            val cloudUrl = response.body()!!.imageUrl
+                            prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
                             com.ilygames.quizapp.data.api.ApiClient.apiService.updateProfile(
                                 token,
-                                com.ilygames.quizapp.data.model.UpdateProfileRequest(profileImageUrl = imageUrl)
+                                com.ilygames.quizapp.data.model.UpdateProfileRequest(profileImageUrl = cloudUrl)
                             )
-                            authViewModel.updateProfileState(profileImageUrl = imageUrl)
-                            globalProfileImageUri.value = imageUrl
-                            Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
-                        } else {
-                            val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
-                            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                            prefs.edit().putString("saved_profile_img_url", localPath).apply()
-                            authViewModel.updateProfileState(profileImageUrl = localPath)
-                            globalProfileImageUri.value = localPath
-                            Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
+                            authViewModel.updateProfileState(profileImageUrl = cloudUrl)
+                            globalProfileImageUri.value = cloudUrl
                         }
-                    } else {
-                        val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
-                        val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                        prefs.edit().putString("saved_profile_img_url", localPath).apply()
-                        authViewModel.updateProfileState(profileImageUrl = localPath)
-                        globalProfileImageUri.value = localPath
-                        Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
-                    val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
-                    val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-                    prefs.edit().putString("saved_profile_img_url", localPath).apply()
-                    authViewModel.updateProfileState(profileImageUrl = localPath)
-                    globalProfileImageUri.value = localPath
-                    Toast.makeText(context, "📸 Profile photo saved!", android.widget.Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
                 }
             }
         }
@@ -859,6 +846,9 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
+                        val modalRawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl } ?: user?.profileImageUrl
+                        val modalAvatarModel = getFullProfileImageUrl(modalRawProfileUrl)
+
                         // Profile avatar with camera upload badge (Restored)
                         Box(
                             modifier = Modifier
@@ -867,15 +857,12 @@ fun HomeScreen(
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = PrimaryGreen.copy(alpha = 0.15f),
+                                color = if (modalAvatarModel != null) Color.Transparent else PrimaryGreen.copy(alpha = 0.15f),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .border(2.dp, PrimaryGreen, CircleShape)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    val modalRawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl } ?: user?.profileImageUrl
-                                    val modalAvatarModel = getFullProfileImageUrl(modalRawProfileUrl)
-
                                     if (modalAvatarModel != null) {
                                         coil.compose.AsyncImage(
                                             model = modalAvatarModel,
