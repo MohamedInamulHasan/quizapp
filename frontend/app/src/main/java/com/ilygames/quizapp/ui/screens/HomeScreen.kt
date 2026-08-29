@@ -957,6 +957,38 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         }
 
+                        if (modalAvatarModel != null) {
+                            Text(
+                                text = "Remove photo",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .clickable {
+                                        kotlinx.coroutines.MainScope().launch {
+                                            try {
+                                                val token = authViewModel.token.value
+                                                    ?: context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                                                        .getString("auth_token", "") ?: ""
+                                                if (token.isNotBlank()) {
+                                                    val response = com.ilygames.quizapp.data.api.ApiClient.apiService.deleteProfileImage(token)
+                                                    if (response.isSuccessful) {
+                                                        val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+                                                        prefs.edit().remove("saved_profile_img_url").apply()
+                                                        authViewModel.updateProfileState(profileImageUrl = null)
+                                                        globalProfileImageUri.value = null
+                                                        Toast.makeText(context, "Photo removed", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                println("[REMOVE_PHOTO_ERROR] ${e.localizedMessage}")
+                                            }
+                                        }
+                                    }
+                                    .padding(vertical = 2.dp, horizontal = 8.dp)
+                            )
+                        }
+
                         // Editable name (Restored)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

@@ -132,6 +132,11 @@ interface ApiService {
         @Part image: MultipartBody.Part
     ): Response<ImageUploadResponse>
 
+    @DELETE("auth/profile-image")
+    suspend fun deleteProfileImage(
+        @Header("x-auth-token") token: String
+    ): Response<User>
+
     @POST("admin/reward")
     suspend fun publishReward(
         @Header("x-auth-token") token: String,

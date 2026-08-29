@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const User = require('../models/User');
+const { deleteFromCloudinary } = require('../config/cloudinary');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
@@ -382,11 +383,12 @@ router.put('/profile', auth, async (req, res) => {
       user.name = name.trim();
     }
     if (profileImageUrl !== undefined) {
-      if (!profileImageUrl || profileImageUrl.includes('undefined') || profileImageUrl.includes('null')) {
-        user.profileImageUrl = null;
-      } else {
-        user.profileImageUrl = profileImageUrl.trim();
+      const newUrl = (profileImageUrl && !profileImageUrl.includes('undefined') && !profileImageUrl.includes('null')) ? profileImageUrl.trim() : null;
+      // Automatically destroy old image asset from Cloudinary CDN when photo is replaced or removed
+      if (user.profileImageUrl && user.profileImageUrl !== newUrl) {
+        deleteFromCloudinary(user.profileImageUrl).catch(err => console.error('Cloudinary asset cleanup error:', err));
       }
+      user.profileImageUrl = newUrl;
     }
 
     await user.save();
@@ -394,6 +396,27 @@ router.put('/profile', auth, async (req, res) => {
   } catch (err) {
     console.error('Update Profile Error:', err);
     res.status(500).json({ success: false, code: 'SERVER_ERROR', message: 'Server error', msg: 'Server error' });
+  }
+});
+
+// @route   DELETE api/auth/profile-image
+// @desc    Delete user profile image asset from Cloudinary and reset database field to null
+// @access  Private
+router.delete('/profile-image', auth, async (req, res) => {
+  try {
+    const user = await findUserFromReq(req);
+    if (!user) return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', msg: 'User not found' });
+
+    if (user.profileImageUrl) {
+      await deleteFromCloudinary(user.profileImageUrl);
+      user.profileImageUrl = null;
+      await user.save();
+    }
+
+    res.json(sanitizeUser(user));
+  } catch (err) {
+    console.error('Delete Profile Image Error:', err);
+    res.status(500).json({ success: false, msg: 'Failed to delete profile photo' });
   }
 });
 

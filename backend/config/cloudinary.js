@@ -47,4 +47,36 @@ const uploadToCloudinary = async (fileBuffer, mimeType = 'image/jpeg', folder = 
   }
 };
 
-module.exports = { cloudinary, uploadToCloudinary };
+/**
+ * Helper to extract public_id from a Cloudinary URL and delete the image asset from Cloudinary CDN
+ * @param {String} imageUrl - Full Cloudinary image URL
+ */
+const deleteFromCloudinary = async (imageUrl) => {
+  if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.includes('cloudinary.com')) return null;
+
+  try {
+    // Example URL: https://res.cloudinary.com/bp7vmiht/image/upload/v1787994626/quizapp_uploads/n6hfvn9lmwnbswokfxqs.png
+    const uploadIdx = imageUrl.indexOf('/upload/');
+    if (uploadIdx === -1) return null;
+
+    let pathAfterUpload = imageUrl.substring(uploadIdx + 8); // e.g. "v1787994626/quizapp_uploads/n6hfvn9lmwnbswokfxqs.png"
+    
+    // Strip version prefix if present (e.g. "v1787994626/")
+    pathAfterUpload = pathAfterUpload.replace(/^v\d+\//, '');
+
+    // Strip extension (e.g. ".png", ".jpg")
+    const lastDotIdx = pathAfterUpload.lastIndexOf('.');
+    const publicId = lastDotIdx !== -1 ? pathAfterUpload.substring(0, lastDotIdx) : pathAfterUpload;
+
+    console.log(`[CLOUDINARY_DELETE] Destroying asset public_id: "${publicId}" from Cloudinary...`);
+
+    const result = await cloudinary.uploader.destroy(publicId);
+    console.log(`[CLOUDINARY_DELETE] Asset "${publicId}" destruction result:`, result);
+    return result;
+  } catch (err) {
+    console.error('❌ Cloudinary asset deletion error:', err.message);
+    return null;
+  }
+};
+
+module.exports = { cloudinary, uploadToCloudinary, deleteFromCloudinary };
