@@ -178,8 +178,9 @@ fun HomeScreen(
         }
     }
 
-    // 3 Daily Quiz Plays Attempts State (3 Hearts Max)
-    var dailyAttemptsLeft by remember { mutableStateOf(3) }
+    // 3 Daily Quiz Plays Attempts State (Persisted in SharedPreferences)
+    val heartsPrefs = remember { context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE) }
+    var dailyAttemptsLeft by remember { mutableStateOf(heartsPrefs.getInt("saved_hearts_count", 3)) }
 
     // Refresh profile every time the screen is entered or user changes
     LaunchedEffect(Unit) {
@@ -515,34 +516,25 @@ fun HomeScreen(
                                 letterSpacing = 1.sp
                             )
 
-                            // 3 Attractive Heart Badges (Active Red Heart ❤️ vs Lost Broken Heart 💔)
+                            // 3 Raw Heart Symbols (Red Favorite Icon ❤️ vs Lost Broken Heart 💔)
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 for (i in 0 until 3) {
                                     val isActive = i < dailyAttemptsLeft
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = if (isActive) Color(0xFFFF2B56).copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                        border = BorderStroke(1.dp, if (isActive) Color(0xFFFF2B56).copy(alpha = 0.3f) else Color.Transparent),
-                                        modifier = Modifier.size(34.dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            if (isActive) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Favorite,
-                                                    contentDescription = "Active Heart",
-                                                    tint = Color(0xFFFF2B56),
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                            } else {
-                                                Text(
-                                                    text = "💔",
-                                                    fontSize = 16.sp
-                                                )
-                                            }
-                                        }
+                                    if (isActive) {
+                                        Icon(
+                                            imageVector = Icons.Default.Favorite,
+                                            contentDescription = "Active Heart",
+                                            tint = Color(0xFFFF2B56),
+                                            modifier = Modifier.size(26.dp)
+                                        )
+                                    } else {
+                                        Text(
+                                            text = "💔",
+                                            fontSize = 20.sp
+                                        )
                                     }
                                 }
                             }
@@ -616,9 +608,10 @@ fun HomeScreen(
                             SoundManager.playClickSound()
                             if (dailyAttemptsLeft > 0) {
                                 dailyAttemptsLeft--
+                                heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
                                 onStartQuiz()
                             } else {
-                                Toast.makeText(context, "💔 No chances left! Tap '+ Watch Ad (+1 ❤️)' above to regain a heart.", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "💔 No chances left! Tap 'Extra Chance' in Explore & Rewards below to regain a heart.", Toast.LENGTH_LONG).show()
                             }
                         }
                 ) {
@@ -747,6 +740,7 @@ fun HomeScreen(
                                 SoundManager.playClickSound()
                                 if (dailyAttemptsLeft < 3) {
                                     dailyAttemptsLeft++
+                                    heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
                                     authViewModel.addAdReward(context)
                                     Toast.makeText(context, "📺 Video Complete! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
                                 } else {
