@@ -27,6 +27,10 @@ function isUserAdmin(identifier) {
 }
 
 function sanitizeUser(user) {
+  let profileUrl = user.profileImageUrl || null;
+  if (profileUrl && (profileUrl.includes('undefined') || profileUrl.includes('null'))) {
+    profileUrl = null;
+  }
   return {
     id: user.id || user._id ? (user.id || user._id).toString() : null,
     name: user.name,
@@ -36,7 +40,7 @@ function sanitizeUser(user) {
     todayScore: user.todayScore || 0,
     highScore: user.highScore || 0,
     isAdmin: user.isAdmin || isUserAdmin(user.email) || isUserAdmin(user.name),
-    profileImageUrl: user.profileImageUrl || null
+    profileImageUrl: profileUrl
   };
 }
 
