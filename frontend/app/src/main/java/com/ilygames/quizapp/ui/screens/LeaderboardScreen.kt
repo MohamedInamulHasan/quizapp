@@ -1,5 +1,6 @@
 package com.ilygames.quizapp.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,10 +25,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ilygames.quizapp.data.api.ApiClient
 import com.ilygames.quizapp.data.model.LeaderboardEntry
 import com.ilygames.quizapp.ui.theme.*
 import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import kotlinx.coroutines.delay
+import java.io.File
 
 // ─── Google Account-Style Curated Profile Background Palette ────────────────
 val googleProfileColors = listOf(
@@ -46,6 +49,18 @@ fun getGoogleProfileColor(name: String): Color {
     if (name.isBlank()) return googleProfileColors[0]
     val hash = Math.abs(name.lowercase().hashCode())
     return googleProfileColors[hash % googleProfileColors.size]
+}
+
+// ─── Robust Profile Image URL Resolver ───────────────────────────────────────
+fun getFullProfileImageUrl(rawUrl: String?): Any? {
+    if (rawUrl.isNullOrBlank()) return null
+    val trimmed = rawUrl.trim()
+    return when {
+        trimmed.startsWith("http://") || trimmed.startsWith("https://") -> trimmed
+        trimmed.startsWith("content://") || trimmed.startsWith("file://") -> Uri.parse(trimmed)
+        trimmed.startsWith("/") || trimmed.startsWith("c:\\", ignoreCase = true) || trimmed.startsWith("C:\\") -> File(trimmed)
+        else -> "${ApiClient.BASE_URL.removeSuffix("/")}/uploads/$trimmed"
+    }
 }
 
 // ─── Helper: Get 1-2 letter initials from a name ─────────────────────────────
@@ -272,6 +287,9 @@ fun PodiumColumn(
     val firstName = player.name.split(" ").firstOrNull() ?: player.name
     val displayName = if (isMe) "$firstName (You)" else firstName
 
+    val rawImageUrl = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) globalProfileImageUri.value else player.profileImageUrl
+    val model = getFullProfileImageUrl(rawImageUrl)
+
     // Uniform PrimaryGreen gradient for all 3 podium pillars
     val pillarBrush = Brush.verticalGradient(listOf(PrimaryGreen, EmeraldGlow))
     val avatarBg = getGoogleProfileColor(player.name)
@@ -290,17 +308,17 @@ fun PodiumColumn(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Avatar Container (Google account style color + light outer drop shadow, NO green outline)
+        // Avatar Container (Flat circle, no placeholder shadow)
         Surface(
             shape = CircleShape,
-            color = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) Color.Transparent else avatarBg,
-            shadowElevation = 6.dp,
+            color = if (model != null) Color.Transparent else avatarBg,
+            shadowElevation = 0.dp,
             modifier = Modifier.size(avatarSize)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
+                if (model != null) {
                     coil.compose.AsyncImage(
-                        model = globalProfileImageUri.value,
+                        model = model,
                         contentDescription = "Profile",
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier
@@ -372,6 +390,9 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     val isMe = if (currentUserId.isNotBlank()) player.id == currentUserId else currentUserName.isNotBlank() && player.name.equals(currentUserName, ignoreCase = true)
     val displayName = if (isMe) "${player.name} (You)" else player.name
     val medalEmoji = when (player.rank) { 1 -> "🥇"; 2 -> "🥈"; 3 -> "🥉"; else -> null }
+
+    val rawImageUrl = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) globalProfileImageUri.value else player.profileImageUrl
+    val model = getFullProfileImageUrl(rawImageUrl)
     val avatarBg = getGoogleProfileColor(player.name)
 
     Card(
@@ -414,17 +435,17 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
                     }
                 }
 
-                // Avatar Container (Google account color + light outer shadow, NO green outline)
+                // Avatar Container (Flat circle, no placeholder shadow)
                 Surface(
                     shape = CircleShape,
-                    color = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) Color.Transparent else avatarBg,
-                    shadowElevation = 3.dp,
+                    color = if (model != null) Color.Transparent else avatarBg,
+                    shadowElevation = 0.dp,
                     modifier = Modifier.size(38.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
+                        if (model != null) {
                             coil.compose.AsyncImage(
-                                model = globalProfileImageUri.value,
+                                model = model,
                                 contentDescription = "Profile",
                                 contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                 modifier = Modifier

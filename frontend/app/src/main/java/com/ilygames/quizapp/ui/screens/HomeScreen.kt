@@ -229,16 +229,19 @@ fun HomeScreen(
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
                         val avatarBg = getGoogleProfileColor(customUserNameState.value)
+                        val rawProfileUrl = globalProfileImageUri.value.ifBlank { user?.profileImageUrl }
+                        val avatarModel = getFullProfileImageUrl(rawProfileUrl)
+
                         Surface(
                             shape = CircleShape,
-                            color = if (!globalProfileImageUri.value.isNullOrBlank()) Color.Transparent else avatarBg,
-                            shadowElevation = 5.dp,
+                            color = if (avatarModel != null) Color.Transparent else avatarBg,
+                            shadowElevation = 0.dp,
                             modifier = Modifier.size(48.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                if (!globalProfileImageUri.value.isNullOrBlank()) {
+                                if (avatarModel != null) {
                                     coil.compose.AsyncImage(
-                                        model = globalProfileImageUri.value,
+                                        model = avatarModel,
                                         contentDescription = "Profile Photo",
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize().clip(CircleShape)
