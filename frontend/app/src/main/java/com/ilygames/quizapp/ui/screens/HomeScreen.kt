@@ -211,9 +211,11 @@ fun HomeScreen(
                             }
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
+                        val avatarBg = getGoogleProfileColor(customUserNameState.value)
                         Surface(
                             shape = CircleShape,
-                            color = PrimaryGreen.copy(alpha = 0.15f),
+                            color = if (!globalProfileImageUri.value.isNullOrBlank()) Color.Transparent else avatarBg,
+                            shadowElevation = 5.dp,
                             modifier = Modifier.size(48.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -222,7 +224,7 @@ fun HomeScreen(
                                         model = globalProfileImageUri.value,
                                         contentDescription = "Profile Photo",
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
+                                        modifier = Modifier.fillMaxSize().clip(CircleShape)
                                     )
                                 } else {
                                     val userInitial = (customUserNameState.value.trim().firstOrNull() ?: 'P').uppercaseChar().toString()
@@ -230,7 +232,7 @@ fun HomeScreen(
                                         text = userInitial,
                                         style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
                                         fontWeight = FontWeight.Black,
-                                        color = PrimaryGreen
+                                        color = Color.White
                                     )
                                 }
                             }

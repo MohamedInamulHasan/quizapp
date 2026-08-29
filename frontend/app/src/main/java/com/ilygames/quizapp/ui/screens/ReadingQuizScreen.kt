@@ -47,9 +47,11 @@ fun ReadingQuizScreen(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // Header Bar (Back button on left, Passage Study Title centered)
+            // Header Bar (Back button on left, Passage Study Title centered - exact Leaderboard Header format)
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(
@@ -60,28 +62,31 @@ fun ReadingQuizScreen(
                         .background(MaterialTheme.colorScheme.surface, CircleShape)
                         .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
                 }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .background(PrimaryGreen.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.MenuBook, contentDescription = "Reading", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                    Icon(
+                        imageVector = Icons.Default.MenuBook,
+                        contentDescription = null,
+                        tint = PrimaryGreen,
+                        modifier = Modifier.size(26.dp)
+                    )
                     Text(
                         text = "Passage Study",
-                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
-                        color = PrimaryGreen
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             if (activeUnits.isEmpty()) {
                 Box(

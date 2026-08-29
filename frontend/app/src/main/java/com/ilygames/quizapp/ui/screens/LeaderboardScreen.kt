@@ -29,6 +29,25 @@ import com.ilygames.quizapp.ui.theme.*
 import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import kotlinx.coroutines.delay
 
+// ─── Google Account-Style Curated Profile Background Palette ────────────────
+val googleProfileColors = listOf(
+    Color(0xFF1E88E5), // Google Blue
+    Color(0xFFE53935), // Google Red
+    Color(0xFF43A047), // Google Green
+    Color(0xFFFB8C00), // Google Orange
+    Color(0xFF8E24AA), // Google Purple
+    Color(0xFF00ACC1), // Google Cyan
+    Color(0xFFD81B60), // Google Pink
+    Color(0xFF5E35B1), // Google Deep Purple
+    Color(0xFF00897B)  // Google Teal
+)
+
+fun getGoogleProfileColor(name: String): Color {
+    if (name.isBlank()) return googleProfileColors[0]
+    val hash = Math.abs(name.lowercase().hashCode())
+    return googleProfileColors[hash % googleProfileColors.size]
+}
+
 // ─── Helper: Get 1-2 letter initials from a name ─────────────────────────────
 fun getPlayerInitials(name: String): String {
     val clean = name.trim().replace(Regex("[^a-zA-Z ]"), "")
@@ -255,6 +274,7 @@ fun PodiumColumn(
 
     // Uniform PrimaryGreen gradient for all 3 podium pillars
     val pillarBrush = Brush.verticalGradient(listOf(PrimaryGreen, EmeraldGlow))
+    val avatarBg = getGoogleProfileColor(player.name)
 
     Column(
         modifier = modifier,
@@ -270,29 +290,31 @@ fun PodiumColumn(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Avatar Container (Border outline removed)
-        Box(
-            modifier = Modifier
-                .size(avatarSize)
-                .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape),
-            contentAlignment = Alignment.Center
+        // Avatar Container (Google account style color + light outer drop shadow, NO green outline)
+        Surface(
+            shape = CircleShape,
+            color = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) Color.Transparent else avatarBg,
+            shadowElevation = 6.dp,
+            modifier = Modifier.size(avatarSize)
         ) {
-            if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
-                coil.compose.AsyncImage(
-                    model = globalProfileImageUri.value,
-                    contentDescription = "Profile",
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                )
-            } else {
-                Text(
-                    text = getPlayerInitials(player.name),
-                    fontSize = if (rank == 1) 20.sp else 15.sp,
-                    fontWeight = FontWeight.Black,
-                    color = PrimaryGreen
-                )
+            Box(contentAlignment = Alignment.Center) {
+                if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
+                    coil.compose.AsyncImage(
+                        model = globalProfileImageUri.value,
+                        contentDescription = "Profile",
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Text(
+                        text = getPlayerInitials(player.name),
+                        fontSize = if (rank == 1) 20.sp else 15.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
             }
         }
 
@@ -350,6 +372,7 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     val isMe = if (currentUserId.isNotBlank()) player.id == currentUserId else currentUserName.isNotBlank() && player.name.equals(currentUserName, ignoreCase = true)
     val displayName = if (isMe) "${player.name} (You)" else player.name
     val medalEmoji = when (player.rank) { 1 -> "🥇"; 2 -> "🥈"; 3 -> "🥉"; else -> null }
+    val avatarBg = getGoogleProfileColor(player.name)
 
     Card(
         shape = RoundedCornerShape(18.dp),
@@ -391,29 +414,31 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
                     }
                 }
 
-                // Avatar
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape),
-                    contentAlignment = Alignment.Center
+                // Avatar Container (Google account color + light outer shadow, NO green outline)
+                Surface(
+                    shape = CircleShape,
+                    color = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) Color.Transparent else avatarBg,
+                    shadowElevation = 3.dp,
+                    modifier = Modifier.size(38.dp)
                 ) {
-                    if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
-                        coil.compose.AsyncImage(
-                            model = globalProfileImageUri.value,
-                            contentDescription = "Profile",
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                        )
-                    } else {
-                        Text(
-                            text = getPlayerInitials(player.name),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 12.sp,
-                            color = PrimaryGreen
-                        )
+                    Box(contentAlignment = Alignment.Center) {
+                        if (isMe && !globalProfileImageUri.value.isNullOrBlank()) {
+                            coil.compose.AsyncImage(
+                                model = globalProfileImageUri.value,
+                                contentDescription = "Profile",
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                            )
+                        } else {
+                            Text(
+                                text = getPlayerInitials(player.name),
+                                fontWeight = FontWeight.Black,
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
 
