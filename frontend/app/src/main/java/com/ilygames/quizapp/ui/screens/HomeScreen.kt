@@ -486,23 +486,6 @@ fun HomeScreen(
                 }
             }
 
-            // 2. RESTRUCTURED SCORE & CHANCES CARD (Attractive Hearts & High score : above Latest score :)
-            item {
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
             // 2. RESTRUCTURED SCORE & CHANCES CARD (Centered CHANCES title, matching heart emojis, Latest score above High score)
             item {
                 Card(
