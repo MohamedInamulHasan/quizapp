@@ -1,20 +1,28 @@
 package com.ilygames.quizapp.ui.screens
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.theme.*
@@ -30,127 +38,244 @@ fun ResultsScreen(
     onBackToHome: () -> Unit
 ) {
     val quizState by quizViewModel.quizState.collectAsState()
+    val token = authViewModel.token.value ?: ""
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+            .background(MaterialTheme.colorScheme.background)
     ) {
         if (quizState is QuizState.Complete) {
             val completeState = quizState as QuizState.Complete
-            
+
+            val performanceText = when {
+                completeState.score >= 80 -> "🌟 Outstanding Masterclass!"
+                completeState.score >= 40 -> "👏 Great Effort & Solid Score!"
+                else -> "💪 Good Attempt! Keep Practice Going!"
+            }
+
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(28.dp),
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Trophy/Award Visual
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "Success",
-                    tint = TextGold,
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // ── 1. Hero Animated Trophy & Victory Badge Container ───
+                Card(
+                    shape = RoundedCornerShape(28.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(0.dp),
                     modifier = Modifier
-                        .size(100.dp)
-                        .background(PrimaryGreen.copy(alpha = 0.15f), shape = CircleShape)
-                        .border(1.5.dp, PrimaryGreen.copy(alpha = 0.4f), CircleShape)
-                        .padding(16.dp)
-                )
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.5.dp, Brush.linearGradient(listOf(PrimaryGreen, EmeraldGlow))),
+                            shape = RoundedCornerShape(28.dp)
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        // Glowing Trophy Circle
+                        Box(
+                            modifier = Modifier
+                                .size(96.dp)
+                                .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape)
+                                .border(2.dp, PrimaryGreen.copy(alpha = 0.4f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = "Trophy",
+                                tint = TextGold,
+                                modifier = Modifier.size(52.dp)
+                            )
+                        }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                        // Badge Pill
+                        Surface(
+                            color = PrimaryGreen.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(20.dp),
+                            border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f))
+                        ) {
+                            Text(
+                                text = "🎉 QUIZ COMPLETED",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black,
+                                color = PrimaryGreen,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                                letterSpacing = 1.sp
+                            )
+                        }
 
-                Text(
-                    text = "Quiz Complete!",
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                        Text(
+                            text = "Great Job!",
+                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 28.sp),
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
 
-                Text(
-                    text = "Great job! Here are your stats:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextMuted
-                )
+                        Text(
+                            text = performanceText,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                            color = TextMuted,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Stats Cards Row (Supports Light Mode & Dark Mode)
+                // ── 2. Hero Performance Stats Grid Cards ─────────────
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Score Card
+                    // Final Score Card
                     Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp)),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(0.dp),
-                        shape = RoundedCornerShape(22.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
                     ) {
                         Column(
-                            modifier = Modifier.padding(18.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            modifier = Modifier.padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("Score", color = TextMuted, style = MaterialTheme.typography.labelSmall)
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(Icons.Default.Star, contentDescription = null, tint = TextGold, modifier = Modifier.size(16.dp))
+                                Text(
+                                    text = "TOTAL SCORE",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = TextMuted
+                                )
+                            }
+
                             Text(
                                 text = "${completeState.score}",
-                                color = PrimaryGreen,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black
+                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
+                                fontWeight = FontWeight.Black,
+                                color = PrimaryGreen
+                            )
+
+                            Text(
+                                text = "pts earned",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextMuted
                             )
                         }
                     }
 
                     // Time Taken Card
                     Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp)),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(0.dp),
-                        shape = RoundedCornerShape(22.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
                     ) {
                         Column(
-                            modifier = Modifier.padding(18.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            modifier = Modifier.padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Icon(Icons.Default.Timer, contentDescription = "Time", tint = TextMuted, modifier = Modifier.size(14.dp))
-                                Text("Time", color = TextMuted, style = MaterialTheme.typography.labelSmall)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(Icons.Default.Timer, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Text(
+                                    text = "TIME SPENT",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = TextMuted
+                                )
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
+
                             Text(
                                 text = "${completeState.timeTaken}s",
-                                color = PrimaryGreen,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black
+                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Text(
+                                text = "total duration",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextMuted
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                Button(
-                    onClick = {
-                        SoundManager.playClickSound()
-                        quizViewModel.resetQuiz()
-                        onBackToHome()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                    shape = RoundedCornerShape(50.dp),
-                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
+                // ── 3. Dual Action Navigation Buttons ────────────────
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Return Home", fontWeight = FontWeight.Bold, color = Color.White)
+                    // Play Again / Retry Quiz Button
+                    OutlinedButton(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            quizViewModel.startQuiz(token)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        border = BorderStroke(1.5.dp, PrimaryGreen)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Play Again", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "PLAY ANOTHER QUIZ",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp,
+                            color = PrimaryGreen
+                        )
+                    }
+
+                    // Return Home Button
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            quizViewModel.resetQuiz()
+                            onBackToHome()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        shape = RoundedCornerShape(18.dp),
+                        elevation = ButtonDefaults.buttonElevation(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "RETURN TO HOME",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }

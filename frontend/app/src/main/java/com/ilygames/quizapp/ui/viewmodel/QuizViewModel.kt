@@ -1,11 +1,9 @@
 package com.ilygames.quizapp.ui.viewmodel
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import com.ilygames.quizapp.data.api.ApiClient
 import com.ilygames.quizapp.data.model.*
 import kotlinx.coroutines.Job
@@ -15,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.*
-import okio.ByteString
 
 sealed class QuizState {
     object Idle : QuizState()
@@ -34,6 +31,7 @@ sealed class QuizState {
 class QuizViewModel : ViewModel() {
 
     private val gson = Gson()
+    private var currentToken: String = ""
 
     // Regular Quiz State
     private val _quizState = MutableStateFlow<QuizState>(QuizState.Idle)
@@ -100,11 +98,12 @@ class QuizViewModel : ViewModel() {
     // ==========================================
 
     fun startQuiz(token: String) {
+        if (token.isNotBlank()) currentToken = token
         _quizState.value = QuizState.Loading
         viewModelScope.launch {
             try {
                 val limit = com.ilygames.quizapp.ui.screens.globalQuizQuestionLimit.value
-                val response = ApiClient.apiService.getQuestions(token, limit = limit)
+                val response = ApiClient.apiService.getQuestions(currentToken, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
                     val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }
@@ -128,11 +127,12 @@ class QuizViewModel : ViewModel() {
     }
 
     fun startGkPractice(token: String) {
+        if (token.isNotBlank()) currentToken = token
         _quizState.value = QuizState.Loading
         viewModelScope.launch {
             try {
                 val limit = com.ilygames.quizapp.ui.screens.globalQuizQuestionLimit.value
-                val response = ApiClient.apiService.getQuestions(token, limit = limit)
+                val response = ApiClient.apiService.getQuestions(currentToken, limit = limit)
                 if (response.isSuccessful && response.body() != null) {
                     val allQuestions = response.body()!!
                     val uniqueQuestions = allQuestions.distinctBy { it.id ?: it.question }
@@ -162,8 +162,8 @@ class QuizViewModel : ViewModel() {
                 delay(1000)
                 _timerState.value -= 1
             }
-            // Timer expired, auto submit empty answer
-            submitAnswer(token = "", option = "", isTimeout = true)
+            // Timer expired, auto submit empty answer using stored currentToken
+            submitAnswer(token = currentToken, option = "", isTimeout = true)
         }
     }
 
@@ -172,6 +172,7 @@ class QuizViewModel : ViewModel() {
         if (currentState !is QuizState.Active) return
 
         timerJob?.cancel()
+        if (token.isNotBlank()) currentToken = token
         
         val question = currentState.questions[currentState.currentQuestionIndex]
         val isCorrect = !isTimeout && option == question.correctAnswer
@@ -189,7 +190,7 @@ class QuizViewModel : ViewModel() {
         if (nextIndex >= currentState.questions.size) {
             // Quiz Complete
             val timeTaken = ((System.currentTimeMillis() - currentState.startTime) / 1000).toInt()
-            submitResultsToBackend(token, newScore, timeTaken)
+            submitResultsToBackend(currentToken, newScore, timeTaken)
         } else {
             // Load next question
             _quizState.value = currentState.copy(
@@ -203,20 +204,22 @@ class QuizViewModel : ViewModel() {
     private fun submitResultsToBackend(token: String, score: Int, timeTaken: Int) {
         _quizState.value = QuizState.Loading
         viewModelScope.launch {
+            val activeToken = if (token.isNotBlank()) token else currentToken
             try {
-                val response = ApiClient.apiService.submitQuiz(token, QuizSubmissionRequest(score, timeTaken))
-                if (response.isSuccessful && response.body() != null) {
-                    val res = response.body()!!
-                    _quizState.value = QuizState.Complete(
-                        score = score,
-                        timeTaken = timeTaken,
-                        coinsEarned = res.coinsEarned
-                    )
-                } else {
-                    _quizState.value = QuizState.Error("Failed to record score.")
-                }
+                val response = if (activeToken.isNotBlank()) ApiClient.apiService.submitQuiz(activeToken, QuizSubmissionRequest(score, timeTaken)) else null
+                val coins = if (response?.isSuccessful == true && response.body() != null) response.body()!!.coinsEarned else 0
+                _quizState.value = QuizState.Complete(
+                    score = score,
+                    timeTaken = timeTaken,
+                    coinsEarned = coins
+                )
             } catch (e: Exception) {
-                _quizState.value = QuizState.Error(e.localizedMessage ?: "Unknown error")
+                // Ensure state always transitions to Complete even if network is offline
+                _quizState.value = QuizState.Complete(
+                    score = score,
+                    timeTaken = timeTaken,
+                    coinsEarned = 0
+                )
             }
         }
     }
@@ -229,17 +232,11 @@ class QuizViewModel : ViewModel() {
     // REAL-TIME PUSH SOCKET (always-on)
     // ==========================================
 
-    /**
-     * Connect a lightweight always-on WebSocket that listens for
-     * 'score-updated' pushes from the server and instantly reloads
-     * the leaderboard + notifies the auth layer to refresh the user.
-     */
     fun connectRealtime(token: String, isDaily: Boolean = true) {
-        if (realtimeSocket != null) return // already connected
+        if (realtimeSocket != null) return
         val request = Request.Builder().url(com.ilygames.quizapp.data.api.ApiClient.WS_URL).build()
         realtimeSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                // Authenticate so server knows who we are
                 webSocket.send(gson.toJson(com.google.gson.JsonObject().apply {
                     addProperty("type", "auth")
                     addProperty("token", token)
@@ -250,9 +247,7 @@ class QuizViewModel : ViewModel() {
                     try {
                         val json = gson.fromJson(text, com.google.gson.JsonObject::class.java)
                         if (json.get("type")?.asString == "score-updated") {
-                            // Someone scored — reload leaderboard instantly
                             loadLeaderboard(token, isDaily)
-                            // Notify auth layer to refresh current user
                             onScoreUpdated?.invoke()
                         }
                     } catch (_: Exception) {}
@@ -260,7 +255,6 @@ class QuizViewModel : ViewModel() {
             }
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 realtimeSocket = null
-                // Reconnect after 5s on failure
                 viewModelScope.launch {
                     kotlinx.coroutines.delay(5000)
                     connectRealtime(token, isDaily)
@@ -316,7 +310,6 @@ class QuizViewModel : ViewModel() {
     // ==========================================
 
     fun joinLiveQuiz(token: String) {
-        // ws address connects to the node server (standard loopback)
         val request = Request.Builder()
             .url("ws://127.0.0.1:3000")
             .build()
@@ -329,7 +322,6 @@ class QuizViewModel : ViewModel() {
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 addLog("Connected to WebSocket Server.")
-                // Authenticate
                 val authMsg = JsonObject().apply {
                     addProperty("type", "auth")
                     addProperty("token", token)
@@ -346,7 +338,6 @@ class QuizViewModel : ViewModel() {
                         when (type) {
                             "auth-success" -> {
                                 addLog("Authenticated as ${json.get("name").asString}.")
-                                // Join Quiz
                                 val joinMsg = JsonObject().apply {
                                     addProperty("type", "join-live-quiz")
                                 }
@@ -390,7 +381,7 @@ class QuizViewModel : ViewModel() {
                                     optionB = qJson.get("optionB").asString,
                                     optionC = qJson.get("optionC").asString,
                                     optionD = qJson.get("optionD").asString,
-                                    correctAnswer = "", // Correct answer hidden during trivia
+                                    correctAnswer = "",
                                     category = qJson.get("category").asString,
                                     difficulty = qJson.get("difficulty").asString
                                 )
@@ -446,7 +437,7 @@ class QuizViewModel : ViewModel() {
 
     fun submitLiveAnswer(answer: String) {
         val ws = webSocket ?: return
-        if (_liveQuizSelectedAnswer.value != null) return // Already answered
+        if (_liveQuizSelectedAnswer.value != null) return
         
         _liveQuizSelectedAnswer.value = answer
 
