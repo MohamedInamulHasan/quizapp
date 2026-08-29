@@ -354,7 +354,13 @@ router.put('/profile', auth, async (req, res) => {
       }
       user.name = name.trim();
     }
-    if (profileImageUrl !== undefined) user.profileImageUrl = profileImageUrl;
+    if (profileImageUrl !== undefined) {
+      if (!profileImageUrl || profileImageUrl.includes('undefined') || profileImageUrl.includes('null')) {
+        user.profileImageUrl = null;
+      } else {
+        user.profileImageUrl = profileImageUrl.trim();
+      }
+    }
 
     await user.save();
     res.json(sanitizeUser(user));

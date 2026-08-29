@@ -53,7 +53,7 @@ fun getGoogleProfileColor(name: String): Color {
 
 // ─── Robust Profile Image URL Resolver ───────────────────────────────────────
 fun getFullProfileImageUrl(rawUrl: String?): Any? {
-    if (rawUrl.isNullOrBlank()) return null
+    if (rawUrl.isNullOrBlank() || rawUrl.contains("undefined") || rawUrl.contains("null")) return null
     val trimmed = rawUrl.trim()
     return when {
         trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:image/") -> trimmed

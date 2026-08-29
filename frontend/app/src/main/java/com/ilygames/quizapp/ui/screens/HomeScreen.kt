@@ -141,7 +141,7 @@ fun HomeScreen(
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
                         val cloudUrl = response.body()?.imageUrl ?: response.body()?.url
-                        if (response.isSuccessful && !cloudUrl.isNullOrBlank()) {
+                        if (response.isSuccessful && !cloudUrl.isNullOrBlank() && !cloudUrl.contains("undefined") && !cloudUrl.contains("null")) {
                             val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
 
