@@ -36,7 +36,7 @@ const uploadToCloudinary = async (fileBuffer, mimeType = 'image/jpeg', folder = 
     // Call standard Cloudinary SDK uploader
     const result = await cloudinary.uploader.upload(tempFilePath, {
       folder: folder,
-      resource_type: 'auto'
+      resource_type: 'image'
     });
 
     // Delete temporary file after upload
