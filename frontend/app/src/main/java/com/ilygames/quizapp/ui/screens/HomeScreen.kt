@@ -109,20 +109,12 @@ fun HomeScreen(
         }
     }
 
-    // Profile Photo Picker Launcher — uploads to Cloudinary server and saves URL in MongoDB
+    // Profile Photo Picker Launcher — uploads strictly to Cloudinary and saves URL in MongoDB
     val profileImagePicker = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         uri?.let { selectedUri ->
-            // 1. Save local copy immediately & update UI so picture appears INSTANTLY
-            val localPath = com.ilygames.quizapp.utils.ImageStorageHelper.saveUriToInternalStorage(context, selectedUri, "profile") ?: selectedUri.toString()
-            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-            prefs.edit().putString("saved_profile_img_url", localPath).apply()
-            authViewModel.updateProfileState(profileImageUrl = localPath)
-            globalProfileImageUri.value = localPath
-            Toast.makeText(context, "📸 Profile photo saved!", Toast.LENGTH_SHORT).show()
-
-            // 2. Upload to Cloudinary & update MongoDB backend in background
+            Toast.makeText(context, "☁️ Uploading photo to Cloudinary...", Toast.LENGTH_SHORT).show()
             kotlinx.coroutines.MainScope().launch {
                 try {
                     val token = authViewModel.token.value
@@ -138,6 +130,7 @@ fun HomeScreen(
                     }
                     val bytes = stream?.readBytes()
                     stream?.close()
+
                     if (bytes != null && token.isNotBlank()) {
                         val mediaType = mimeType.toMediaTypeOrNull()
                         val requestBody = bytes.toRequestBody(mediaType)
@@ -149,17 +142,23 @@ fun HomeScreen(
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
                         val cloudUrl = response.body()?.imageUrl ?: response.body()?.url
                         if (response.isSuccessful && !cloudUrl.isNullOrBlank()) {
+                            val prefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
                             prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
+
                             com.ilygames.quizapp.data.api.ApiClient.apiService.updateProfile(
                                 token,
                                 com.ilygames.quizapp.data.model.UpdateProfileRequest(profileImageUrl = cloudUrl)
                             )
                             authViewModel.updateProfileState(profileImageUrl = cloudUrl)
                             globalProfileImageUri.value = cloudUrl
+                            Toast.makeText(context, "📸 Profile saved to Cloudinary!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "❌ Upload failed: ${response.code()}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    println("[CLOUDINARY_UPLOAD_ERROR] Exception: ${e.localizedMessage}")
+                    Toast.makeText(context, "Upload error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
