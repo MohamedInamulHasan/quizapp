@@ -31,6 +31,7 @@ data class DailyWinnerResponse(
 )
 
 data class ImageUploadResponse(
-    val imageUrl: String,
-    val filename: String
+    val imageUrl: String?,
+    val url: String?,
+    val filename: String?
 )

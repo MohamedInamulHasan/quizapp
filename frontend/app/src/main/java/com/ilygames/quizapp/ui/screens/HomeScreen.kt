@@ -147,8 +147,8 @@ fun HomeScreen(
                             requestBody
                         )
                         val response = com.ilygames.quizapp.data.api.ApiClient.apiService.uploadImage(token, part)
-                        if (response.isSuccessful && response.body()?.imageUrl != null) {
-                            val cloudUrl = response.body()!!.imageUrl
+                        val cloudUrl = response.body()?.imageUrl ?: response.body()?.url
+                        if (response.isSuccessful && !cloudUrl.isNullOrBlank()) {
                             prefs.edit().putString("saved_profile_img_url", cloudUrl).apply()
                             com.ilygames.quizapp.data.api.ApiClient.apiService.updateProfile(
                                 token,
