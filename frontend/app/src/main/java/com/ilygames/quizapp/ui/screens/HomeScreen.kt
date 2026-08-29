@@ -178,8 +178,8 @@ fun HomeScreen(
         }
     }
 
-    // 2 Daily Quiz Plays Attempts State
-    var dailyAttemptsLeft by remember { mutableStateOf(2) }
+    // 3 Daily Quiz Plays Attempts State (3 Hearts Max)
+    var dailyAttemptsLeft by remember { mutableStateOf(3) }
 
     // Refresh profile every time the screen is entered or user changes
     LaunchedEffect(Unit) {
@@ -485,7 +485,7 @@ fun HomeScreen(
                 }
             }
 
-            // 2. RESTORED ORIGINAL CLEAN SURFACE SCORE CARD (Showing Today's Score & High Score Side-by-Side)
+            // 2. RESTRUCTURED SCORE & CHANCES CARD (Left: 3 Hearts & Watch Ad, Right: High Score Above Latest Score)
             item {
                 Card(
                     shape = RoundedCornerShape(24.dp),
@@ -502,48 +502,128 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Left: Today's Score
-                        Column {
+                        // LEFT SIDE: CHANCES (3 HEARTS SYMBOLS & WATCH AD REGAIN)
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
                             Text(
-                                text = "LATEST SCORE",
+                                text = "CHANCES",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextMuted,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${user?.todayScore ?: 0} pts",
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+
+                            // 3 Heart Symbols (Red filled for active, Gray outline for broken)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                for (i in 0 until 3) {
+                                    if (i < dailyAttemptsLeft) {
+                                        Icon(
+                                            imageVector = Icons.Default.Favorite,
+                                            contentDescription = "Active Heart",
+                                            tint = Color(0xFFE53935),
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.FavoriteBorder,
+                                            contentDescription = "Broken Heart",
+                                            tint = MaterialTheme.colorScheme.surfaceVariant,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Watch Ad button to regain 1 broken heart (Max 3 hearts in game)
+                            if (dailyAttemptsLeft < 3) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            SoundManager.playClickSound()
+                                            dailyAttemptsLeft = minOf(3, dailyAttemptsLeft + 1)
+                                            Toast.makeText(context, "🎬 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                        }
+                                        .padding(top = 2.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayCircle,
+                                        contentDescription = "Watch Ad",
+                                        tint = PrimaryGreen,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "+ Watch Ad (+1 ❤️)",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = PrimaryGreen
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = "3/3 Max Hearts",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextMuted
+                                )
+                            }
                         }
 
-                        // Divider Line
+                        // DIVIDER LINE
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
-                                .height(40.dp)
+                                .height(56.dp)
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                         )
 
-                        // Right: Total High Score
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "HIGH SCORE",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = PrimaryGreen,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${user?.highScore ?: 0} pts",
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
-                                fontWeight = FontWeight.Black,
-                                color = PrimaryGreen
-                            )
+                        // RIGHT SIDE: HIGH SCORE ABOVE LATEST SCORE
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            // High Score (Larger, Prominent PrimaryGreen)
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "HIGH SCORE",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = PrimaryGreen,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp
+                                )
+                                Text(
+                                    text = "${user?.highScore ?: 0} pts",
+                                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen
+                                )
+                            }
+
+                            // Latest Score (Below High Score)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "Latest Score:",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextMuted
+                                )
+                                Text(
+                                    text = "${user?.todayScore ?: 0} pts",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 }
