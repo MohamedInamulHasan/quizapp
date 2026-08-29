@@ -1,11 +1,22 @@
-const crypto = require('crypto');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const cloudinary = require('cloudinary').v2;
 
 const CLOUD_NAME = 'bp7vmiht';
 const API_KEY    = '414693825442831';
 const API_SECRET = 'I4-LQriPGUwZREr2wl6DChZqGPs';
 
+// Configure Cloudinary SDK with user's credentials
+cloudinary.config({
+  cloud_name: CLOUD_NAME,
+  api_key: API_KEY,
+  api_secret: API_SECRET,
+  secure: true
+});
+
 /**
- * Direct HTTPS Multipart REST API Upload helper to Cloudinary CDN using native FormData and Blob
+ * Standard Cloudinary SDK Upload helper using temporary file path
  * @param {Buffer} fileBuffer - Image file buffer from Multer memory storage
  * @param {String} mimeType - Image mime type
  * @param {String} folder - Cloudinary folder name
@@ -16,41 +27,37 @@ const uploadToCloudinary = async (fileBuffer, mimeType = 'image/jpeg', folder = 
     throw new Error('No image buffer received by server');
   }
 
+  const tempFilePath = path.join(os.tmpdir(), `upload_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`);
+
   try {
-    const timestamp = Math.floor(Date.now() / 1000);
-    // Cloudinary signature requires alphabetically sorted parameters (folder & timestamp)
-    const strToSign = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
-    const signature = crypto.createHash('sha1').update(strToSign).digest('hex');
+    // Save image buffer to OS temporary folder
+    fs.writeFileSync(tempFilePath, fileBuffer);
 
-    const formData = new FormData();
-    const blob = new Blob([fileBuffer], { type: mimeType });
-    formData.append('file', blob, 'profile.jpg');
-    formData.append('api_key', API_KEY);
-    formData.append('timestamp', timestamp.toString());
-    formData.append('signature', signature);
-    formData.append('folder', folder);
-
-    console.log(`[CLOUDINARY_DEBUG] Direct multipart upload to Cloudinary cloud "${CLOUD_NAME}"...`);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-      method: 'POST',
-      body: formData
+    // Call standard Cloudinary SDK uploader
+    const result = await cloudinary.uploader.upload(tempFilePath, {
+      folder: folder,
+      resource_type: 'auto'
     });
 
-    const data = await response.json();
+    // Delete temporary file after upload
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
 
-    if (response.ok && data.secure_url) {
-      console.log('✅ Cloudinary Direct Multipart Upload Success! URL:', data.secure_url);
-      return data.secure_url;
+    if (result && result.secure_url) {
+      console.log('✅ Cloudinary Standard SDK Upload Success! URL:', result.secure_url);
+      return result.secure_url;
     } else {
-      const errMsg = data.error ? data.error.message : (data.message || JSON.stringify(data));
-      console.error('❌ Cloudinary REST API Error:', errMsg);
-      throw new Error(`Cloudinary Error: ${errMsg}`);
+      throw new Error('No secure_url returned from Cloudinary SDK');
     }
   } catch (err) {
-    console.error('❌ Cloudinary Exception:', err.message);
-    throw err;
+    // Ensure temp file is cleaned up on error
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+    console.error('❌ Cloudinary SDK Error:', err.message);
+    throw new Error(`Cloudinary Error: ${err.message}`);
   }
 };
 
-module.exports = { uploadToCloudinary };
+module.exports = { cloudinary, uploadToCloudinary };
