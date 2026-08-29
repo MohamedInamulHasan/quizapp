@@ -231,7 +231,7 @@ fun HomeScreen(
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
                         val avatarBg = getGoogleProfileColor(customUserNameState.value)
-                        val rawProfileUrl = globalProfileImageUri.value.ifBlank { user?.profileImageUrl }
+                        val rawProfileUrl = globalProfileImageUri.value?.ifBlank { user?.profileImageUrl } ?: user?.profileImageUrl
                         val avatarModel = getFullProfileImageUrl(rawProfileUrl)
 
                         Surface(
