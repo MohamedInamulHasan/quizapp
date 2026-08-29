@@ -1633,38 +1633,16 @@ fun NativeAdminScreen(
                             value = questionText,
                             onValueChange = { questionText = it },
                             label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        OutlinedTextField(
-                            value = questionText,
-                            onValueChange = { questionText = it },
-                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         )
 
                         // DYNAMIC OPTIONS HEADER
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Options (Minimum 2 Required)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
-                            TextButton(
-                                onClick = { dynamicOptions.add("") }
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add Option", tint = PrimaryGreen, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
-                        }
+                        Text("Options (Minimum 2 Required)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp)
 
-                        // DYNAMIC OPTION FIELDS WITH TRASH DELETE BUTTON
+                        // DYNAMIC OPTION FIELDS WITH TRASH DELETE BUTTON (Only for Option C and above)
                         dynamicOptions.forEachIndexed { idx, optVal ->
                             val letterLabel = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
                             Row(
@@ -1675,26 +1653,41 @@ fun NativeAdminScreen(
                                 OutlinedTextField(
                                     value = optVal,
                                     onValueChange = { newValue -> dynamicOptions[idx] = newValue },
-                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
                                     colors = defaultAdminTextFieldColors(),
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp)
+                                    shape = RoundedCornerShape(10.dp)
                                 )
-                                if (dynamicOptions.size > 2) {
+                                if (dynamicOptions.size > 2 && idx >= 2) {
                                     IconButton(
                                         onClick = { dynamicOptions.removeAt(idx) },
                                         modifier = Modifier
-                                            .size(40.dp)
+                                            .size(32.dp)
                                             .background(IncorrectRed.copy(alpha = 0.15f), CircleShape)
                                     ) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Delete Option", tint = IncorrectRed, modifier = Modifier.size(18.dp))
+                                        Icon(Icons.Default.Delete, contentDescription = "Delete Option", tint = IncorrectRed, modifier = Modifier.size(15.dp))
                                     }
                                 }
                             }
                         }
 
-                        Text("Correct Answer Option:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        // VERY SMALL ADD OPTION BUTTON BELOW LAST OPTION
+                        OutlinedButton(
+                            onClick = { dynamicOptions.add("") },
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, PrimaryGreen),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .height(30.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Option", tint = PrimaryGreen, modifier = Modifier.size(13.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+
+                        Text("Correct Answer Option:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -1704,7 +1697,7 @@ fun NativeAdminScreen(
                                 FilterChip(
                                     selected = correctAnswer == letter,
                                     onClick = { correctAnswer = letter },
-                                    label = { Text("Opt $letter", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1) },
+                                    label = { Text(letter, fontWeight = FontWeight.Black, fontSize = 13.sp) },
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = PrimaryGreen.copy(alpha = 0.2f),
                                         selectedLabelColor = PrimaryGreen
