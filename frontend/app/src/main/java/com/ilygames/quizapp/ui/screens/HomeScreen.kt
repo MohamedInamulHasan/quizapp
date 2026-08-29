@@ -544,16 +544,17 @@ fun HomeScreen(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // Latest Score : 0 pts (Top Line - Aligned with CHANCES label)
+                            // LATEST SCORE : 0 pts (Top Line - Aligned with CHANCES label)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = "Latest Score :",
+                                    text = "LATEST SCORE :",
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextMuted
+                                    fontWeight = FontWeight.Black,
+                                    color = TextMuted,
+                                    letterSpacing = 0.5.sp
                                 )
                                 Text(
                                     text = "${user?.todayScore ?: 0} pts",
@@ -563,16 +564,17 @@ fun HomeScreen(
                                 )
                             }
 
-                            // High Score : 380 pts (Bottom Line - Bigger font, aligned with Hearts)
+                            // HIGH SCORE : 380 pts (Bottom Line - Bigger font, aligned with Hearts)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = "High Score :",
+                                    text = "HIGH SCORE :",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = PrimaryGreen
+                                    color = PrimaryGreen,
+                                    letterSpacing = 0.5.sp
                                 )
                                 Text(
                                     text = "${user?.highScore ?: 0} pts",

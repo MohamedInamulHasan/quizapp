@@ -1451,12 +1451,12 @@ fun NativeAdminScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    Text("Delete Permanently", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("Confirm", color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             },
                             dismissButton = {
                                 TextButton(onClick = { userToDelete = null }) {
-                                    Text("Cancel", color = TextMuted)
+                                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                                 }
                             }
                         )
