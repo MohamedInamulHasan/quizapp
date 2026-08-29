@@ -39,6 +39,33 @@ const adminAuth = (req, res, next) => {
 };
 
 
+// Active daily reward state (synced for all app users)
+let activeDailyReward = {
+  title: "",
+  description: "",
+  imageUrl: null
+};
+
+// @route   POST api/admin/reward
+// @desc    Publish / Update global daily reward prize
+// @access  Private (Admin)
+router.post('/reward', [auth, adminAuth], (req, res) => {
+  const { title, description, imageUrl } = req.body;
+  activeDailyReward = {
+    title: title || "",
+    description: description || "",
+    imageUrl: imageUrl || null
+  };
+  res.json({ success: true, reward: activeDailyReward });
+});
+
+// @route   GET api/admin/reward
+// @desc    Get active daily reward prize for all users
+// @access  Public / Private
+router.get('/reward', (req, res) => {
+  res.json(activeDailyReward);
+});
+
 // @route    GET api/admin/stats
 // @desc     Get system stats
 // @access   Private (Admin)

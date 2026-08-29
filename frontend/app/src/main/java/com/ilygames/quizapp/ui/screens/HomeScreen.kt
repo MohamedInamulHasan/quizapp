@@ -87,8 +87,24 @@ fun HomeScreen(
     var isUpdatingName by remember { mutableStateOf(false) }
 
     var customUserNameState = remember { mutableStateOf(user?.name ?: "Player") }
-    var tempNameInput by remember { mutableStateOf("") }
     val context = LocalContext.current
+
+    // Sync active daily reward from backend for all users on startup
+    LaunchedEffect(Unit) {
+        try {
+            val resp = com.ilygames.quizapp.data.api.ApiClient.apiService.getReward()
+            if (resp.isSuccessful && resp.body() != null) {
+                val reward = resp.body()!!
+                if (!reward.title.isNullOrBlank()) {
+                    globalRewardTitle.value = reward.title
+                    globalRewardDescription.value = reward.description
+                    globalRewardImageUrl.value = reward.imageUrl
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     // Profile Photo Picker Launcher — uploads to server and saves URL in MongoDB
     val profileImagePicker = androidx.activity.compose.rememberLauncherForActivityResult(

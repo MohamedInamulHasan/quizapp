@@ -109,6 +109,23 @@ fun loadPersistedAdminData(context: Context) {
         globalRewardDescription.value = savedDesc
     }
 
+    // Sync active daily reward from backend for all users
+    kotlinx.coroutines.MainScope().launch {
+        try {
+            val resp = com.ilygames.quizapp.data.api.ApiClient.apiService.getReward()
+            if (resp.isSuccessful && resp.body() != null) {
+                val reward = resp.body()!!
+                if (!reward.title.isNullOrBlank()) {
+                    globalRewardTitle.value = reward.title
+                    globalRewardDescription.value = reward.description
+                    globalRewardImageUrl.value = reward.imageUrl
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     isDataLoadedFromPrefs = true
 }
 
@@ -128,7 +145,7 @@ fun savePassagesToPrefs(context: Context) {
     prefs.edit().putString("saved_passages_key", json).apply()
 }
 
-fun saveRewardToPrefs(context: Context, title: String, desc: String, imgUrl: String? = globalRewardImageUrl.value) {
+fun saveRewardToPrefs(context: Context, title: String, desc: String, imgUrl: String? = globalRewardImageUrl.value, token: String = "") {
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
     prefs.edit()
         .putString("saved_reward_title_key", title)
@@ -138,6 +155,19 @@ fun saveRewardToPrefs(context: Context, title: String, desc: String, imgUrl: Str
     globalRewardTitle.value = title
     globalRewardDescription.value = desc
     globalRewardImageUrl.value = imgUrl
+
+    if (token.isNotBlank()) {
+        kotlinx.coroutines.MainScope().launch {
+            try {
+                com.ilygames.quizapp.data.api.ApiClient.apiService.publishReward(
+                    token,
+                    com.ilygames.quizapp.data.api.RewardSyncRequest(title, desc, imgUrl)
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }
 
 // Professional Reusable Image Dropzone Placeholder
@@ -1027,7 +1057,7 @@ fun NativeAdminScreen(
                                                 globalRewardTitle.value = ""
                                                 globalRewardDescription.value = ""
                                                 globalRewardImageUrl.value = null
-                                                saveRewardToPrefs(context, "", "", null)
+                                                saveRewardToPrefs(context, "", "", null, token ?: "")
                                                 isEditingReward = false
                                                 Toast.makeText(context, "🗑️ Reward Prize Deleted!", Toast.LENGTH_SHORT).show()
                                             },
@@ -1179,7 +1209,7 @@ fun NativeAdminScreen(
                                             globalRewardTitle.value = inputRewardTitle
                                             globalRewardDescription.value = inputRewardDesc
                                             globalRewardImageUrl.value = inputRewardImgUrl.ifBlank { null }
-                                            saveRewardToPrefs(context, inputRewardTitle, inputRewardDesc, globalRewardImageUrl.value)
+                                            saveRewardToPrefs(context, inputRewardTitle, inputRewardDesc, globalRewardImageUrl.value, token ?: "")
                                             isEditingReward = false
                                             Toast.makeText(context, "🏆 Today's Reward Prize Published!", Toast.LENGTH_SHORT).show()
                                         } else {

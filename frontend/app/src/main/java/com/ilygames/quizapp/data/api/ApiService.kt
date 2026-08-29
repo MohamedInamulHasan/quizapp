@@ -131,4 +131,16 @@ interface ApiService {
         @Header("x-auth-token") token: String,
         @Part image: MultipartBody.Part
     ): Response<ImageUploadResponse>
+
+    @POST("admin/reward")
+    suspend fun publishReward(
+        @Header("x-auth-token") token: String,
+        @Body reward: RewardSyncRequest
+    ): Response<Unit>
+
+    @GET("admin/reward")
+    suspend fun getReward(): Response<RewardSyncResponse>
 }
+
+data class RewardSyncRequest(val title: String, val description: String, val imageUrl: String?)
+data class RewardSyncResponse(val title: String, val description: String, val imageUrl: String?)
