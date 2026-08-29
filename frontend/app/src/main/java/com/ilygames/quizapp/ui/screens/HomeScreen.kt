@@ -506,7 +506,7 @@ fun HomeScreen(
                         // LEFT SIDE: CHANCES (CENTERED TITLE OVER MATCHING ❤️ & 💔 EMOJIS)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
                                 text = "CHANCES",
@@ -535,48 +535,48 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
-                                .height(54.dp)
+                                .height(56.dp)
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                         )
 
-                        // RIGHT SIDE: LATEST SCORE ABOVE HIGH SCORE
+                        // RIGHT SIDE: LATEST SCORE (ALIGNED WITH CHANCES LINE) & HIGH SCORE (BIGGER, ALIGNED WITH HEARTS LINE)
                         Column(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // Latest Score : 0 pts (Top)
+                            // Latest Score : 0 pts (Top Line - Aligned with CHANCES label)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
                                     text = "Latest Score :",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = TextMuted
                                 )
                                 Text(
                                     text = "${user?.todayScore ?: 0} pts",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
 
-                            // High Score : 199 pts (Bottom)
+                            // High Score : 380 pts (Bottom Line - Bigger font, aligned with Hearts)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
                                     text = "High Score :",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PrimaryGreen
                                 )
                                 Text(
                                     text = "${user?.highScore ?: 0} pts",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
+                                    fontSize = 18.sp,
                                     fontWeight = FontWeight.Black,
                                     color = PrimaryGreen
                                 )
@@ -651,7 +651,7 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = if (dailyAttemptsLeft > 0) "START QUIZ NOW" else "WATCH AD TO GET CHANCE (+1 ❤️)",
+                                        text = if (dailyAttemptsLeft > 0) "START QUIZ NOW" else "WATCH AD",
                                         style = MaterialTheme.typography.titleSmall.copy(fontSize = 13.sp),
                                         fontWeight = FontWeight.Black,
                                         color = if (dailyAttemptsLeft > 0) DarkGreen else PrimaryGreen

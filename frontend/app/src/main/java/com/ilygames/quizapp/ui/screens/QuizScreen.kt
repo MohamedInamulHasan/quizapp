@@ -487,6 +487,7 @@ fun CleanHighlightOptionRow(
         elevation = CardDefaults.cardElevation(0.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .border(1.5.dp, borderColor, RoundedCornerShape(20.dp))
             .clickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                 indication = null,

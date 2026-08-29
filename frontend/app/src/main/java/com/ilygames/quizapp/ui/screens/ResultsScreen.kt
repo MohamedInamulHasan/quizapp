@@ -228,9 +228,9 @@ fun ResultsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (currentHearts > 0) "Play Again" else "Watch Ad (+1 ❤️)",
+                                    text = if (currentHearts > 0) "Play Again" else "Watch Ad",
                                     fontWeight = FontWeight.Black,
-                                    fontSize = 12.sp,
+                                    fontSize = 13.sp,
                                     color = PrimaryGreen
                                 )
                             }
