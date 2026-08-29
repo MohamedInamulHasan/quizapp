@@ -173,7 +173,7 @@ fun LoginScreen(
                             )
                         }
                     },
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = inputTextStyle,

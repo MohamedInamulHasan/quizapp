@@ -211,7 +211,7 @@ fun RegisterScreen(
                             )
                         }
                     },
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                     isError = showPasswordError,
                     supportingText = if (showPasswordError) {
                         { Text("Password must be at least 6 characters", color = IncorrectRed, fontSize = 12.sp) }
@@ -246,7 +246,7 @@ fun RegisterScreen(
                     },
                     label = { Text("Confirm Password", color = labelColor, fontWeight = FontWeight.SemiBold) },
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = PrimaryGreen) },
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else SoftPasswordTransformation(),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                     isError = showConfirmError,
                     supportingText = if (showConfirmError) {
                         { Text("Passwords do not match", color = IncorrectRed, fontSize = 12.sp) }
