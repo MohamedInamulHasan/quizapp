@@ -996,8 +996,8 @@ fun HomeScreen(
                         OutlinedTextField(
                             value = tempNameInput,
                             onValueChange = { input ->
-                                // Block spaces and special chars — only letters, digits, _ and . (max 12 chars)
-                                val filtered = input.filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(12)
+                                // Block spaces and special chars — only letters, digits, _ and . (max 10 chars)
+                                val filtered = input.filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(10)
                                 tempNameInput = filtered
                                 editNameError = ""
                             },

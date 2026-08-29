@@ -131,10 +131,12 @@ fun RegisterScreen(
                 // Field 1: Username
                 OutlinedTextField(
                     value = usernameInput,
-                    onValueChange = {
-                        usernameInput = it
-                        validationError = null
-                        if (authState is AuthState.Error) authViewModel.resetAuthState()
+                    onValueChange = { input ->
+                        if (input.length <= 10) {
+                            usernameInput = input
+                            validationError = null
+                            if (authState is AuthState.Error) authViewModel.resetAuthState()
+                        }
                     },
                     label = { Text("Username", color = TextMuted) },
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = PrimaryGreen) },
