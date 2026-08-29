@@ -114,7 +114,7 @@ fun HomeScreen(
         contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         uri?.let { selectedUri ->
-            Toast.makeText(context, "☁️ Uploading photo to Cloudinary...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Saving profile photo...", Toast.LENGTH_SHORT).show()
             kotlinx.coroutines.MainScope().launch {
                 try {
                     val token = authViewModel.token.value

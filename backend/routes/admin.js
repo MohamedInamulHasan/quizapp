@@ -14,11 +14,7 @@ const { uploadToCloudinary } = require('../config/cloudinary');
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|webp/;
-    cb(null, allowed.test(file.mimetype) || allowed.test(file.originalname.toLowerCase()));
-  }
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB max
 });
 
 

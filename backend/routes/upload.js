@@ -8,15 +8,7 @@ const { uploadToCloudinary } = require('../config/cloudinary');
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|webp/;
-    if (allowed.test(file.mimetype) || allowed.test(file.originalname.toLowerCase())) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files (JPEG, PNG, GIF, WEBP) are allowed'));
-    }
-  }
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB max
 });
 
 // @route   POST api/upload
