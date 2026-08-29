@@ -5,7 +5,7 @@ const API_KEY    = '414693825442831';
 const API_SECRET = 'I4-LQriPGUwZREr2wl6DChZqGPs';
 
 /**
- * Direct HTTPS REST API Upload helper to Cloudinary CDN
+ * Direct HTTPS Multipart REST API Upload helper to Cloudinary CDN using native FormData and Blob
  * @param {Buffer} fileBuffer - Image file buffer from Multer memory storage
  * @param {String} mimeType - Image mime type
  * @param {String} folder - Cloudinary folder name
@@ -18,32 +18,29 @@ const uploadToCloudinary = async (fileBuffer, mimeType = 'image/jpeg', folder = 
 
   try {
     const timestamp = Math.floor(Date.now() / 1000);
-    // Cloudinary signature requires alphabetically sorted parameters
+    // Cloudinary signature requires alphabetically sorted parameters (folder & timestamp)
     const strToSign = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
     const signature = crypto.createHash('sha1').update(strToSign).digest('hex');
 
-    const params = new URLSearchParams();
-    const base64 = fileBuffer.toString('base64');
-    params.append('file', `data:${mimeType};base64,${base64}`);
-    params.append('api_key', API_KEY);
-    params.append('timestamp', timestamp.toString());
-    params.append('signature', signature);
-    params.append('folder', folder);
+    const formData = new FormData();
+    const blob = new Blob([fileBuffer], { type: mimeType });
+    formData.append('file', blob, 'profile.jpg');
+    formData.append('api_key', API_KEY);
+    formData.append('timestamp', timestamp.toString());
+    formData.append('signature', signature);
+    formData.append('folder', folder);
 
-    console.log(`[CLOUDINARY_DEBUG] Uploading to Cloudinary cloud "${CLOUD_NAME}"...`);
+    console.log(`[CLOUDINARY_DEBUG] Direct multipart upload to Cloudinary cloud "${CLOUD_NAME}"...`);
 
     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params.toString()
+      body: formData
     });
 
     const data = await response.json();
 
     if (response.ok && data.secure_url) {
-      console.log('✅ Cloudinary Direct REST Upload Success! URL:', data.secure_url);
+      console.log('✅ Cloudinary Direct Multipart Upload Success! URL:', data.secure_url);
       return data.secure_url;
     } else {
       const errMsg = data.error ? data.error.message : (data.message || JSON.stringify(data));
