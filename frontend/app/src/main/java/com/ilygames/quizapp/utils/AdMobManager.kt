@@ -13,8 +13,11 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 object AdMobManager {
 
-    // LIVE ADMOB REWARDED AD UNIT ID
-    const val REWARDED_AD_UNIT_ID = "ca-app-pub-9896007608885239/8625133425"
+    // GOOGLE OFFICIAL TEST AD UNIT ID (Guaranteed to load instantly for testing!)
+    const val REWARDED_TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+
+    // YOUR LIVE ADMOB REWARDED AD UNIT ID
+    const val REWARDED_LIVE_AD_UNIT_ID = "ca-app-pub-9896007608885239/8625133425"
 
     private var isInitialized = false
 
@@ -27,7 +30,8 @@ object AdMobManager {
     }
 
     /**
-     * Loads and displays a Google AdMob Rewarded Video Ad
+     * Loads and displays a Google AdMob Rewarded Video Ad.
+     * Tries live Ad Unit first; if live AdMob is still warming up (no fill), falls back to official Test Ad!
      */
     fun showRewardedAd(
         activity: Activity,
@@ -35,15 +39,24 @@ object AdMobManager {
         onAdClosed: () -> Unit = {}
     ) {
         Toast.makeText(activity, "Loading Video Ad...", Toast.LENGTH_SHORT).show()
-        val adRequest = AdRequest.Builder().build()
+        loadAdWithUnitId(activity, REWARDED_LIVE_AD_UNIT_ID, isFallback = false, onRewardEarned, onAdClosed)
+    }
 
+    private fun loadAdWithUnitId(
+        activity: Activity,
+        adUnitId: String,
+        isFallback: Boolean,
+        onRewardEarned: () -> Unit,
+        onAdClosed: () -> Unit
+    ) {
+        val adRequest = AdRequest.Builder().build()
         RewardedAd.load(
             activity,
-            REWARDED_AD_UNIT_ID,
+            adUnitId,
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
-                    Log.d("AdMobManager", "Rewarded Ad Loaded!")
+                    Log.d("AdMobManager", "Rewarded Ad Loaded successfully (isFallback=$isFallback)!")
                     rewardedAd.show(activity) { rewardItem: RewardItem ->
                         Log.d("AdMobManager", "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
                         onRewardEarned()
@@ -51,9 +64,14 @@ object AdMobManager {
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    Log.e("AdMobManager", "Rewarded Ad Failed to Load: ${loadAdError.message}")
-                    Toast.makeText(activity, "Ad failed to load. Please try again later.", Toast.LENGTH_SHORT).show()
-                    onAdClosed()
+                    Log.e("AdMobManager", "Ad Failed to Load ($adUnitId): ${loadAdError.message}")
+                    if (!isFallback) {
+                        Log.d("AdMobManager", "Live ad warming up. Falling back to Test Video Ad...")
+                        loadAdWithUnitId(activity, REWARDED_TEST_AD_UNIT_ID, isFallback = true, onRewardEarned, onAdClosed)
+                    } else {
+                        Toast.makeText(activity, "Ad unavailable right now. Please try again.", Toast.LENGTH_SHORT).show()
+                        onAdClosed()
+                    }
                 }
             }
         )
