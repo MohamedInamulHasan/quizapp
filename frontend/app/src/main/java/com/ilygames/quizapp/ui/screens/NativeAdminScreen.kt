@@ -1496,7 +1496,7 @@ fun NativeAdminScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // QUIZ TYPE SELECTOR
-                        Text("Select Quiz Type:", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 13.sp)
+                        Text("1. QUIZ FORMAT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -1504,13 +1504,13 @@ fun NativeAdminScreen(
                             FilterChip(
                                 selected = !isImageQuiz,
                                 onClick = { isImageQuiz = false },
-                                label = { Text("Word / Text Quiz", fontWeight = FontWeight.Bold) },
+                                label = { Text("Text Question 📝", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                                 modifier = Modifier.weight(1f)
                             )
                             FilterChip(
                                 selected = isImageQuiz,
                                 onClick = { isImageQuiz = true },
-                                label = { Text("Image Quiz 🖼️", fontWeight = FontWeight.Bold) },
+                                label = { Text("Image Question 🖼️", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -1526,18 +1526,21 @@ fun NativeAdminScreen(
                             )
                         }
 
+                        Text("2. QUESTION STATEMENT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
                         OutlinedTextField(
                             value = questionText,
                             onValueChange = { questionText = it },
-                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("e.g. What is the chemical symbol for Gold?", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp)
                         )
 
                         // DYNAMIC OPTIONS HEADER
-                        Text("Options (Minimum 2 Required)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp)
+                        Text("3. ANSWER CHOICES (Minimum 2 Required)", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
 
                         // DYNAMIC OPTION FIELDS WITH TRASH DELETE BUTTON (Only for Option C and above)
                         dynamicOptions.forEachIndexed { idx, optVal ->
@@ -1550,10 +1553,12 @@ fun NativeAdminScreen(
                                 OutlinedTextField(
                                     value = optVal,
                                     onValueChange = { newValue -> dynamicOptions[idx] = newValue },
-                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                                    placeholder = { Text("Choice $letterLabel content", color = TextMuted, fontSize = 11.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                                     colors = defaultAdminTextFieldColors(),
                                     modifier = Modifier.weight(1f),
+                                    singleLine = true,
                                     shape = RoundedCornerShape(10.dp)
                                 )
                                 if (dynamicOptions.size > 2 && idx >= 2) {
@@ -1587,7 +1592,7 @@ fun NativeAdminScreen(
                             Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        Text("Correct Answer Option:", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp)
+                        Text("4. CORRECT ANSWER CHOICE", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
                         val optionLetters = dynamicOptions.indices.map { idx ->
                             if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
                         }
@@ -1731,33 +1736,38 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = passageCategory,
                             onValueChange = { passageCategory = it },
-                            label = { Text("Passage Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            label = { Text("Passage Category", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("e.g. GENERAL KNOWLEDGE or SCIENCE", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp)
                         )
 
                         OutlinedTextField(
                             value = passageTitle,
                             onValueChange = { passageTitle = it },
-                            label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("e.g. The Wonders of Solar Energy", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp)
                         )
 
                         OutlinedTextField(
                             value = passageParagraph,
                             onValueChange = { passageParagraph = it },
-                            label = { Text("Passage Reading Content", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            label = { Text("Passage Reading Content", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("Type or paste reading passage paragraph text here...", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp),
-                            shape = RoundedCornerShape(12.dp)
+                                .height(140.dp),
+                            shape = RoundedCornerShape(10.dp)
                         )
                     }
                 },
@@ -2061,26 +2071,26 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = inputRewardTitle,
                             onValueChange = { inputRewardTitle = it },
-                            label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
 
                         OutlinedTextField(
                             value = inputRewardDesc,
                             onValueChange = { inputRewardDesc = it },
-                            label = { Text("Prize Specifications & Details", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            placeholder = { Text("e.g. 500ml Stainless Steel with LED Display", color = TextMuted) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            label = { Text("Prize Specifications & Details", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("e.g. 500ml Stainless Steel with LED Display", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(120.dp),
-                            shape = RoundedCornerShape(12.dp)
+                                .height(100.dp),
+                            shape = RoundedCornerShape(10.dp)
                         )
                     }
                 },

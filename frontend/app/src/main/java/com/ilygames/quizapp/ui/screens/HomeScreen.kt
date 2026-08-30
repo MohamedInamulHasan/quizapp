@@ -563,15 +563,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
                             val totalAllowedChances = globalQuizChances.value
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                for (i in 0 until 5) {
-                                    val isConfiguredActive = i < totalAllowedChances
-                                    val isHeartActive = i < dailyAttemptsLeft && isConfiguredActive
+                                for (i in 0 until totalAllowedChances) {
+                                    val isHeartActive = i < dailyAttemptsLeft
                                     Text(
-                                        text = if (isHeartActive) "❤️" else if (isConfiguredActive) "💔" else "🖤",
-                                        fontSize = 18.sp
+                                        text = if (isHeartActive) "❤️" else "💔",
+                                        fontSize = 20.sp
                                     )
                                 }
                             }
