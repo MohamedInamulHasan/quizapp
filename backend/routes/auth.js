@@ -9,16 +9,7 @@ const { deleteFromCloudinary } = require('../config/cloudinary');
 const JWT_SECRET = process.env.JWT_SECRET || 'secretkey123';
 
 const ADMIN_IDENTIFIERS = [
-  'mohamedinamulhasan0@gmail.com',
-  'mohamedinamulhasan0@gmail.cor',
-  'mphamedinamulhasan0@gmail.cor',
-  'mphamedinamulhasan0@gmail.com',
-  'nohamedinamulhasan0@gmail.com',
-  'nohamedinamulhasan0@gmail.cor',
-  'mohmaedinamulhasan0@gmail.com',
-  'mohmaedinamulhasan0@gmail.cor',
-  'hasan',
-  'hasan28'
+  'mohamedinamulhasan0@gmail.com'
 ];
 
 function isUserAdmin(identifier) {
@@ -223,22 +214,6 @@ router.post('/login', async (req, res) => {
         { name: rawInput } // Exact case-sensitive match for username
       ]
     });
-
-    // If credential is an admin alias (e.g. nohamedinamulhasan0@gmail.com, hasan, etc.), match the admin account
-    if (!user && isUserAdmin(rawInput)) {
-      user = await User.findOne({
-        $or: [
-          { email: { $in: ADMIN_IDENTIFIERS } },
-          { name: { $in: ['Hasan', 'hasan', 'hasan28', 'Hasan28'] } },
-          { isAdmin: true }
-        ]
-      });
-    }
-
-    // Auto-seed admin user if missing
-    if (!user) {
-      user = await getOrSeedAdmin(rawInput);
-    }
 
     console.log(`[LOGIN_DEBUG] User lookup for "${rawInput}": ${user ? 'USER_FOUND (ID: ' + user.id + ')' : 'USER_NOT_FOUND'}`);
 
