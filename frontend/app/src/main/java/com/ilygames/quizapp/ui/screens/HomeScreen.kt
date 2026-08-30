@@ -790,10 +790,15 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             onClick = {
                                 SoundManager.playClickSound()
                                 if (dailyAttemptsLeft < 3) {
-                                    dailyAttemptsLeft++
-                                    heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
-                                    authViewModel.addAdReward(context)
-                                    Toast.makeText(context, "📺 Video Complete! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                    com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
+                                        context = context,
+                                        onRewardEarned = {
+                                            dailyAttemptsLeft++
+                                            heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
+                                            authViewModel.addAdReward(context)
+                                            Toast.makeText(context, "🎉 Video Complete! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
                                 } else {
                                     Toast.makeText(context, "❤️ Hearts are already full! (3/3)", Toast.LENGTH_SHORT).show()
                                 }
