@@ -1904,6 +1904,7 @@ fun NativeAdminScreen(
                     ) {
                         Text("Publish Prize", color = Color.White, fontWeight = FontWeight.Bold)
                     }
+                }
             )
         }
     }
