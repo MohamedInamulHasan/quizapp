@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Allow smooth screen mirroring and screenshots on PC during development
         window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        com.ilygames.quizapp.ui.theme.ThemeState.init(this)
         setContent {
             QuizAppTheme {
                 Surface(

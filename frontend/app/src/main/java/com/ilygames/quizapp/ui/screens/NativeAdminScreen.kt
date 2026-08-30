@@ -51,6 +51,7 @@ var globalRewardDescription = mutableStateOf("")
 var globalRewardImageUrl = mutableStateOf<String?>(null)
 var globalQuizQuestionLimit = mutableStateOf(20)
 var globalQuizTimerSeconds = mutableStateOf(20)
+var globalQuizChances = mutableStateOf(5)
 private var isDataLoadedFromPrefs = false
 
 @Composable
@@ -72,11 +73,13 @@ fun loadPersistedAdminData(context: Context) {
     if (isDataLoadedFromPrefs) return
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
 
-    // Load Quiz Question Limit & Timer Seconds
+    // Load Quiz Question Limit, Timer Seconds & Chances (Lives)
     val savedLimit = prefs.getInt("quiz_questions_limit_key", 20)
     val savedTimer = prefs.getInt("quiz_timer_seconds_key", 20)
+    val savedChances = prefs.getInt("quiz_chances_key", 5)
     globalQuizQuestionLimit.value = savedLimit
     globalQuizTimerSeconds.value = savedTimer
+    globalQuizChances.value = savedChances
 
     // Load Saved Reward Image
     val savedRewardImg = prefs.getString("saved_reward_img_key", null)
@@ -129,14 +132,16 @@ fun loadPersistedAdminData(context: Context) {
     isDataLoadedFromPrefs = true
 }
 
-fun saveQuizSettingsToPrefs(context: Context, limit: Int, timerSeconds: Int) {
+fun saveQuizSettingsToPrefs(context: Context, limit: Int, timerSeconds: Int, chances: Int = 5) {
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
     prefs.edit()
         .putInt("quiz_questions_limit_key", limit)
         .putInt("quiz_timer_seconds_key", timerSeconds)
+        .putInt("quiz_chances_key", chances)
         .apply()
     globalQuizQuestionLimit.value = limit
     globalQuizTimerSeconds.value = timerSeconds
+    globalQuizChances.value = chances
 }
 
 fun savePassagesToPrefs(context: Context) {
@@ -440,6 +445,7 @@ fun NativeAdminScreen(
     var showQuizSettingsModal by remember { mutableStateOf(false) }
     var tempLimitText by remember { mutableStateOf(globalQuizQuestionLimit.value.toString()) }
     var tempTimerText by remember { mutableStateOf(globalQuizTimerSeconds.value.toString()) }
+    var tempChances by remember { mutableStateOf(globalQuizChances.value) }
 
     // Questions State
     var questionsStateList by remember { mutableStateOf<List<Question>>(emptyList()) }
@@ -601,6 +607,7 @@ fun NativeAdminScreen(
                         SoundManager.playClickSound()
                         tempLimitText = globalQuizQuestionLimit.value.toString()
                         tempTimerText = globalQuizTimerSeconds.value.toString()
+                        tempChances = globalQuizChances.value
                         showQuizSettingsModal = true
                     },
                     modifier = Modifier
@@ -1937,11 +1944,57 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = tempLimitText,
                             onValueChange = { tempLimitText = it },
-                            label = { Text("Custom Question Limit (e.g. 10, 20, 50)", color = Color(0xFF0F7B52), fontWeight = FontWeight.Bold) },
+                            label = { Text("Custom Question Limit (e.g. 10, 20, 50)", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             singleLine = true,
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+                        // Section 3: Daily Quiz Chances / Lives (5 Hearts Selector)
+                        Text(
+                            text = "❤️ DAILY QUIZ CHANCES (LIVES)",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Black,
+                            color = PrimaryGreen,
+                            letterSpacing = 1.sp
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                (1..5).forEach { heartIdx ->
+                                    val isHeartActive = heartIdx <= tempChances
+                                    IconButton(
+                                        onClick = { tempChances = heartIdx },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Favorite,
+                                            contentDescription = "Heart $heartIdx",
+                                            tint = if (isHeartActive) IncorrectRed else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Text(
+                            text = "Active Lives: $tempChances / 5 (${if (tempChances < 5) "${5 - tempChances} hearts disabled (gray)" else "All 5 hearts active"})",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMuted,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 },
@@ -1950,9 +2003,9 @@ fun NativeAdminScreen(
                         onClick = {
                             val limit = tempLimitText.toIntOrNull() ?: 20
                             val timerSec = tempTimerText.toIntOrNull() ?: 20
-                            saveQuizSettingsToPrefs(context, limit, timerSec)
+                            saveQuizSettingsToPrefs(context, limit, timerSec, tempChances)
                             showQuizSettingsModal = false
-                            Toast.makeText(context, "⚙️ Settings Saved! $limit Qs | ${timerSec}s timer", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "⚙️ Settings Saved! $limit Qs | ${timerSec}s timer | $tempChances Lives", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
                         modifier = Modifier.fillMaxWidth(),

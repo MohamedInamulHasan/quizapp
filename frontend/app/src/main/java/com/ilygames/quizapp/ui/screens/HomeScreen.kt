@@ -548,7 +548,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // LEFT SIDE: CHANCES (CENTERED TITLE OVER MATCHING ❤️ & 💔 EMOJIS)
+                        // LEFT SIDE: CHANCES (CENTERED TITLE OVER MATCHING ❤️, 💔 & 🖤 EMOJIS BASED ON ADMIN SETTINGS)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -561,16 +561,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 letterSpacing = 1.sp
                             )
 
-                            // 3 Matching Heart Emojis (❤️ Active vs 💔 Broken)
+                            val totalAllowedChances = globalQuizChances.value
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                for (i in 0 until 3) {
-                                    val isActive = i < dailyAttemptsLeft
+                                for (i in 0 until 5) {
+                                    val isConfiguredActive = i < totalAllowedChances
+                                    val isHeartActive = i < dailyAttemptsLeft && isConfiguredActive
                                     Text(
-                                        text = if (isActive) "❤️" else "💔",
-                                        fontSize = 20.sp
+                                        text = if (isHeartActive) "❤️" else if (isConfiguredActive) "💔" else "🖤",
+                                        fontSize = 18.sp
                                     )
                                 }
                             }
