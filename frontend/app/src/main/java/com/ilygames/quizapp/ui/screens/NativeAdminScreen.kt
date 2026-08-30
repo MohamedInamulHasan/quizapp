@@ -1466,24 +1466,44 @@ fun NativeAdminScreen(
         // SINGLE QUESTION MODAL (SUPPORTING PROFESSIONAL IMAGE QUIZ DROPZONE & HIGH CONTRAST TEXT)
         if (showQuestionModal) {
             AlertDialog(
+                        // QUESTION CREATOR / EDIT MODAL (NEW MODERN CARD DESIGN)
+        if (showQuestionModal) {
+            AlertDialog(
                 onDismissRequest = { showQuestionModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(BorderStroke(1.5.dp, Brush.linearGradient(listOf(PrimaryGreen, EmeraldGlow))), RoundedCornerShape(32.dp)),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = if (editingQuestion != null) "Edit Question" else "Create Question",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        IconButton(onClick = { showQuestionModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        Surface(
+                            color = PrimaryGreen.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(Icons.Default.AddCircle, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Text(
+                                    text = if (editingQuestion != null) "EDIT QUESTION" else "CREATE QUESTION",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = { showQuestionModal = false },
+                            modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                         }
                     }
                 },
@@ -1493,32 +1513,37 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // QUIZ TYPE SELECTOR
-                        Text("1. QUIZ FORMAT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                        // SECTION 1: FORMAT SELECTOR
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
                         ) {
-                            FilterChip(
-                                selected = !isImageQuiz,
-                                onClick = { isImageQuiz = false },
-                                label = { Text("Text Question 📝", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterChip(
-                                selected = isImageQuiz,
-                                onClick = { isImageQuiz = true },
-                                label = { Text("Image Question 🖼️", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                                modifier = Modifier.weight(1f)
-                            )
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("1. QUIZ FORMAT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                                    FilterChip(
+                                        selected = !isImageQuiz,
+                                        onClick = { isImageQuiz = false },
+                                        label = { Text("Text Quiz 📝", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    FilterChip(
+                                        selected = isImageQuiz,
+                                        onClick = { isImageQuiz = true },
+                                        label = { Text("Image Quiz 🖼️", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
                         }
 
                         if (isImageQuiz) {
                             ProfessionalImageDropzone(
-                                title = "Question Image Upload",
-                                subtitle = "Pick photo from gallery or enter direct image URL",
+                                title = "Question Photo",
+                                subtitle = "Upload photo from device gallery or enter image URL",
                                 currentImageUrl = questionImageUrl,
                                 onPickGallery = { questionImagePicker.launch("image/*") },
                                 onUrlChange = { questionImageUrl = it },
@@ -1526,106 +1551,111 @@ fun NativeAdminScreen(
                             )
                         }
 
-                        Text("2. QUESTION STATEMENT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
-                        OutlinedTextField(
-                            value = questionText,
-                            onValueChange = { questionText = it },
-                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. What is the chemical symbol for Gold?", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-
-                        // DYNAMIC OPTIONS HEADER
-                        Text("3. ANSWER CHOICES (Minimum 2 Required)", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
-
-                        // DYNAMIC OPTION FIELDS WITH TRASH DELETE BUTTON (Only for Option C and above)
-                        dynamicOptions.forEachIndexed { idx, optVal ->
-                            val letterLabel = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                        // SECTION 2: QUESTION STATEMENT
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("2. QUESTION STATEMENT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
                                 OutlinedTextField(
-                                    value = optVal,
-                                    onValueChange = { newValue -> dynamicOptions[idx] = newValue },
-                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
-                                    placeholder = { Text("Choice $letterLabel content", color = TextMuted, fontSize = 11.sp) },
+                                    value = questionText,
+                                    onValueChange = { questionText = it },
+                                    label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    placeholder = { Text("Type question clearly here...", color = TextMuted, fontSize = 12.sp) },
                                     textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                                     colors = defaultAdminTextFieldColors(),
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
-                                    shape = RoundedCornerShape(10.dp)
+                                    shape = RoundedCornerShape(12.dp)
                                 )
-                                if (dynamicOptions.size > 2 && idx >= 2) {
-                                    IconButton(
-                                        onClick = { dynamicOptions.removeAt(idx) },
-                                        modifier = Modifier.size(36.dp)
+                            }
+                        }
+
+                        // SECTION 3: OPTIONS
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("3. ANSWER CHOICES (Min 2)", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                dynamicOptions.forEachIndexed { idx, optVal ->
+                                    val letterLabel = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete Option",
-                                            tint = IncorrectRed,
-                                            modifier = Modifier.size(20.dp)
+                                        OutlinedTextField(
+                                            value = optVal,
+                                            onValueChange = { newValue -> dynamicOptions[idx] = newValue },
+                                            label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                                            placeholder = { Text("Enter choice $letterLabel", color = TextMuted, fontSize = 11.sp) },
+                                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                            colors = defaultAdminTextFieldColors(),
+                                            modifier = Modifier.weight(1f),
+                                            singleLine = true,
+                                            shape = RoundedCornerShape(10.dp)
                                         )
+                                        if (dynamicOptions.size > 2 && idx >= 2) {
+                                            IconButton(
+                                                onClick = { dynamicOptions.removeAt(idx) },
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = IncorrectRed, modifier = Modifier.size(18.dp))
+                                            }
+                                        }
                                     }
+                                }
+
+                                OutlinedButton(
+                                    onClick = { dynamicOptions.add("") },
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = BorderStroke(1.dp, PrimaryGreen),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                                    modifier = Modifier.height(30.dp)
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                                 }
                             }
                         }
 
-                        // VERY SMALL ADD OPTION BUTTON BELOW LAST OPTION
-                        OutlinedButton(
-                            onClick = { dynamicOptions.add("") },
-                            shape = RoundedCornerShape(10.dp),
-                            border = BorderStroke(1.dp, PrimaryGreen),
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
-                            modifier = Modifier
-                                .align(Alignment.Start)
-                                .height(30.dp)
+                        // SECTION 4: CORRECT ANSWER
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Option", tint = PrimaryGreen, modifier = Modifier.size(13.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
-
-                        Text("4. CORRECT ANSWER CHOICE", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
-                        val optionLetters = dynamicOptions.indices.map { idx ->
-                            if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
-                        }
-                        val chunkedOptions = optionLetters.chunked(5)
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            chunkedOptions.forEach { rowLetters ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    rowLetters.forEach { letter ->
-                                        FilterChip(
-                                            selected = correctAnswer == letter,
-                                            onClick = { correctAnswer = letter },
-                                            label = {
-                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-                                                    Text(letter, fontWeight = FontWeight.Black, fontSize = 13.sp)
-                                                }
-                                            },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = PrimaryGreen.copy(alpha = 0.25f),
-                                                selectedLabelColor = PrimaryGreen
-                                            ),
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    if (rowLetters.size < 5) {
-                                        repeat(5 - rowLetters.size) {
-                                            Spacer(modifier = Modifier.weight(1f))
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("4. SELECT CORRECT OPTION", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                val optionLetters = dynamicOptions.indices.map { idx -> if (idx < 26) ('A' + idx).toString() else (idx + 1).toString() }
+                                val chunkedOptions = optionLetters.chunked(5)
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                                    chunkedOptions.forEach { rowLetters ->
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                                            rowLetters.forEach { letter ->
+                                                FilterChip(
+                                                    selected = correctAnswer == letter,
+                                                    onClick = { correctAnswer = letter },
+                                                    label = {
+                                                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                                                            Text(letter, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                                                        }
+                                                    },
+                                                    colors = FilterChipDefaults.filterChipColors(
+                                                        selectedContainerColor = PrimaryGreen.copy(alpha = 0.25f),
+                                                        selectedLabelColor = PrimaryGreen
+                                                    ),
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                            }
+                                            if (rowLetters.size < 5) {
+                                                repeat(5 - rowLetters.size) { Spacer(modifier = Modifier.weight(1f)) }
+                                            }
                                         }
                                     }
                                 }
@@ -1649,8 +1679,8 @@ fun NativeAdminScreen(
                             val targetId = editingQuestion?.id
 
                             val newQ = Question(
-                                id = targetId,
-                                question = questionText.trim(),
+                                id = targetId ?: "",
+                                question = questionText,
                                 optionA = optA,
                                 optionB = optB,
                                 optionC = optC,
@@ -1692,36 +1722,54 @@ fun NativeAdminScreen(
                             Toast.makeText(context, "🎉 Question Saved!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Save Question", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("SAVE QUESTION", color = Color.White, fontWeight = FontWeight.Black)
                     }
-                }
             )
         }
 
-        // STUDY PASSAGE MODAL (CREATE / EDIT PASSAGE)
+        // PASSAGES MODAL (NEW MODERN CARD DESIGN)
         if (showPassageModal) {
             AlertDialog(
                 onDismissRequest = { showPassageModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(BorderStroke(1.5.dp, Brush.linearGradient(listOf(PrimaryGreen, EmeraldGlow))), RoundedCornerShape(32.dp)),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = if (editingPassage != null) "Edit Study Passage" else "Add Study Passage",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        IconButton(onClick = { showPassageModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        Surface(
+                            color = PrimaryGreen.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(Icons.Default.MenuBook, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Text(
+                                    text = if (editingPassage != null) "EDIT STUDY PASSAGE" else "ADD STUDY PASSAGE",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = { showPassageModal = false },
+                            modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                         }
                     }
                 },
@@ -1731,44 +1779,60 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        OutlinedTextField(
-                            value = passageCategory,
-                            onValueChange = { passageCategory = it },
-                            label = { Text("Passage Category", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. GENERAL KNOWLEDGE or SCIENCE", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("1. PASSAGE METADATA", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                OutlinedTextField(
+                                    value = passageCategory,
+                                    onValueChange = { passageCategory = it },
+                                    label = { Text("Category Name", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    placeholder = { Text("e.g. GENERAL KNOWLEDGE", color = TextMuted, fontSize = 12.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
 
-                        OutlinedTextField(
-                            value = passageTitle,
-                            onValueChange = { passageTitle = it },
-                            label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. The Wonders of Solar Energy", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                                OutlinedTextField(
+                                    value = passageTitle,
+                                    onValueChange = { passageTitle = it },
+                                    label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    placeholder = { Text("e.g. The Marvels of Renewable Energy", color = TextMuted, fontSize = 12.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
+                        }
 
-                        OutlinedTextField(
-                            value = passageParagraph,
-                            onValueChange = { passageParagraph = it },
-                            label = { Text("Passage Reading Content", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("Type or paste reading passage paragraph text here...", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(140.dp),
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("2. READING CONTENT", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                OutlinedTextField(
+                                    value = passageParagraph,
+                                    onValueChange = { passageParagraph = it },
+                                    label = { Text("Paragraph Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    placeholder = { Text("Type or paste study reading content here...", color = TextMuted, fontSize = 12.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth().height(140.dp),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
+                        }
                     }
                 },
                 confirmButton = {
@@ -1798,46 +1862,53 @@ fun NativeAdminScreen(
                             Toast.makeText(context, "📚 Passage Saved Successfully!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Save Passage", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("SAVE PASSAGE", color = Color.White, fontWeight = FontWeight.Black)
                     }
                 }
             )
         }
 
-        // ADMIN QUIZ TIMING & QUESTION LIMIT SETTINGS MODAL
+        // QUIZ SETTINGS MODAL (NEW MODERN CARD DESIGN)
         if (showQuizSettingsModal) {
             AlertDialog(
                 onDismissRequest = { showQuizSettingsModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(26.dp),
+                shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(BorderStroke(1.5.dp, Brush.linearGradient(listOf(PrimaryGreen, EmeraldGlow))), RoundedCornerShape(32.dp)),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Surface(
+                            color = PrimaryGreen.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings",
-                                tint = PrimaryGreen
-                            )
-                            Text(
-                                text = "Admin Quiz Settings",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(Icons.Default.Settings, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Text(
+                                    text = "QUIZ ENGINE CONFIGURATION",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen,
+                                    letterSpacing = 1.sp
+                                )
+                            }
                         }
-                        IconButton(onClick = { showQuizSettingsModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = { showQuizSettingsModal = false },
+                            modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                         }
                     }
                 },
@@ -1849,163 +1920,121 @@ fun NativeAdminScreen(
                             .padding(vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // Section 1: Timer per Question
-                        Text(
-                            text = "⏱️ QUESTION TIMER (SECONDS)",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Black,
-                            color = PrimaryGreen,
-                            letterSpacing = 1.sp
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        // SECTION 1: TIMER
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
                         ) {
-                            listOf(5, 10, 15, 20, 30, 45).forEach { preset ->
-                                val isSelected = tempTimerText == preset.toString()
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(50.dp))
-                                        .background(
-                                            brush = if (isSelected) {
-                                                Brush.linearGradient(colors = listOf(PrimaryGreen, EmeraldGlow))
-                                            } else {
-                                                Brush.linearGradient(colors = listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
-                                            }
-                                        )
-                                        .border(
-                                            1.dp,
-                                            if (isSelected) ElectricMint else MaterialTheme.colorScheme.surfaceVariant,
-                                            RoundedCornerShape(50.dp)
-                                        )
-                                        .clickable { tempTimerText = preset.toString() }
-                                        .padding(vertical = 8.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "${preset}s",
-                                        fontWeight = FontWeight.Black,
-                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 11.sp
-                                    )
-                                }
-                            }
-                        }
-
-                        OutlinedTextField(
-                            value = tempTimerText,
-                            onValueChange = { tempTimerText = it },
-                            label = { Text("Custom Seconds per Question (e.g. 15, 30)", color = Color(0xFF0F7B52), fontWeight = FontWeight.Bold) },
-                            singleLine = true,
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-
-                        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                        // Section 2: Questions Count per Quiz
-                        Text(
-                            text = "❓ QUESTIONS SHOWN PER QUIZ",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Black,
-                            color = PrimaryGreen,
-                            letterSpacing = 1.sp
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf(5, 10, 15, 20, 30, 50).forEach { preset ->
-                                val isSelected = tempLimitText == preset.toString()
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(50.dp))
-                                        .background(
-                                            brush = if (isSelected) {
-                                                Brush.linearGradient(colors = listOf(PrimaryGreen, EmeraldGlow))
-                                            } else {
-                                                Brush.linearGradient(colors = listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
-                                            }
-                                        )
-                                        .border(
-                                            1.dp,
-                                            if (isSelected) ElectricMint else MaterialTheme.colorScheme.surfaceVariant,
-                                            RoundedCornerShape(50.dp)
-                                        )
-                                        .clickable { tempLimitText = preset.toString() }
-                                        .padding(vertical = 8.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "$preset Qs",
-                                        fontWeight = FontWeight.Black,
-                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 11.sp
-                                    )
-                                }
-                            }
-                        }
-
-                        OutlinedTextField(
-                            value = tempLimitText,
-                            onValueChange = { tempLimitText = it },
-                            label = { Text("Custom Question Limit (e.g. 10, 20, 50)", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
-                            singleLine = true,
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-
-                        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                        // Section 3: Daily Quiz Chances / Lives (5 Hearts Selector)
-                        Text(
-                            text = "❤️ DAILY QUIZ CHANCES (LIVES)",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Black,
-                            color = PrimaryGreen,
-                            letterSpacing = 1.sp
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                (1..5).forEach { heartIdx ->
-                                    val isHeartActive = heartIdx <= tempChances
-                                    IconButton(
-                                        onClick = { tempChances = heartIdx },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Favorite,
-                                            contentDescription = "Heart $heartIdx",
-                                            tint = if (isHeartActive) IncorrectRed else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
-                                            modifier = Modifier.size(28.dp)
-                                        )
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("⏱️ QUESTION TIMER (SECONDS)", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    listOf(5, 10, 15, 20, 30, 45).forEach { preset ->
+                                        val isSelected = tempTimerText == preset.toString()
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(50.dp))
+                                                .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surface)
+                                                .border(1.dp, if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(50.dp))
+                                                .clickable { tempTimerText = preset.toString() }
+                                                .padding(vertical = 8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("${preset}s", fontWeight = FontWeight.Black, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 11.sp)
+                                        }
                                     }
                                 }
+                                OutlinedTextField(
+                                    value = tempTimerText,
+                                    onValueChange = { tempTimerText = it },
+                                    label = { Text("Custom Seconds per Question", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                                    singleLine = true,
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                             }
                         }
 
-                        Text(
-                            text = "Active Lives: $tempChances / 5 (${if (tempChances < 5) "${5 - tempChances} hearts disabled (gray)" else "All 5 hearts active"})",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextMuted,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        // SECTION 2: QUESTION LIMIT
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("❓ QUESTIONS PER QUIZ", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    listOf(5, 10, 15, 20, 30, 50).forEach { preset ->
+                                        val isSelected = tempLimitText == preset.toString()
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(50.dp))
+                                                .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surface)
+                                                .border(1.dp, if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(50.dp))
+                                                .clickable { tempLimitText = preset.toString() }
+                                                .padding(vertical = 8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("$preset Qs", fontWeight = FontWeight.Black, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                                OutlinedTextField(
+                                    value = tempLimitText,
+                                    onValueChange = { tempLimitText = it },
+                                    label = { Text("Custom Question Limit", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                                    singleLine = true,
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
+                        }
+
+                        // SECTION 3: DAILY QUIZ CHANCES
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("❤️ DAILY QUIZ CHANCES CONFIGURATION", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        (1..5).forEach { heartIdx ->
+                                            val isHeartActive = heartIdx <= tempChances
+                                            IconButton(
+                                                onClick = { tempChances = heartIdx },
+                                                modifier = Modifier.size(36.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Favorite,
+                                                    contentDescription = "Heart $heartIdx",
+                                                    tint = if (isHeartActive) IncorrectRed else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+                                                    modifier = Modifier.size(28.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Text(
+                                    text = "Selected Lives: $tempChances / 5 (${if (tempChances < 5) "${5 - tempChances} disabled hearts" else "All 5 hearts active"})",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextMuted,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
                     }
                 },
                 confirmButton = {
@@ -2018,36 +2047,53 @@ fun NativeAdminScreen(
                             Toast.makeText(context, "⚙️ Settings Saved! $limit Qs | ${timerSec}s timer | $tempChances Lives", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Save All Settings", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("SAVE ALL SETTINGS", color = Color.White, fontWeight = FontWeight.Black)
                     }
                 }
             )
         }
 
-        // REWARD PRIZE MODAL (PUBLISH / EDIT REWARD)
+        // REWARD PRIZE MODAL (NEW MODERN CARD DESIGN)
         if (showRewardModal) {
             AlertDialog(
                 onDismissRequest = { showRewardModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(BorderStroke(1.5.dp, Brush.linearGradient(listOf(PrimaryGreen, EmeraldGlow))), RoundedCornerShape(32.dp)),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = if (globalRewardTitle.value.isNotBlank()) "Edit Daily Reward" else "Publish Daily Reward",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        IconButton(onClick = { showRewardModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        Surface(
+                            color = PrimaryGreen.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(16.dp))
+                                Text(
+                                    text = if (globalRewardTitle.value.isNotBlank()) "EDIT REWARD PRIZE" else "PUBLISH REWARD PRIZE",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = PrimaryGreen,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = { showRewardModal = false },
+                            modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                         }
                     }
                 },
@@ -2057,7 +2103,7 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         ProfessionalImageDropzone(
                             title = "Upload Reward Prize Photo",
@@ -2068,30 +2114,37 @@ fun NativeAdminScreen(
                             onClearImage = { inputRewardImgUrl = "" }
                         )
 
-                        OutlinedTextField(
-                            value = inputRewardTitle,
-                            onValueChange = { inputRewardTitle = it },
-                            label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("PRIZE SPECIFICATIONS", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                                OutlinedTextField(
+                                    value = inputRewardTitle,
+                                    onValueChange = { inputRewardTitle = it },
+                                    label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted, fontSize = 12.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
 
-                        OutlinedTextField(
-                            value = inputRewardDesc,
-                            onValueChange = { inputRewardDesc = it },
-                            label = { Text("Prize Specifications & Details", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. 500ml Stainless Steel with LED Display", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
-                            colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                                OutlinedTextField(
+                                    value = inputRewardDesc,
+                                    onValueChange = { inputRewardDesc = it },
+                                    label = { Text("Prize Details & Specs", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                                    placeholder = { Text("e.g. 500ml Stainless Steel with LED Display", color = TextMuted, fontSize = 12.sp) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
+                                    colors = defaultAdminTextFieldColors(),
+                                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
+                        }
                     }
                 },
                 confirmButton = {
@@ -2109,10 +2162,10 @@ fun NativeAdminScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Publish Prize", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("PUBLISH PRIZE", color = Color.White, fontWeight = FontWeight.Black)
                     }
                 }
             )

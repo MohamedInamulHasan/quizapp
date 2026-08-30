@@ -548,10 +548,10 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // LEFT SIDE: CHANCES (CENTERED TITLE OVER MATCHING ❤️, 💔 & 🖤 EMOJIS BASED ON ADMIN SETTINGS)
+                        // LEFT SIDE: CHANCES (3 NORMAL HEARTS + 4TH WATCH AD HEART - NO RECOVER)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
                                 text = "CHANCES",
@@ -561,17 +561,37 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 letterSpacing = 1.sp
                             )
 
-                            val totalAllowedChances = globalQuizChances.value
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                for (i in 0 until totalAllowedChances) {
+                                // 3 Normal Hearts
+                                for (i in 0 until 3) {
                                     val isHeartActive = i < dailyAttemptsLeft
                                     Text(
                                         text = if (isHeartActive) "❤️" else "💔",
                                         fontSize = 20.sp
                                     )
+                                }
+
+                                // 4th Heart: Watch Ad (Broken by default until Ad is watched - No Auto Recover)
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = PrimaryGreen.copy(alpha = 0.15f),
+                                    border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.4f)),
+                                    modifier = Modifier.clickable {
+                                        SoundManager.playClickSound()
+                                        Toast.makeText(context, "🎬 Watch Ad to unlock 4th Extra Chance! (No auto-recover)", Toast.LENGTH_LONG).show()
+                                    }
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(text = "💔", fontSize = 18.sp)
+                                        Text(text = "+Ad", fontSize = 10.sp, fontWeight = FontWeight.Black, color = PrimaryGreen)
+                                    }
                                 }
                             }
                         }
