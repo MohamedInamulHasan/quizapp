@@ -17,10 +17,8 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 object AdMobManager {
 
-    // DEFAULT ADMOB TEST UNIT IDs (Provided by Google for testing)
-    // Replace with your live Ad Unit IDs from https://admob.google.com when ready!
-    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
-    const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+    // LIVE ADMOB REWARDED AD UNIT ID
+    const val REWARDED_AD_UNIT_ID = "ca-app-pub-9896007608885239/8625133425"
 
     private var isInitialized = false
 

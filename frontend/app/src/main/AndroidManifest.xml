@@ -13,10 +13,10 @@
         android:theme="@style/Theme.QuizApp"
         android:usesCleartextTraffic="true">
         
-        <!-- Google AdMob Application ID (Sample Google Test App ID - replace with your real App ID from admob.google.com) -->
+        <!-- Google AdMob Live Application ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-9896007608885239~9743713320"/>
 
         <activity
             android:name=".MainActivity"
