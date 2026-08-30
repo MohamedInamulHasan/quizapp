@@ -222,7 +222,7 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
 // @access   Private (Admin)
 router.post('/reset-scores', [auth, adminAuth], async (req, res) => {
   try {
-    await User.updateMany({}, { $set: { totalScore: 0, todayScore: 0, coins: 0 } });
+    await User.updateMany({}, { $set: { highScore: 0, totalScore: 0, todayScore: 0, coins: 0 } });
     await DailyResult.deleteMany({});
     res.json({ success: true, msg: 'All user scores reset to zero successfully' });
   } catch (err) {

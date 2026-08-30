@@ -1841,20 +1841,20 @@ fun NativeAdminScreen(
         if (showResetScoresConfirmModal) {
             AlertDialog(
                 onDismissRequest = { showResetScoresConfirmModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = Color.White,
                 title = {
                     Text(
                         text = "Reset All Scores?",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color(0xFF101828)
                     )
                 },
                 text = {
                     Text(
                         text = "Are you sure you want to reset all user scores to zero? This action will set everyone's score to 0 and clear leaderboard results.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color(0xFF475467)
                     )
                 },
                 confirmButton = {
@@ -1868,6 +1868,7 @@ fun NativeAdminScreen(
                                         val response = ApiClient.apiService.resetScores(authToken)
                                         if (response.isSuccessful) {
                                             quizViewModel?.loadLeaderboard(authToken, true)
+                                            quizViewModel?.loadLeaderboard(authToken, false)
                                             Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
                                         } else {
                                             Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
@@ -1885,19 +1886,22 @@ fun NativeAdminScreen(
                     }
                 },
                 dismissButton = {
-                    Button(
+                    Surface(
                         onClick = {
                             SoundManager.playClickSound()
                             showResetScoresConfirmModal = false
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Black
-                        ),
                         shape = RoundedCornerShape(12.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE0E0E0))
+                        color = Color.White,
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFD0D5DD)),
+                        modifier = Modifier.height(40.dp)
                     ) {
-                        Text("Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.padding(horizontal = 18.dp)
+                        ) {
+                            Text("Cancel", color = Color(0xFF1D2939), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
                     }
                 },
                 shape = RoundedCornerShape(24.dp)
