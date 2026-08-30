@@ -669,14 +669,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             SoundManager.playClickSound()
                             if (dailyAttemptsLeft > 0) {
                                 dailyAttemptsLeft--
-                                heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
+                                heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
                                 onStartQuiz()
                             } else {
                                 com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
                                     context = context,
                                     onRewardEarned = {
                                         dailyAttemptsLeft++
-                                        heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
+                                        heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
                                         authViewModel.addAdReward(context)
                                         Toast.makeText(context, "🎉 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
                                     }
@@ -812,7 +812,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                         context = context,
                                         onRewardEarned = {
                                             dailyAttemptsLeft++
-                                            heartsPrefs.edit().putInt("saved_hearts_count", dailyAttemptsLeft).apply()
+                                            heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
                                             authViewModel.addAdReward(context)
                                             Toast.makeText(context, "🎉 Video Complete! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
                                         }
