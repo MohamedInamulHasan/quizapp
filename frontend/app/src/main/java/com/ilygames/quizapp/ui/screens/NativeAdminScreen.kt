@@ -1463,10 +1463,7 @@ fun NativeAdminScreen(
             )
         }
 
-        // SINGLE QUESTION MODAL (SUPPORTING PROFESSIONAL IMAGE QUIZ DROPZONE & HIGH CONTRAST TEXT)
-        if (showQuestionModal) {
-            AlertDialog(
-                        // QUESTION CREATOR / EDIT MODAL (NEW MODERN CARD DESIGN)
+        // QUESTION CREATOR / EDIT MODAL (NEW MODERN CARD DESIGN)
         if (showQuestionModal) {
             AlertDialog(
                 onDismissRequest = { showQuestionModal = false },
@@ -1729,6 +1726,7 @@ fun NativeAdminScreen(
                     ) {
                         Text("SAVE QUESTION", color = Color.White, fontWeight = FontWeight.Black)
                     }
+                }
             )
         }
 
