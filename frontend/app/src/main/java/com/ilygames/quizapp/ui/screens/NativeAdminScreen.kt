@@ -1867,7 +1867,7 @@ fun NativeAdminScreen(
                                     try {
                                         val response = ApiClient.apiService.resetScores(authToken)
                                         if (response.isSuccessful) {
-                                            quizViewModel?.loadLeaderboard(authToken, forceRefresh = true)
+                                            quizViewModel?.loadLeaderboard(authToken, true)
                                             Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
                                         } else {
                                             Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
