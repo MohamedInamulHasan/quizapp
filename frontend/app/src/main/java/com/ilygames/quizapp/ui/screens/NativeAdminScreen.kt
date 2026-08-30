@@ -1536,8 +1536,8 @@ fun NativeAdminScreen(
                     Button(
                         onClick = {
                             val cleanOptions = dynamicOptions.map { it.trim() }.filter { it.isNotBlank() }
-                            val finalQuestionText = if (questionText.isBlank() && isImageQuiz) "Identify the image" else questionText.trim()
-                            if (finalQuestionText.isBlank() || cleanOptions.size < 2) {
+                            val finalQuestionText = questionText.trim()
+                            if (!isImageQuiz && finalQuestionText.isBlank() || cleanOptions.size < 2) {
                                 Toast.makeText(context, "Please enter question text and at least 2 options!", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }

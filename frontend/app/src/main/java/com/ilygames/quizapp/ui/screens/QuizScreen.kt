@@ -246,35 +246,37 @@ fun QuizScreen(
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.height(14.dp))
+                                if (!question.question.isNullOrBlank()) {
+                                    Spacer(modifier = Modifier.height(14.dp))
 
-                                // 2. Separate Question Text Card (Below Image)
-                                AnimatedVisibility(
-                                    visible = isContentVisible,
-                                    enter = fadeIn(tween(400, delayMillis = 50, easing = FastOutSlowInEasing)) + 
-                                            slideInVertically(tween(400, delayMillis = 50, easing = FastOutSlowInEasing)) { 40 }
-                                ) {
-                                    Card(
-                                        shape = RoundedCornerShape(22.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        elevation = CardDefaults.cardElevation(0.dp),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
+                                    // 2. Separate Question Text Card (Below Image)
+                                    AnimatedVisibility(
+                                        visible = isContentVisible,
+                                        enter = fadeIn(tween(400, delayMillis = 50, easing = FastOutSlowInEasing)) + 
+                                                slideInVertically(tween(400, delayMillis = 50, easing = FastOutSlowInEasing)) { 40 }
                                     ) {
-                                        Column(
+                                        Card(
+                                            shape = RoundedCornerShape(22.dp),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                            elevation = CardDefaults.cardElevation(0.dp),
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(20.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally
+                                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
                                         ) {
-                                            Text(
-                                                text = question.question,
-                                                style = MaterialTheme.typography.titleMedium.copy(lineHeight = 28.sp, fontSize = 18.sp),
-                                                fontWeight = FontWeight.Black,
-                                                textAlign = TextAlign.Center,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(20.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text(
+                                                    text = question.question,
+                                                    style = MaterialTheme.typography.titleMedium.copy(lineHeight = 28.sp, fontSize = 18.sp),
+                                                    fontWeight = FontWeight.Black,
+                                                    textAlign = TextAlign.Center,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
                                         }
                                     }
                                 }
