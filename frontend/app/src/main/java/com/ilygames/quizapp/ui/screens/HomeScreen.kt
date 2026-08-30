@@ -571,9 +571,9 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                         text = if (isHeartActive) "❤️" else "💔",
                                         fontSize = 20.sp,
                                         modifier = Modifier.clickable {
-                                            if (!isHeartActive && context is android.app.Activity) {
+                                            if (!isHeartActive) {
                                                 com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
-                                                    activity = context,
+                                                    context = context,
                                                     onRewardEarned = {
                                                         dailyAttemptsLeft = (dailyAttemptsLeft + 1).coerceAtMost(3)
                                                         Toast.makeText(context, "🎉 Heart Restored from Video Ad!", Toast.LENGTH_SHORT).show()

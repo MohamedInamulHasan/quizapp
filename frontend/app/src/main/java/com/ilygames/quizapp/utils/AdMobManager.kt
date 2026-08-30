@@ -2,6 +2,7 @@ package com.ilygames.quizapp.utils
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.ads.AdRequest
@@ -29,17 +30,35 @@ object AdMobManager {
         }
     }
 
+    private fun Context.findActivity(): Activity? {
+        var currentContext = this
+        while (currentContext is ContextWrapper) {
+            if (currentContext is Activity) {
+                return currentContext
+            }
+            currentContext = currentContext.baseContext
+        }
+        return null
+    }
+
     /**
      * Loads and displays a Google AdMob Rewarded Video Ad.
-     * Tries live Ad Unit first; if live AdMob is still warming up (no fill), falls back to official Test Ad!
+     * Accepts any Context and safely extracts the underlying Activity!
      */
     fun showRewardedAd(
-        activity: Activity,
+        context: Context,
         onRewardEarned: () -> Unit,
         onAdClosed: () -> Unit = {}
     ) {
+        val activity = context.findActivity()
+        if (activity == null) {
+            Log.e("AdMobManager", "Could not find Activity from context!")
+            Toast.makeText(context, "Unable to launch ad screen.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         Toast.makeText(activity, "Loading Video Ad...", Toast.LENGTH_SHORT).show()
-        loadAdWithUnitId(activity, REWARDED_LIVE_AD_UNIT_ID, isFallback = false, onRewardEarned, onAdClosed)
+        loadAdWithUnitId(activity, REWARDED_TEST_AD_UNIT_ID, isFallback = true, onRewardEarned, onAdClosed)
     }
 
     private fun loadAdWithUnitId(
