@@ -215,6 +215,7 @@ fun AppNavigation() {
         composable("admin_panel") {
             NativeAdminScreen(
                 token = token,
+                quizViewModel = quizViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
