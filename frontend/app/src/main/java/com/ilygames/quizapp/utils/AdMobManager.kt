@@ -4,13 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.gms.ads.*
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
@@ -28,28 +24,6 @@ object AdMobManager {
             isInitialized = true
             Log.d("AdMobManager", "AdMob initialized successfully: ${status.adapterStatusMap}")
         }
-    }
-
-    /**
-     * Composable Banner Ad component for bottom of screens
-     */
-    @Composable
-    fun BannerAd(
-        modifier: Modifier = Modifier,
-        adUnitId: String = BANNER_AD_UNIT_ID
-    ) {
-        AndroidView(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            factory = { context ->
-                AdView(context).apply {
-                    setAdSize(AdSize.BANNER)
-                    this.adUnitId = adUnitId
-                    loadAd(AdRequest.Builder().build())
-                }
-            }
-        )
     }
 
     /**
