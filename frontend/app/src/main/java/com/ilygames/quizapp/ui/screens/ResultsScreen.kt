@@ -206,12 +206,17 @@ fun ResultsScreen(
                                     if (currentHearts > 0) {
                                         onPlayAgain()
                                     } else {
-                                        // Watch Ad to gain 1 heart and play again
-                                        currentHearts++
-                                        heartsPrefs.edit().putInt("saved_hearts_count", currentHearts).apply()
-                                        authViewModel.addAdReward(context)
-                                        Toast.makeText(context, "🎬 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
-                                        onPlayAgain()
+                                        // Watch Video Ad to gain 1 heart and play again
+                                        com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
+                                            context = context,
+                                            onRewardEarned = {
+                                                currentHearts++
+                                                heartsPrefs.edit().putInt("saved_hearts_count", currentHearts).apply()
+                                                authViewModel.addAdReward(context)
+                                                Toast.makeText(context, "🎉 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
+                                                onPlayAgain()
+                                            }
+                                        )
                                     }
                                 },
                                 modifier = Modifier
