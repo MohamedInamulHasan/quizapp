@@ -45,9 +45,11 @@ fun ResultsScreen(
     val context = LocalContext.current
     var isVisible by remember { mutableStateOf(false) }
 
-    // Read and track persisted hearts
+    // Read and track persisted hearts per logged in user
+    val user by authViewModel.user.collectAsState()
+    val userKey = user?.id ?: user?.name ?: "default"
     val heartsPrefs = remember { context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE) }
-    var currentHearts by remember { mutableStateOf(heartsPrefs.getInt("saved_hearts_count", 3)) }
+    var currentHearts by remember(userKey) { mutableStateOf(heartsPrefs.getInt("saved_hearts_count_$userKey", 3)) }
 
     LaunchedEffect(Unit) {
         isVisible = true
@@ -211,7 +213,7 @@ fun ResultsScreen(
                                             context = context,
                                             onRewardEarned = {
                                                 currentHearts++
-                                                heartsPrefs.edit().putInt("saved_hearts_count", currentHearts).apply()
+                                                heartsPrefs.edit().putInt("saved_hearts_count_$userKey", currentHearts).apply()
                                                 authViewModel.addAdReward(context)
                                                 Toast.makeText(context, "🎉 Ad Watched! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
                                                 onPlayAgain()

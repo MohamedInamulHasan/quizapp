@@ -191,9 +191,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
         }
     }
 
-    // 3 Daily Quiz Plays Attempts State (Persisted in SharedPreferences)
+    // 3 Daily Quiz Plays Attempts State (Persisted per User in SharedPreferences)
+    val userKey = user?.id ?: user?.name ?: "default"
     val heartsPrefs = remember { context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE) }
-    var dailyAttemptsLeft by remember { mutableStateOf(heartsPrefs.getInt("saved_hearts_count", 3)) }
+    var dailyAttemptsLeft by remember(userKey) { mutableStateOf(heartsPrefs.getInt("saved_hearts_count_$userKey", 3)) }
+
+    LaunchedEffect(dailyAttemptsLeft, userKey) {
+        heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
+    }
 
     // Refresh profile every time the screen is entered or user changes
     LaunchedEffect(Unit) {
