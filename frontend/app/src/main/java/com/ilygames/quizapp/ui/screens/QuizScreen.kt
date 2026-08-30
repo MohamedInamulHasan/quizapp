@@ -234,33 +234,16 @@ fun QuizScreen(
                                     enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
                                             slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
                                 ) {
-                                    Card(
-                                        shape = RoundedCornerShape(22.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        elevation = CardDefaults.cardElevation(2.dp),
+                                    coil.compose.AsyncImage(
+                                        model = question.imageUrl,
+                                        contentDescription = "Question Image",
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(2.dp, Color.White, RoundedCornerShape(22.dp))
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(8.dp)
-                                                .clip(RoundedCornerShape(18.dp))
-                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            coil.compose.AsyncImage(
-                                                model = question.imageUrl,
-                                                contentDescription = "Question Image",
-                                                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(160.dp)
-                                                    .clip(RoundedCornerShape(18.dp))
-                                            )
-                                        }
-                                    }
+                                            .height(220.dp)
+                                            .clip(RoundedCornerShape(22.dp))
+                                            .border(2.5.dp, Color.White, RoundedCornerShape(22.dp))
+                                    )
                                 }
 
                                 Spacer(modifier = Modifier.height(14.dp))
