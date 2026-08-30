@@ -396,6 +396,7 @@ fun NativeAdminScreen(
     var inputRewardDesc by remember { mutableStateOf("") }
     var inputRewardImgUrl by remember { mutableStateOf("") }
     var showRewardModal by remember { mutableStateOf(false) }
+    var showResetScoresConfirmModal by remember { mutableStateOf(false) }
 
     // Helper: Upload image file to backend server → returns full http:// URL stored on server
     suspend fun uploadImageToServer(uri: Uri, prefix: String): String? {
@@ -1802,21 +1803,8 @@ fun NativeAdminScreen(
 
                         Button(
                             onClick = {
-                                token?.let { authToken ->
-                                    coroutineScope.launch {
-                                        try {
-                                            val response = ApiClient.apiService.resetScores(authToken)
-                                            if (response.isSuccessful) {
-                                                quizViewModel.loadLeaderboard(authToken, forceRefresh = true)
-                                                Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
-                                            } else {
-                                                Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
-                                            }
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                }
+                                SoundManager.playClickSound()
+                                showResetScoresConfirmModal = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
                             shape = RoundedCornerShape(12.dp),
@@ -1844,6 +1832,73 @@ fun NativeAdminScreen(
                         Text("Save Settings", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
+            )
+        }
+
+        // CONFIRMATION POPUP FOR RESET ALL SCORES
+        if (showResetScoresConfirmModal) {
+            AlertDialog(
+                onDismissRequest = { showResetScoresConfirmModal = false },
+                containerColor = MaterialTheme.colorScheme.surface,
+                title = {
+                    Text(
+                        text = "Reset All Scores?",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Are you sure you want to reset all user scores to zero? This action will set everyone's score to 0 and clear leaderboard results.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            showResetScoresConfirmModal = false
+                            token?.let { authToken ->
+                                coroutineScope.launch {
+                                    try {
+                                        val response = ApiClient.apiService.resetScores(authToken)
+                                        if (response.isSuccessful) {
+                                            quizViewModel.loadLeaderboard(authToken, forceRefresh = true)
+                                            Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Yes, Reset All", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            showResetScoresConfirmModal = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE0E0E0))
+                    ) {
+                        Text("Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
+                },
+                shape = RoundedCornerShape(24.dp)
             )
         }
 

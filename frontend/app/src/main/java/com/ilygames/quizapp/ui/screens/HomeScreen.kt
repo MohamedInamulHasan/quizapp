@@ -1217,15 +1217,19 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                     }
                 },
                 dismissButton = {
-                    OutlinedButton(
+                    Button(
                         onClick = {
                             SoundManager.playClickSound()
                             showSignOutConfirmationModal = false
                         },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
                         shape = RoundedCornerShape(12.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE0E0E0))
                     ) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                        Text("Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
                 },
                 shape = RoundedCornerShape(24.dp),
