@@ -1495,27 +1495,37 @@ fun NativeAdminScreen(
                         Text("Correct Answer Choice", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         val optionLetters = dynamicOptions.indices.map { idx -> if (idx < 26) ('A' + idx).toString() else (idx + 1).toString() }
                         val chunkedOptions = optionLetters.chunked(5)
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             chunkedOptions.forEach { rowLetters ->
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
                                     rowLetters.forEach { letter ->
-                                        FilterChip(
-                                            selected = correctAnswer == letter,
-                                            onClick = { correctAnswer = letter },
-                                            label = {
-                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-                                                    Text(letter, fontWeight = FontWeight.Black, fontSize = 13.sp)
-                                                }
-                                            },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = PrimaryGreen.copy(alpha = 0.25f),
-                                                selectedLabelColor = PrimaryGreen
-                                            ),
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    if (rowLetters.size < 5) {
-                                        repeat(5 - rowLetters.size) { Spacer(modifier = Modifier.weight(1f)) }
+                                        val isSelected = correctAnswer == letter
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(horizontal = 4.dp)
+                                                .width(48.dp)
+                                                .height(36.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                                                .border(1.dp, if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                                                .clickable { correctAnswer = letter },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = letter,
+                                                fontWeight = FontWeight.Black,
+                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                fontSize = 13.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
