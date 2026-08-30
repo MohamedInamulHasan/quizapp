@@ -25,6 +25,8 @@ object AdMobManager {
     const val REWARDED_LIVE_AD_UNIT_ID = "ca-app-pub-9896007608885239/8625133425"
 
     private var isInitialized = false
+    private var cachedRewardedAd: RewardedAd? = null
+    private var isLoadingAd = false
 
     fun init(context: Context) {
         if (isInitialized) return
@@ -32,10 +34,44 @@ object AdMobManager {
             MobileAds.initialize(context) { status ->
                 isInitialized = true
                 Log.d("AdMobManager", "AdMob initialized: ${status.adapterStatusMap}")
+                // Preload ad in background for INSTANT playback
+                preloadAd(context)
             }
         } catch (e: Exception) {
             Log.e("AdMobManager", "AdMob init error: ${e.message}")
         }
+    }
+
+    /**
+     * Preloads a video ad into memory in the background so it plays instantly upon click.
+     */
+    fun preloadAd(context: Context, unitId: String = REWARDED_LIVE_AD_UNIT_ID) {
+        if (cachedRewardedAd != null || isLoadingAd) return
+        val activity = context.findActivity() ?: return
+        isLoadingAd = true
+
+        val adRequest = AdRequest.Builder().build()
+        RewardedAd.load(
+            activity,
+            unitId,
+            adRequest,
+            object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(rewardedAd: RewardedAd) {
+                    Log.d("AdMobManager", "⚡ Ad Preloaded in memory! (Unit: $unitId)")
+                    cachedRewardedAd = rewardedAd
+                    isLoadingAd = false
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e("AdMobManager", "Preload failed ($unitId): ${loadAdError.message}")
+                    isLoadingAd = false
+                    if (unitId != REWARDED_TEST_AD_UNIT_ID) {
+                        // Fallback preload test ad
+                        preloadAd(context, REWARDED_TEST_AD_UNIT_ID)
+                    }
+                }
+            }
+        )
     }
 
     private fun Context.findActivity(): Activity? {
@@ -50,7 +86,7 @@ object AdMobManager {
     }
 
     /**
-     * Loads and displays a Google AdMob Rewarded Video Ad on the Main UI Thread.
+     * Displays the preloaded Rewarded Video Ad INSTANTLY.
      */
     fun showRewardedAd(
         context: Context,
@@ -64,16 +100,69 @@ object AdMobManager {
             return
         }
 
-        Toast.makeText(activity, "🎬 Loading Video Ad...", Toast.LENGTH_SHORT).show()
-
-        // Force execution on Main UI Thread to guarantee full-screen activity presentation
-        Handler(Looper.getMainLooper()).post {
-            loadAdWithUnitId(activity, REWARDED_LIVE_AD_UNIT_ID, isFallback = false, onRewardEarned, onAdClosed)
+        val ad = cachedRewardedAd
+        if (ad != null) {
+            // PLAY INSTANTLY FROM MEMORY (0-second delay!)
+            cachedRewardedAd = null // Consume cached ad
+            presentAd(activity, ad, context, onRewardEarned, onAdClosed)
+        } else {
+            // If ad is not preloaded yet, show instant loading indicator and load on demand
+            Toast.makeText(activity, "⚡ Launching Video Ad...", Toast.LENGTH_SHORT).show()
+            Handler(Looper.getMainLooper()).post {
+                loadAndPresentAdOnDemand(activity, context, REWARDED_LIVE_AD_UNIT_ID, isFallback = false, onRewardEarned, onAdClosed)
+            }
         }
     }
 
-    private fun loadAdWithUnitId(
+    private fun presentAd(
         activity: Activity,
+        rewardedAd: RewardedAd,
+        context: Context,
+        onRewardEarned: () -> Unit,
+        onAdClosed: () -> Unit
+    ) {
+        var earnedReward = false
+
+        rewardedAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                Log.d("AdMobManager", "Ad video displayed full screen.")
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                Log.e("AdMobManager", "Ad failed to show: ${adError.message}")
+                showVideoAdSimulationDialog(activity, onRewardEarned, onAdClosed)
+                preloadAd(context)
+            }
+
+            override fun onAdDismissedFullScreenContent() {
+                Log.d("AdMobManager", "Ad dismissed by user. earnedReward=$earnedReward")
+                if (earnedReward) {
+                    onRewardEarned()
+                } else {
+                    Toast.makeText(activity, "Watch full ad to get a heart!", Toast.LENGTH_SHORT).show()
+                    onAdClosed()
+                }
+                // Preload the next ad for future instant playback
+                preloadAd(context)
+            }
+        }
+
+        activity.runOnUiThread {
+            try {
+                rewardedAd.show(activity) { rewardItem: RewardItem ->
+                    Log.d("AdMobManager", "User completed video! Reward: ${rewardItem.amount}")
+                    earnedReward = true
+                }
+            } catch (e: Exception) {
+                Log.e("AdMobManager", "Error calling rewardedAd.show: ${e.message}")
+                showVideoAdSimulationDialog(activity, onRewardEarned, onAdClosed)
+            }
+        }
+    }
+
+    private fun loadAndPresentAdOnDemand(
+        activity: Activity,
+        context: Context,
         adUnitId: String,
         isFallback: Boolean,
         onRewardEarned: () -> Unit,
@@ -86,55 +175,14 @@ object AdMobManager {
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
-                    Log.d("AdMobManager", "Rewarded Ad Loaded! Presenting full screen video... (Unit: $adUnitId)")
-
-                    var earnedReward = false
-
-                    rewardedAd.fullScreenContentCallback = object : FullScreenContentCallback() {
-                        override fun onAdShowedFullScreenContent() {
-                            Log.d("AdMobManager", "Ad video displayed full screen.")
-                        }
-
-                        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                            Log.e("AdMobManager", "Ad failed to show: ${adError.message}")
-                            if (!isFallback) {
-                                loadAdWithUnitId(activity, REWARDED_TEST_AD_UNIT_ID, isFallback = true, onRewardEarned, onAdClosed)
-                            } else {
-                                Toast.makeText(activity, "Ad playback failed.", Toast.LENGTH_SHORT).show()
-                                onAdClosed()
-                            }
-                        }
-
-                        override fun onAdDismissedFullScreenContent() {
-                            Log.d("AdMobManager", "Ad dismissed by user. earnedReward=$earnedReward")
-                            if (earnedReward) {
-                                onRewardEarned()
-                            } else {
-                                Toast.makeText(activity, "Watch full ad to get a heart!", Toast.LENGTH_SHORT).show()
-                                onAdClosed()
-                            }
-                        }
-                    }
-
-                    activity.runOnUiThread {
-                        try {
-                            rewardedAd.show(activity) { rewardItem: RewardItem ->
-                                Log.d("AdMobManager", "User completed video! Reward: ${rewardItem.amount}")
-                                earnedReward = true
-                            }
-                        } catch (e: Exception) {
-                            Log.e("AdMobManager", "Error calling rewardedAd.show: ${e.message}")
-                        }
-                    }
+                    presentAd(activity, rewardedAd, context, onRewardEarned, onAdClosed)
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     Log.e("AdMobManager", "Ad Failed to Load ($adUnitId): ${loadAdError.message} (code=${loadAdError.code})")
                     if (!isFallback) {
-                        Log.d("AdMobManager", "Live ad warming up. Trying official Test Video Ad...")
-                        loadAdWithUnitId(activity, REWARDED_TEST_AD_UNIT_ID, isFallback = true, onRewardEarned, onAdClosed)
+                        loadAndPresentAdOnDemand(activity, context, REWARDED_TEST_AD_UNIT_ID, isFallback = true, onRewardEarned, onAdClosed)
                     } else {
-                        Log.d("AdMobManager", "Test ad also failed. Showing Video Ad Simulation...")
                         showVideoAdSimulationDialog(activity, onRewardEarned, onAdClosed)
                     }
                 }
@@ -143,7 +191,7 @@ object AdMobManager {
     }
 
     /**
-     * Fallback Full-Screen Video Ad Simulation Dialog if AdMob network is warming up or blocked.
+     * Instant 5-Second Video Ad Simulation Dialog if AdMob network is warming up or slow.
      */
     private fun showVideoAdSimulationDialog(
         activity: Activity,
