@@ -1441,8 +1441,8 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = questionText,
                             onValueChange = { questionText = it },
-                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("Type question text here...", color = TextMuted, fontSize = 12.sp) },
+                            label = { Text(if (isImageQuiz) "Question Text (Optional)" else "Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text(if (isImageQuiz) "Optional (e.g. Identify this picture)" else "Type question text here...", color = TextMuted, fontSize = 12.sp) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
@@ -1536,7 +1536,8 @@ fun NativeAdminScreen(
                     Button(
                         onClick = {
                             val cleanOptions = dynamicOptions.map { it.trim() }.filter { it.isNotBlank() }
-                            if (questionText.isBlank() || cleanOptions.size < 2) {
+                            val finalQuestionText = if (questionText.isBlank() && isImageQuiz) "Identify the image" else questionText.trim()
+                            if (finalQuestionText.isBlank() || cleanOptions.size < 2) {
                                 Toast.makeText(context, "Please enter question text and at least 2 options!", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
@@ -1549,7 +1550,7 @@ fun NativeAdminScreen(
 
                             val newQ = Question(
                                 id = targetId ?: "",
-                                question = questionText,
+                                question = finalQuestionText,
                                 optionA = optA,
                                 optionB = optB,
                                 optionC = optC,
