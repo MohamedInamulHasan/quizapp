@@ -213,16 +213,14 @@ router.post('/login', async (req, res) => {
     }
 
     const cleanInput = rawInput.toLowerCase();
-    const cleanRegex = new RegExp('^' + rawInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
     const emailRegex = new RegExp('^' + cleanInput.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
 
-    // 1. Look up user by email or username
+    // 1. Look up user by email (case-insensitive) OR exact username (case-sensitive)
     let user = await User.findOne({
       $or: [
         { email: emailRegex },
-        { name: cleanRegex },
         { email: cleanInput },
-        { name: rawInput }
+        { name: rawInput } // Exact case-sensitive match for username
       ]
     });
 
