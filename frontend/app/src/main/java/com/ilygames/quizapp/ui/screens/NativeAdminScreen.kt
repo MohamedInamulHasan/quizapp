@@ -55,23 +55,16 @@ var globalQuizChances = mutableStateOf(5)
 private var isDataLoadedFromPrefs = false
 
 @Composable
-fun defaultAdminTextFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-    focusedIndicatorColor = Color.Transparent,
-    unfocusedIndicatorColor = Color.Transparent,
-    disabledIndicatorColor = Color.Transparent,
+fun defaultAdminTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = PrimaryGreen,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
     focusedLabelColor = PrimaryGreen,
-    unfocusedLabelColor = PrimaryGreen.copy(alpha = 0.8f),
+    unfocusedLabelColor = TextMuted,
     focusedTextColor = MaterialTheme.colorScheme.onSurface,
     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
     focusedPlaceholderColor = TextMuted,
     unfocusedPlaceholderColor = TextMuted,
-    cursorColor = PrimaryGreen,
-    focusedLeadingIconColor = PrimaryGreen,
-    unfocusedLeadingIconColor = PrimaryGreen,
-    focusedTrailingIconColor = TextMuted,
-    unfocusedTrailingIconColor = TextMuted
+    cursorColor = PrimaryGreen
 )
 
 fun loadPersistedAdminData(context: Context) {
@@ -180,11 +173,11 @@ fun saveRewardToPrefs(context: Context, title: String, desc: String, imgUrl: Str
     }
 }
 
-// Professional Reusable Image Dropzone Placeholder
+// Simple Clean Image Picker
 @Composable
 fun ProfessionalImageDropzone(
-    title: String = "Upload Question Image",
-    subtitle: String = "Tap to pick photo from gallery or enter direct URL",
+    title: String = "Question Image",
+    subtitle: String = "Pick photo or paste URL",
     currentImageUrl: String?,
     onPickGallery: () -> Unit,
     onUrlChange: (String) -> Unit,
@@ -192,164 +185,102 @@ fun ProfessionalImageDropzone(
 ) {
     var showUrlInput by remember { mutableStateOf(false) }
 
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = PrimaryGreen.copy(alpha = 0.06f)),
-        elevation = CardDefaults.cardElevation(0.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                BorderStroke(1.5.dp, Brush.linearGradient(colors = listOf(PrimaryGreen, EmeraldGlow))),
-                shape = RoundedCornerShape(22.dp)
-            )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (currentImageUrl == "uploading...") {
-                // Show upload progress spinner
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(170.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(PrimaryGreen.copy(alpha = 0.08f))
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(36.dp))
-                        Text("Uploading to server...", fontSize = 12.sp, color = PrimaryGreen, fontWeight = FontWeight.Bold)
-                    }
-                }
-            } else if (!currentImageUrl.isNullOrBlank()) {
-                // Live Image Preview Container
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(170.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
-                ) {
-                    AsyncImage(
-                        model = currentImageUrl,
-                        contentDescription = "Image Preview",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
-                    )
-
-                    // Top Right Action Badges
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clickable { onPickGallery() }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.Edit, contentDescription = "Change", tint = PrimaryGreen, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                        Surface(
-                            shape = CircleShape,
-                            color = IncorrectRed.copy(alpha = 0.9f),
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clickable { onClearImage() }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.White, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Dropzone Upload Placeholder Cues
-                Box(
-                    modifier = Modifier
-                        .size(54.dp)
-                        .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape)
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.4f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CloudUpload,
-                        contentDescription = "Upload",
-                        tint = PrimaryGreen,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                        color = TextMuted,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            // Action Row: Gallery Upload vs URL Link
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+        if (currentImageUrl == "uploading...") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                contentAlignment = Alignment.Center
             ) {
-                Button(
-                    onClick = onPickGallery,
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(vertical = 10.dp)
-                ) {
-                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Gallery", tint = Color.White, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Pick Gallery", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
-
-                OutlinedButton(
-                    onClick = { showUrlInput = !showUrlInput },
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, PrimaryGreen),
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(vertical = 10.dp)
-                ) {
-                    Icon(Icons.Default.Link, contentDescription = "URL", tint = PrimaryGreen, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(if (showUrlInput) "Hide URL" else "Paste URL", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp))
+                    Text("Uploading image...", fontSize = 12.sp, color = PrimaryGreen, fontWeight = FontWeight.Bold)
                 }
             }
-
-            if (showUrlInput) {
-                OutlinedTextField(
-                    value = currentImageUrl ?: "",
-                    onValueChange = onUrlChange,
-                    label = { Text("Direct Image URL (HTTP/HTTPS)") },
-                    placeholder = { Text("https://example.com/image.jpg") },
-                    singleLine = true,
-                    colors = defaultAdminTextFieldColors(),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
+        } else if (!currentImageUrl.isNullOrBlank()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            ) {
+                AsyncImage(
+                    model = currentImageUrl,
+                    contentDescription = "Preview",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize()
                 )
+
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    IconButton(
+                        onClick = onPickGallery,
+                        modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surface, CircleShape)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Change", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
+                    }
+                    IconButton(
+                        onClick = onClearImage,
+                        modifier = Modifier.size(28.dp).background(IncorrectRed, CircleShape)
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.White, modifier = Modifier.size(14.dp))
+                    }
+                }
             }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onPickGallery,
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Pick Gallery", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+
+            OutlinedButton(
+                onClick = { showUrlInput = !showUrlInput },
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, PrimaryGreen),
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                Icon(Icons.Default.Link, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(15.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(if (showUrlInput) "Hide URL" else "Paste URL", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        }
+
+        if (showUrlInput) {
+            OutlinedTextField(
+                value = if (currentImageUrl == "uploading...") "" else (currentImageUrl ?: ""),
+                onValueChange = onUrlChange,
+                label = { Text("Direct Image URL", color = PrimaryGreen, fontSize = 11.sp) },
+                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface),
+                colors = defaultAdminTextFieldColors(),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp)
+            )
         }
     }
 }
@@ -1463,37 +1394,27 @@ fun NativeAdminScreen(
                         Icon(Icons.Default.UploadFile, contentDescription = "Upload", tint = Color.White)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("PARSE & UPLOAD ALL TO DB", color = Color.White, fontWeight = FontWeight.Black)
-                    }
-                }
-            )
-        }
-
-        // QUESTION CREATOR / EDIT MODAL (CLEAN REFERENCE FORM DESIGN)
+                       // QUESTION CREATOR / EDIT MODAL (NORMAL COMPACT FORM)
         if (showQuestionModal) {
             AlertDialog(
                 onDismissRequest = { showQuestionModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(24.dp),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Spacer(modifier = Modifier.width(24.dp))
                         Text(
-                            text = if (editingQuestion != null) "EDIT QUESTION" else "CREATE QUESTION",
+                            text = if (editingQuestion != null) "Edit Question" else "Create Question",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            letterSpacing = 0.5.sp
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        IconButton(
-                            onClick = { showQuestionModal = false },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                        IconButton(onClick = { showQuestionModal = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 },
@@ -1503,7 +1424,7 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // FORMAT SELECTOR
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -1532,22 +1453,19 @@ fun NativeAdminScreen(
                             )
                         }
 
-                        // QUESTION STATEMENT (SOFT FILLED RECTANGLE INPUT)
-                        TextField(
+                        OutlinedTextField(
                             value = questionText,
                             onValueChange = { questionText = it },
-                            label = { Text("Question Statement", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("Type question clearly here...", color = TextMuted, fontSize = 12.sp) },
-                            leadingIcon = { Icon(Icons.Default.Help, contentDescription = null, tint = PrimaryGreen) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            label = { Text("Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("Type question text here...", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
 
-                        // ANSWER CHOICES
-                        Text("ANSWER CHOICES (Min 2)", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                        Text("Answer Choices", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         dynamicOptions.forEachIndexed { idx, optVal ->
                             val letterLabel = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
                             Row(
@@ -1555,22 +1473,21 @@ fun NativeAdminScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                TextField(
+                                OutlinedTextField(
                                     value = optVal,
                                     onValueChange = { newValue -> dynamicOptions[idx] = newValue },
                                     label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
                                     placeholder = { Text("Enter choice $letterLabel", color = TextMuted, fontSize = 11.sp) },
-                                    leadingIcon = { Icon(Icons.Default.FormatListBulleted, contentDescription = null, tint = PrimaryGreen) },
                                     textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                                     colors = defaultAdminTextFieldColors(),
                                     modifier = Modifier.weight(1f),
                                     singleLine = true,
-                                    shape = RoundedCornerShape(12.dp)
+                                    shape = RoundedCornerShape(10.dp)
                                 )
                                 if (dynamicOptions.size > 2 && idx >= 2) {
                                     IconButton(
                                         onClick = { dynamicOptions.removeAt(idx) },
-                                        modifier = Modifier.size(36.dp)
+                                        modifier = Modifier.size(32.dp)
                                     ) {
                                         Icon(Icons.Default.Delete, contentDescription = "Delete", tint = IncorrectRed, modifier = Modifier.size(18.dp))
                                     }
@@ -1590,8 +1507,7 @@ fun NativeAdminScreen(
                             Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        // CORRECT ANSWER SELECTOR
-                        Text("SELECT CORRECT OPTION", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                        Text("Correct Answer Choice", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         val optionLetters = dynamicOptions.indices.map { idx -> if (idx < 26) ('A' + idx).toString() else (idx + 1).toString() }
                         val chunkedOptions = optionLetters.chunked(5)
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
@@ -1682,41 +1598,36 @@ fun NativeAdminScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(50.dp)
+                            .height(46.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("SAVE QUESTION", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("Save Question", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             )
         }
 
-        // PASSAGES MODAL (CLEAN REFERENCE FORM DESIGN)
+        // PASSAGES MODAL (NORMAL COMPACT FORM)
         if (showPassageModal) {
             AlertDialog(
                 onDismissRequest = { showPassageModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(24.dp),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Spacer(modifier = Modifier.width(24.dp))
                         Text(
-                            text = if (editingPassage != null) "EDIT STUDY PASSAGE" else "ADD STUDY PASSAGE",
+                            text = if (editingPassage != null) "Edit Study Passage" else "Add Study Passage",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            letterSpacing = 0.5.sp
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        IconButton(
-                            onClick = { showPassageModal = false },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                        IconButton(onClick = { showPassageModal = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 },
@@ -1726,44 +1637,41 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        TextField(
+                        OutlinedTextField(
                             value = passageCategory,
                             onValueChange = { passageCategory = it },
-                            label = { Text("Category Name", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. GENERAL KNOWLEDGE", color = TextMuted, fontSize = 12.sp) },
-                            leadingIcon = { Icon(Icons.Default.Category, contentDescription = null, tint = PrimaryGreen) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            label = { Text("Passage Category", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("e.g. GENERAL KNOWLEDGE or SCIENCE", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
 
-                        TextField(
+                        OutlinedTextField(
                             value = passageTitle,
                             onValueChange = { passageTitle = it },
                             label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("e.g. The Marvels of Renewable Energy", color = TextMuted, fontSize = 12.sp) },
-                            leadingIcon = { Icon(Icons.Default.Title, contentDescription = null, tint = PrimaryGreen) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            placeholder = { Text("e.g. The Wonders of Solar Energy", color = TextMuted, fontSize = 12.sp) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
 
-                        TextField(
+                        OutlinedTextField(
                             value = passageParagraph,
                             onValueChange = { passageParagraph = it },
-                            label = { Text("Reading Paragraph Content", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                            placeholder = { Text("Type or paste study reading content here...", color = TextMuted, fontSize = 12.sp) },
-                            leadingIcon = { Icon(Icons.Default.MenuBook, contentDescription = null, tint = PrimaryGreen) },
+                            label = { Text("Passage Reading Content", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            placeholder = { Text("Type or paste reading passage paragraph text here...", color = TextMuted, fontSize = 12.sp) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth().height(140.dp),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier.fillMaxWidth().height(120.dp),
+                            shape = RoundedCornerShape(10.dp)
                         )
                     }
                 },
@@ -1794,41 +1702,36 @@ fun NativeAdminScreen(
                             Toast.makeText(context, "📚 Passage Saved Successfully!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
-                        shape = RoundedCornerShape(50.dp)
+                        modifier = Modifier.fillMaxWidth().height(46.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("SAVE PASSAGE", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("Save Passage", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             )
         }
 
-        // QUIZ SETTINGS MODAL (CLEAN REFERENCE FORM DESIGN - CHANCES REMOVED)
+        // QUIZ SETTINGS MODAL (NORMAL COMPACT FORM)
         if (showQuizSettingsModal) {
             AlertDialog(
                 onDismissRequest = { showQuizSettingsModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(24.dp),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Spacer(modifier = Modifier.width(24.dp))
                         Text(
-                            text = "QUIZ SETTINGS",
+                            text = "Admin Quiz Settings",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            letterSpacing = 0.5.sp
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        IconButton(
-                            onClick = { showQuizSettingsModal = false },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                        IconButton(onClick = { showQuizSettingsModal = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 },
@@ -1838,10 +1741,9 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // TIMER PRESETS & CUSTOM INPUT
-                        Text("⏱️ QUESTION TIMER (SECONDS)", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                        Text("Question Timer (Seconds)", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf(5, 10, 15, 20, 30, 45).forEach { preset ->
                                 val isSelected = tempTimerText == preset.toString()
@@ -1851,27 +1753,25 @@ fun NativeAdminScreen(
                                         .clip(RoundedCornerShape(50.dp))
                                         .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                                         .clickable { tempTimerText = preset.toString() }
-                                        .padding(vertical = 8.dp),
+                                        .padding(vertical = 6.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("${preset}s", fontWeight = FontWeight.Black, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 11.sp)
+                                    Text("${preset}s", fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 11.sp)
                                 }
                             }
                         }
-                        TextField(
+                        OutlinedTextField(
                             value = tempTimerText,
                             onValueChange = { tempTimerText = it },
                             label = { Text("Custom Seconds per Question", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
-                            leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null, tint = PrimaryGreen) },
                             singleLine = true,
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
 
-                        // QUESTION LIMIT PRESETS & CUSTOM INPUT
-                        Text("❓ QUESTIONS PER QUIZ", fontWeight = FontWeight.Black, color = PrimaryGreen, fontSize = 11.sp, letterSpacing = 1.sp)
+                        Text("Questions Shown per Quiz", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf(5, 10, 15, 20, 30, 50).forEach { preset ->
                                 val isSelected = tempLimitText == preset.toString()
@@ -1881,23 +1781,22 @@ fun NativeAdminScreen(
                                         .clip(RoundedCornerShape(50.dp))
                                         .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                                         .clickable { tempLimitText = preset.toString() }
-                                        .padding(vertical = 8.dp),
+                                        .padding(vertical = 6.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("$preset Qs", fontWeight = FontWeight.Black, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 11.sp)
+                                    Text("$preset Qs", fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 11.sp)
                                 }
                             }
                         }
-                        TextField(
+                        OutlinedTextField(
                             value = tempLimitText,
                             onValueChange = { tempLimitText = it },
                             label = { Text("Custom Question Limit", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
-                            leadingIcon = { Icon(Icons.Default.HelpOutline, contentDescription = null, tint = PrimaryGreen) },
                             singleLine = true,
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
                     }
                 },
@@ -1911,41 +1810,36 @@ fun NativeAdminScreen(
                             Toast.makeText(context, "⚙️ Settings Saved! $limit Qs | ${timerSec}s timer", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
-                        shape = RoundedCornerShape(50.dp)
+                        modifier = Modifier.fillMaxWidth().height(46.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("SAVE ALL SETTINGS", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("Save Settings", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             )
         }
 
-        // REWARD PRIZE MODAL (CLEAN REFERENCE FORM DESIGN)
+        // REWARD PRIZE MODAL (NORMAL COMPACT FORM)
         if (showRewardModal) {
             AlertDialog(
                 onDismissRequest = { showRewardModal = false },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(24.dp),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Spacer(modifier = Modifier.width(24.dp))
                         Text(
-                            text = if (globalRewardTitle.value.isNotBlank()) "EDIT REWARD PRIZE" else "PUBLISH REWARD PRIZE",
+                            text = if (globalRewardTitle.value.isNotBlank()) "Edit Daily Reward" else "Publish Daily Reward",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            letterSpacing = 0.5.sp
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        IconButton(
-                            onClick = { showRewardModal = false },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                        IconButton(onClick = { showRewardModal = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 },
@@ -1955,7 +1849,7 @@ fun NativeAdminScreen(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         ProfessionalImageDropzone(
                             title = "Upload Reward Prize Photo",
@@ -1966,29 +1860,27 @@ fun NativeAdminScreen(
                             onClearImage = { inputRewardImgUrl = "" }
                         )
 
-                        TextField(
+                        OutlinedTextField(
                             value = inputRewardTitle,
                             onValueChange = { inputRewardTitle = it },
                             label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted, fontSize = 12.sp) },
-                            leadingIcon = { Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = PrimaryGreen) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
 
-                        TextField(
+                        OutlinedTextField(
                             value = inputRewardDesc,
                             onValueChange = { inputRewardDesc = it },
-                            label = { Text("Prize Details & Specs", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text("Prize Specifications & Details", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("e.g. 500ml Stainless Steel with LED Display", color = TextMuted, fontSize = 12.sp) },
-                            leadingIcon = { Icon(Icons.Default.Description, contentDescription = null, tint = PrimaryGreen) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
-                            modifier = Modifier.fillMaxWidth().height(100.dp),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier.fillMaxWidth().height(90.dp),
+                            shape = RoundedCornerShape(10.dp)
                         )
                     }
                 },
@@ -2007,12 +1899,11 @@ fun NativeAdminScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
-                        shape = RoundedCornerShape(50.dp)
+                        modifier = Modifier.fillMaxWidth().height(46.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("PUBLISH PRIZE", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                        Text("Publish Prize", color = Color.White, fontWeight = FontWeight.Bold)
                     }
-                }
             )
         }
     }
