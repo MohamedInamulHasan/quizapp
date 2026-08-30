@@ -145,6 +145,11 @@ interface ApiService {
 
     @GET("admin/reward")
     suspend fun getReward(): Response<RewardSyncResponse>
+
+    @POST("admin/reset-scores")
+    suspend fun resetScores(
+        @Header("x-auth-token") token: String
+    ): Response<Unit>
 }
 
 data class RewardSyncRequest(val title: String, val description: String, val imageUrl: String?)

@@ -1795,6 +1795,37 @@ fun NativeAdminScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp)
                         )
+
+                        Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+
+                        Text("Reset User Scores", fontWeight = FontWeight.Bold, color = IncorrectRed, fontSize = 12.sp)
+
+                        Button(
+                            onClick = {
+                                token?.let { authToken ->
+                                    coroutineScope.launch {
+                                        try {
+                                            val response = ApiClient.apiService.resetScores(authToken)
+                                            if (response.isSuccessful) {
+                                                quizViewModel.loadLeaderboard(authToken, forceRefresh = true)
+                                                Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth().height(44.dp)
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Reset All User Scores to 0", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 12.sp)
+                        }
                     }
                 },
                 confirmButton = {

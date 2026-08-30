@@ -217,12 +217,14 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
 });
 
 // @route    DELETE api/admin/questions/all/clear
-// @desc     Delete all questions in DB
+// @route    POST api/admin/reset-scores
+// @desc     Reset all user scores (totalScore, todayScore, coins) to 0
 // @access   Private (Admin)
-router.delete('/questions/all/clear', [auth, adminAuth], async (req, res) => {
+router.post('/reset-scores', [auth, adminAuth], async (req, res) => {
   try {
-    await Question.deleteMany({});
-    res.json({ msg: 'All questions cleared successfully' });
+    await User.updateMany({}, { $set: { totalScore: 0, todayScore: 0, coins: 0 } });
+    await DailyResult.deleteMany({});
+    res.json({ success: true, msg: 'All user scores reset to zero successfully' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
