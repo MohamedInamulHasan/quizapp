@@ -227,69 +227,102 @@ fun QuizScreen(
                     // KEYED CONTENT BLOCK
                     key(currentQuestionIndex) {
                         Column {
-                            // 1. Question Card
-                            AnimatedVisibility(
-                                visible = isContentVisible,
-                                enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
-                                        slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
-                            ) {
-                                Card(
-                                    shape = RoundedCornerShape(26.dp),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                    elevation = CardDefaults.cardElevation(0.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(26.dp))
+                            if (!question.imageUrl.isNullOrBlank()) {
+                                // 1. Separate Image Card (First, above question with crisp white outline and rounded edges)
+                                AnimatedVisibility(
+                                    visible = isContentVisible,
+                                    enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
+                                            slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
                                 ) {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    Card(
+                                        shape = RoundedCornerShape(22.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                        elevation = CardDefaults.cardElevation(2.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(2.dp, Color.White, RoundedCornerShape(22.dp))
                                     ) {
-                                        if (!question.imageUrl.isNullOrBlank()) {
-                                            // Small, compact question image container
-                                            Box(
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(8.dp)
+                                                .clip(RoundedCornerShape(18.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            coil.compose.AsyncImage(
+                                                model = question.imageUrl,
+                                                contentDescription = "Question Image",
+                                                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(12.dp)
-                                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
-                                                    .clip(RoundedCornerShape(16.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                coil.compose.AsyncImage(
-                                                    model = question.imageUrl,
-                                                    contentDescription = "Question Image",
-                                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .height(140.dp)
-                                                        .clip(RoundedCornerShape(16.dp))
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.height(8.dp))
+                                                    .height(160.dp)
+                                                    .clip(RoundedCornerShape(18.dp))
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                // 2. Separate Question Text Card (Below Image)
+                                AnimatedVisibility(
+                                    visible = isContentVisible,
+                                    enter = fadeIn(tween(400, delayMillis = 50, easing = FastOutSlowInEasing)) + 
+                                            slideInVertically(tween(400, delayMillis = 50, easing = FastOutSlowInEasing)) { 40 }
+                                ) {
+                                    Card(
+                                        shape = RoundedCornerShape(22.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                        elevation = CardDefaults.cardElevation(0.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
                                             Text(
                                                 text = question.question,
                                                 style = MaterialTheme.typography.titleMedium.copy(lineHeight = 28.sp, fontSize = 18.sp),
                                                 fontWeight = FontWeight.Black,
                                                 textAlign = TextAlign.Center,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                        } else {
-                                            Column(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(22.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                Text(
-                                                    text = question.question,
-                                                    style = MaterialTheme.typography.titleLarge.copy(lineHeight = 30.sp, fontSize = 19.sp),
-                                                    fontWeight = FontWeight.Black,
-                                                    textAlign = TextAlign.Center,
-                                                    color = MaterialTheme.colorScheme.onSurface
-                                                )
-                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Normal Text Question Card
+                                AnimatedVisibility(
+                                    visible = isContentVisible,
+                                    enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
+                                            slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
+                                ) {
+                                    Card(
+                                        shape = RoundedCornerShape(26.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                        elevation = CardDefaults.cardElevation(0.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(26.dp))
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(22.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = question.question,
+                                                style = MaterialTheme.typography.titleLarge.copy(lineHeight = 30.sp, fontSize = 19.sp),
+                                                fontWeight = FontWeight.Black,
+                                                textAlign = TextAlign.Center,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
                                         }
                                     }
                                 }
