@@ -38,6 +38,7 @@ import com.google.gson.reflect.TypeToken
 import com.ilygames.quizapp.data.api.ApiClient
 import com.ilygames.quizapp.data.model.Question
 import com.ilygames.quizapp.ui.theme.*
+import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import com.ilygames.quizapp.utils.SoundManager
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
