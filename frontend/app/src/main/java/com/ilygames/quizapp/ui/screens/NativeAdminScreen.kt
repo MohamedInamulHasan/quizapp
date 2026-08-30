@@ -68,8 +68,10 @@ fun defaultAdminTextFieldColors() = TextFieldDefaults.colors(
     focusedPlaceholderColor = TextMuted,
     unfocusedPlaceholderColor = TextMuted,
     cursorColor = PrimaryGreen,
-    leadingIconColor = PrimaryGreen,
-    trailingIconColor = TextMuted
+    focusedLeadingIconColor = PrimaryGreen,
+    unfocusedLeadingIconColor = PrimaryGreen,
+    focusedTrailingIconColor = TextMuted,
+    unfocusedTrailingIconColor = TextMuted
 )
 
 fun loadPersistedAdminData(context: Context) {
