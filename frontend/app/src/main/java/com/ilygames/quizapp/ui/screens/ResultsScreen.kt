@@ -70,6 +70,7 @@ fun ResultsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .background(MaterialTheme.colorScheme.background)
             .padding(20.dp),
         contentAlignment = Alignment.Center

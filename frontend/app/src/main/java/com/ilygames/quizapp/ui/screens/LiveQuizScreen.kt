@@ -71,6 +71,7 @@ fun LiveQuizScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(20.dp)
         ) {
             // Header bar

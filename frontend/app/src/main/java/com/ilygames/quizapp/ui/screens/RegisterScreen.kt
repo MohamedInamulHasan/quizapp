@@ -77,6 +77,7 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .imePadding()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp),

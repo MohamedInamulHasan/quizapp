@@ -239,6 +239,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .background(MaterialTheme.colorScheme.background)
     ) {
         LazyColumn(
