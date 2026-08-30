@@ -228,15 +228,13 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp)
-            ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp)
+        ) {
             // 1. MINIMALIST TOP HEADER (User Profile & Right-Aligned Small Settings Dropdown)
             item {
                 Row(
@@ -1210,7 +1208,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 containerColor = MaterialTheme.colorScheme.surface
             )
         }
-        com.ilygames.quizapp.utils.AdMobManager.BannerAd()
     }
 }
 
