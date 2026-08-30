@@ -1394,7 +1394,12 @@ fun NativeAdminScreen(
                         Icon(Icons.Default.UploadFile, contentDescription = "Upload", tint = Color.White)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("PARSE & UPLOAD ALL TO DB", color = Color.White, fontWeight = FontWeight.Black)
-                       // QUESTION CREATOR / EDIT MODAL (NORMAL COMPACT FORM)
+                    }
+                }
+            )
+        }
+
+        // QUESTION CREATOR / EDIT MODAL (NORMAL COMPACT FORM)
         if (showQuestionModal) {
             AlertDialog(
                 onDismissRequest = { showQuestionModal = false },
