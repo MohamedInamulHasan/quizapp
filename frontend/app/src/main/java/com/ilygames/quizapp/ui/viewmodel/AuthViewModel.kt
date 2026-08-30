@@ -290,6 +290,9 @@ class AuthViewModel : ViewModel() {
 
     private fun clearToken(context: Context) {
         val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-        sharedPrefs.edit().clear().apply()
+        sharedPrefs.edit()
+            .remove("auth_token")
+            .remove("saved_profile_img_url")
+            .apply()
     }
 }
