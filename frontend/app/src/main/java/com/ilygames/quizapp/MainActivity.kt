@@ -159,20 +159,21 @@ fun AppNavigation() {
         }
 
         composable("quiz") {
-            token?.let { currentToken ->
-                QuizScreen(
-                    token = currentToken,
-                    quizViewModel = quizViewModel,
-                    onQuizFinished = {
-                        navController.navigate("result") {
-                            popUpTo("quiz") { inclusive = true }
-                        }
-                    },
-                    onExitQuiz = {
-                        navController.popBackStack()
+            QuizScreen(
+                token = token ?: "",
+                quizViewModel = quizViewModel,
+                onQuizFinished = {
+                    navController.navigate("result") {
+                        popUpTo("quiz") { inclusive = true }
                     }
-                )
-            }
+                },
+                onExitQuiz = {
+                    quizViewModel.resetQuiz()
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable("reading_quiz") {
