@@ -1858,53 +1858,69 @@ fun NativeAdminScreen(
                     )
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            SoundManager.playClickSound()
-                            showResetScoresConfirmModal = false
-                            token?.let { authToken ->
-                                coroutineScope.launch {
-                                    try {
-                                        val response = ApiClient.apiService.resetScores(authToken)
-                                        if (response.isSuccessful) {
-                                            quizViewModel?.loadLeaderboard(authToken, true)
-                                            quizViewModel?.loadLeaderboard(authToken, false)
-                                            Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
-                                        } else {
-                                            Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
-                                        }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
-                        shape = RoundedCornerShape(12.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Yes, Reset All", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    Surface(
-                        onClick = {
-                            SoundManager.playClickSound()
-                            showResetScoresConfirmModal = false
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.White,
-                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFD0D5DD)),
-                        modifier = Modifier.height(40.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.padding(horizontal = 18.dp)
+                        // Pure White Cancel Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                showResetScoresConfirmModal = false
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White,
+                                contentColor = Color(0xFF1D2939)
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFCFD4DC)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp)
                         ) {
                             Text("Cancel", color = Color(0xFF1D2939), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
+
+                        // Red Yes, Reset All Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                showResetScoresConfirmModal = false
+                                token?.let { authToken ->
+                                    coroutineScope.launch {
+                                        try {
+                                            val response = ApiClient.apiService.resetScores(authToken)
+                                            if (response.isSuccessful) {
+                                                quizViewModel?.loadLeaderboard(authToken, true)
+                                                quizViewModel?.loadLeaderboard(authToken, false)
+                                                Toast.makeText(context, "🔄 All user scores reset to 0!", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "Failed to reset scores", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = IncorrectRed,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp)
+                        ) {
+                            Text("Yes, Reset All", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        }
                     }
                 },
-                shape = RoundedCornerShape(24.dp)
+                dismissButton = null,
+                shape = RoundedCornerShape(26.dp),
+                containerColor = Color.White
             )
         }
 

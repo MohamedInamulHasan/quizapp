@@ -1203,39 +1203,54 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                     )
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            SoundManager.playClickSound()
-                            showSignOutConfirmationModal = false
-                            authViewModel.logout(context)
-                            onLogout()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
-                        shape = RoundedCornerShape(12.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Sign Out", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    Surface(
-                        onClick = {
-                            SoundManager.playClickSound()
-                            showSignOutConfirmationModal = false
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.White,
-                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFD0D5DD)),
-                        modifier = Modifier.height(40.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.padding(horizontal = 18.dp)
+                        // Pure White Cancel Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                showSignOutConfirmationModal = false
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White,
+                                contentColor = Color(0xFF1D2939)
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFCFD4DC)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp)
                         ) {
                             Text("Cancel", color = Color(0xFF1D2939), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
+
+                        // Red Sign Out Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                showSignOutConfirmationModal = false
+                                authViewModel.logout(context)
+                                onLogout()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = IncorrectRed,
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp)
+                        ) {
+                            Text("Sign Out", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
                     }
                 },
-                shape = RoundedCornerShape(24.dp),
+                dismissButton = null,
+                shape = RoundedCornerShape(26.dp),
                 containerColor = Color.White
             )
         }
