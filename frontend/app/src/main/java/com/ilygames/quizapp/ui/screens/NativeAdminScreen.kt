@@ -218,26 +218,6 @@ fun ProfessionalImageDropzone(
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize()
                 )
-
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    IconButton(
-                        onClick = onPickGallery,
-                        modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surface, CircleShape)
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Change", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
-                    }
-                    IconButton(
-                        onClick = onClearImage,
-                        modifier = Modifier.size(28.dp).background(IncorrectRed, CircleShape)
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.White, modifier = Modifier.size(14.dp))
-                    }
-                }
             }
         }
 
