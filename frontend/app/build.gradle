@@ -80,4 +80,7 @@ dependencies {
 
     // MultiDex
     implementation 'androidx.multidex:multidex:2.0.1'
+
+    // Google Mobile Ads (AdMob)
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
 }

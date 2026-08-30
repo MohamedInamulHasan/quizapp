@@ -1,0 +1,89 @@
+package com.ilygames.quizapp.utils
+
+import android.app.Activity
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.rewarded.RewardItem
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+
+object AdMobManager {
+
+    // DEFAULT ADMOB TEST UNIT IDs (Provided by Google for testing)
+    // Replace with your live Ad Unit IDs from https://admob.google.com when ready!
+    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
+    const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+
+    private var isInitialized = false
+
+    fun init(context: Context) {
+        if (isInitialized) return
+        MobileAds.initialize(context) { status ->
+            isInitialized = true
+            Log.d("AdMobManager", "AdMob initialized successfully: ${status.adapterStatusMap}")
+        }
+    }
+
+    /**
+     * Composable Banner Ad component for bottom of screens
+     */
+    @Composable
+    fun BannerAd(
+        modifier: Modifier = Modifier,
+        adUnitId: String = BANNER_AD_UNIT_ID
+    ) {
+        AndroidView(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            factory = { context ->
+                AdView(context).apply {
+                    setAdSize(AdSize.BANNER)
+                    this.adUnitId = adUnitId
+                    loadAd(AdRequest.Builder().build())
+                }
+            }
+        )
+    }
+
+    /**
+     * Loads and displays a Google AdMob Rewarded Video Ad
+     */
+    fun showRewardedAd(
+        activity: Activity,
+        onRewardEarned: () -> Unit,
+        onAdClosed: () -> Unit = {}
+    ) {
+        Toast.makeText(activity, "Loading Video Ad...", Toast.LENGTH_SHORT).show()
+        val adRequest = AdRequest.Builder().build()
+
+        RewardedAd.load(
+            activity,
+            REWARDED_AD_UNIT_ID,
+            adRequest,
+            object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(rewardedAd: RewardedAd) {
+                    Log.d("AdMobManager", "Rewarded Ad Loaded!")
+                    rewardedAd.show(activity) { rewardItem: RewardItem ->
+                        Log.d("AdMobManager", "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+                        onRewardEarned()
+                    }
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e("AdMobManager", "Rewarded Ad Failed to Load: ${loadAdError.message}")
+                    Toast.makeText(activity, "Ad failed to load. Please try again later.", Toast.LENGTH_SHORT).show()
+                    onAdClosed()
+                }
+            }
+        )
+    }
+}

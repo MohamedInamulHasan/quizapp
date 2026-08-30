@@ -56,6 +56,7 @@ fun AppNavigation() {
         com.ilygames.quizapp.ui.theme.ThemeState.init(context)
         com.ilygames.quizapp.ui.screens.loadPersistedAdminData(context)
         SoundManager.init(context)
+        com.ilygames.quizapp.utils.AdMobManager.init(context)
         authViewModel.tryAutoLogin(context)
     }
 

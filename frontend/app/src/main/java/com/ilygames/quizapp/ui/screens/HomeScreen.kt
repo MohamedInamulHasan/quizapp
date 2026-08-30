@@ -228,13 +228,15 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp)
+            ) {
             // 1. MINIMALIST TOP HEADER (User Profile & Right-Aligned Small Settings Dropdown)
             item {
                 Row(
@@ -569,7 +571,18 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     val isHeartActive = i < dailyAttemptsLeft
                                     Text(
                                         text = if (isHeartActive) "❤️" else "💔",
-                                        fontSize = 20.sp
+                                        fontSize = 20.sp,
+                                        modifier = Modifier.clickable {
+                                            if (!isHeartActive && context is android.app.Activity) {
+                                                com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
+                                                    activity = context,
+                                                    onRewardEarned = {
+                                                        dailyAttemptsLeft = (dailyAttemptsLeft + 1).coerceAtMost(3)
+                                                        Toast.makeText(context, "🎉 Heart Restored from Video Ad!", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                )
+                                            }
+                                        }
                                     )
                                 }
                             }
@@ -1197,6 +1210,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 containerColor = MaterialTheme.colorScheme.surface
             )
         }
+        com.ilygames.quizapp.utils.AdMobManager.BannerAd()
     }
 }
 
