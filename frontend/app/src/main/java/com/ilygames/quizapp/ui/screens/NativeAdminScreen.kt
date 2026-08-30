@@ -1919,8 +1919,7 @@ fun NativeAdminScreen(
                     }
                 },
                 dismissButton = null,
-                shape = RoundedCornerShape(26.dp),
-                containerColor = Color.White
+                shape = RoundedCornerShape(26.dp)
             )
         }
 
