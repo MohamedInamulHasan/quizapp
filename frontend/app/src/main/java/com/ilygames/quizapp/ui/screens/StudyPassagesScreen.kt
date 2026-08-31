@@ -177,8 +177,7 @@ fun StudyPassagesScreen(
                             .shadow(
                                 elevation = 8.dp,
                                 shape = RoundedCornerShape(22.dp),
-                                spotColor = Color.Black.copy(alpha = if (isDarkArt) 0.45f else 0.1f),
-                                ambientColor = Color.Black.copy(alpha = if (isDarkArt) 0.35f else 0.05f)
+                                spotColor = Color.Black.copy(alpha = if (isDarkArt) 0.45f else 0.1f)
                             )
                             .background(artCardBg, RoundedCornerShape(22.dp))
                             .border(

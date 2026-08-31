@@ -232,8 +232,7 @@ fun LeaderboardPodium(entries: List<LeaderboardEntry>, currentUserId: String, cu
             .shadow(
                 elevation = 10.dp,
                 shape = RoundedCornerShape(26.dp),
-                spotColor = Color.Black.copy(alpha = if (isDarkLdr) 0.45f else 0.12f),
-                ambientColor = Color.Black.copy(alpha = if (isDarkLdr) 0.35f else 0.08f)
+                spotColor = Color.Black.copy(alpha = if (isDarkLdr) 0.45f else 0.12f)
             )
             .background(ldrCardBg, RoundedCornerShape(26.dp))
             .border(

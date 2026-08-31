@@ -572,8 +572,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         .shadow(
                             elevation = 10.dp,
                             shape = RoundedCornerShape(24.dp),
-                            spotColor = Color.Black.copy(alpha = if (isDarkHeader) 0.45f else 0.12f),
-                            ambientColor = Color.Black.copy(alpha = if (isDarkHeader) 0.35f else 0.08f)
+                            spotColor = Color.Black.copy(alpha = if (isDarkHeader) 0.45f else 0.12f)
                         )
                         .background(scoreCardBg, RoundedCornerShape(24.dp))
                         .border(
@@ -1328,8 +1327,7 @@ fun UnifiedEmeraldCard(
             .shadow(
                 elevation = 10.dp,
                 shape = RoundedCornerShape(22.dp),
-                spotColor = Color.Black.copy(alpha = if (isDark) 0.45f else 0.12f),
-                ambientColor = Color.Black.copy(alpha = if (isDark) 0.35f else 0.08f)
+                spotColor = Color.Black.copy(alpha = if (isDark) 0.45f else 0.12f)
             )
             .background(cardBg, RoundedCornerShape(22.dp))
             .border(

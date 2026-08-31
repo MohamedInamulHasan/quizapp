@@ -160,7 +160,7 @@ fun ResultsScreen(
                             )
                         }
 
-                        Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
+                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
 
                         // Clear Performance Details Table
                         Column(
