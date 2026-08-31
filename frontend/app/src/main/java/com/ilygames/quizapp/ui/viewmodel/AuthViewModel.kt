@@ -283,7 +283,7 @@ class AuthViewModel : ViewModel() {
         sharedPrefs.edit().putString("auth_token", token).apply()
     }
 
-    private fun getToken(context: Context): String? {
+    fun getToken(context: Context): String? {
         val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
         return sharedPrefs.getString("auth_token", null)
     }
