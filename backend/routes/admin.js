@@ -411,18 +411,49 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       return res.status(400).json({ success: false, msg: `No images found online for "${targetQuery}". Try another keyword!` });
     }
 
-    const limit = Math.min(count, items.length);
-    const shuffled = [...items].sort(() => 0.5 - Math.random()).slice(0, limit);
+    const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
+
+    // Fetch existing questions from MongoDB to prevent repeating any answer
+    const existingInDb = await Question.find({ category: categoryLabel });
+    const usedNames = new Set();
+    for (const q of existingInDb) {
+      if (q.options && Array.isArray(q.options)) {
+        const idx = ["A", "B", "C", "D"].indexOf(q.correctAnswer);
+        if (idx !== -1 && q.options[idx]) {
+          usedNames.add(q.options[idx].toLowerCase().trim());
+        }
+      }
+    }
+
+    // Filter out items already created in DB
+    let poolToUse = items.filter(x => !usedNames.has(x.name.toLowerCase().trim()));
+    if (poolToUse.length === 0) {
+      poolToUse = items; // Reuse pool if user already generated all available entities
+    }
+
+    const shuffled = [...poolToUse].sort(() => 0.5 - Math.random());
     const createdQuestions = [];
+    const batchUsedNames = new Set(usedNames);
 
     for (const targetItem of shuffled) {
+      if (createdQuestions.length >= count) break;
+
       const correctName = targetItem.name;
+      const cleanName = correctName.toLowerCase().trim();
+
+      // STRICT DEDUPLICATION: Skip if this answer was already generated in DB or current batch!
+      if (batchUsedNames.has(cleanName)) {
+        continue;
+      }
+
+      batchUsedNames.add(cleanName);
+
       // Pick 3 distractor option names from items list
-      let otherNames = items.filter(x => x.name !== correctName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
+      let otherNames = items.filter(x => x.name.toLowerCase().trim() !== cleanName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
 
       const fallbackDistractors = ["Eren Yeager", "Mikasa Ackerman", "Armin Arlert", "Levi Ackerman", "Naruto Uzumaki", "Sasuke Uchiha", "Kakashi Hatake", "Thalapathy Vijay", "Ajith Kumar", "Suriya"];
       while (otherNames.length < 3) {
-        const extra = fallbackDistractors.filter(x => x !== correctName && !otherNames.includes(x));
+        const extra = fallbackDistractors.filter(x => x.toLowerCase().trim() !== cleanName && !otherNames.includes(x));
         if (extra.length > 0) {
           otherNames.push(extra[Math.floor(Math.random() * extra.length)]);
         } else {
@@ -440,7 +471,6 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
         finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
       }
 
-      const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
       const questionPrompt = customQuery ? `Identify this ${customQuery}:` : `Identify the picture:`;
 
       const newQ = new Question({
