@@ -607,7 +607,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Text(
                                 text = "CHANCES",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextMuted,
+                                color = if (isDarkHeader) Color.White else Color(0xFF17181C),
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
                             )
@@ -645,12 +645,12 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
                         )
 
-                        // RIGHT SIDE: LATEST SCORE (ALIGNED WITH CHANCES LINE) & HIGH SCORE (BIGGER, ALIGNED WITH HEARTS LINE)
+                        // RIGHT SIDE: LATEST SCORE & HIGH SCORE
                         Column(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // LATEST SCORE : 0 pts (Top Line - Aligned with CHANCES label)
+                            // LATEST SCORE : 0 pts (White text)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -659,14 +659,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     text = "LATEST SCORE :",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = TextMuted,
+                                    color = if (isDarkHeader) Color.White else Color(0xFF17181C),
                                     letterSpacing = 0.5.sp
                                 )
                                 Text(
                                     text = "${user?.todayScore ?: 0} pts",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = if (isDarkHeader) Color.White else Color(0xFF17181C)
                                 )
                             }
 

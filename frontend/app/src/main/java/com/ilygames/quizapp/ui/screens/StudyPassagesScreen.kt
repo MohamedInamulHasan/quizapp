@@ -210,7 +210,7 @@ fun StudyPassagesScreen(
                             Text(
                                 text = formatMarkdownText(article.paragraph),
                                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp, fontSize = 14.sp),
-                                color = if (isDarkArt) Color.White.copy(alpha = 0.9f) else Color(0xFF2C3E6B)
+                                color = if (isDarkArt) Color.White.copy(alpha = 0.9f) else Color(0xFF334155)
                             )
                         }
                     }
