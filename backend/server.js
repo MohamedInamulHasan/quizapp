@@ -44,6 +44,12 @@ app.use('/admin', express.static(path.join(__dirname, 'public/admin')));
 // Serve uploaded images (question images, reward images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve AdMob app-ads.txt file for Google AdMob verification
+app.get('/app-ads.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send('google.com, pub-9896007608885239, DIRECT, f08c47fec0942fa0\n');
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', (req, res, next) => { req.broadcast = broadcast; next(); }, quizRoutes);
