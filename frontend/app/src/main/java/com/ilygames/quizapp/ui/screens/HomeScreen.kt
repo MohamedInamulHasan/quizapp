@@ -971,13 +971,26 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             )
         }
 
-        // GPay-Style Profile & Account Modal
+        // GPay-Style Profile & Account Modal (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showGPayProfileModal) {
+            val isDarkProfileModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val profileModalBg = if (isDarkProfileModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showGPayProfileModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = profileModalBg,
+                titleContentColor = if (isDarkProfileModal) Color.White else Color(0xFF17181C),
                 shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkProfileModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkProfileModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(32.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -988,10 +1001,26 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             text = "Profile",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
-                            color = PrimaryGreen
+                            color = Color(0xFF255FF4)
                         )
-                        IconButton(onClick = { showGPayProfileModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = { showGPayProfileModal = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(profileModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkProfileModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkProfileModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkProfileModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -1010,7 +1039,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             ?: modalSavedLocally
                         val modalAvatarModel = getFullProfileImageUrl(modalRawProfileUrl)
 
-                        // Profile avatar with camera upload badge (Exact fit white outline, no shadow)
+                        // Profile avatar with camera upload badge
                         Box(
                             modifier = Modifier
                                 .size(90.dp)
@@ -1022,7 +1051,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     .border(2.5.dp, Color.White, CircleShape)
                                     .padding(2.5.dp)
                                     .clip(CircleShape)
-                                    .background(PrimaryGreen.copy(alpha = 0.15f)),
+                                    .background(Color(0xFF255FF4).copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (modalAvatarModel != null) {
@@ -1038,7 +1067,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     text = userInitial,
                                                     style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
                                                     fontWeight = FontWeight.Black,
-                                                    color = PrimaryGreen
+                                                    color = Color(0xFF255FF4)
                                                 )
                                             }
                                         }
@@ -1049,7 +1078,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                         text = userInitial,
                                         style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
                                         fontWeight = FontWeight.Black,
-                                        color = PrimaryGreen
+                                        color = Color(0xFF255FF4)
                                     )
                                 }
                             }
@@ -1059,7 +1088,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     .size(26.dp)
                                     .align(Alignment.BottomEnd)
                                     .clip(CircleShape)
-                                    .background(PrimaryGreen)
+                                    .background(Color(0xFF255FF4))
                                     .border(1.5.dp, Color.White, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1072,7 +1101,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         }
 
-                        // Editable name (Restored)
+                        // Editable name
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -1088,17 +1117,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 text = customUserNameState.value,
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
                                 fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = if (isDarkProfileModal) Color.White else Color(0xFF17181C)
                             )
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit Name",
-                                tint = PrimaryGreen,
+                                tint = Color(0xFF255FF4),
                                 modifier = Modifier.size(18.dp)
                             )
                         }
 
-                        // Tap caption (Restored)
+                        // Tap caption
                         Text(
                             text = "Tap name to change username",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
@@ -1109,7 +1138,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 confirmButton = {
                     Button(
                         onClick = { showGPayProfileModal = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -1119,16 +1148,29 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             )
         }
 
-        // Edit Player Username Modal
+        // Edit Player Username Modal (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showEditNameModal) {
+            val isDarkEditNameModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val editNameModalBg = if (isDarkEditNameModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = {
                     showEditNameModal = false
                     editNameError = ""
                 },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(26.dp),
+                containerColor = editNameModalBg,
+                titleContentColor = if (isDarkEditNameModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkEditNameModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkEditNameModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1139,13 +1181,29 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             text = "Change Username",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isDarkEditNameModal) Color.White else Color(0xFF17181C)
                         )
-                        IconButton(onClick = {
-                            showEditNameModal = false
-                            editNameError = ""
-                        }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = {
+                                showEditNameModal = false
+                                editNameError = ""
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(editNameModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkEditNameModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkEditNameModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkEditNameModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -1159,16 +1217,15 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         OutlinedTextField(
                             value = tempNameInput,
                             onValueChange = { input ->
-                                // Block spaces and special chars — only letters, digits, _ and . (max 20 chars)
                                 val filtered = input.filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(20)
                                 tempNameInput = filtered
                                 editNameError = ""
                             },
-                            label = { Text("New Username", color = TextMuted) },
+                            label = { Text("New Username", color = Color(0xFF255FF4)) },
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),
                             textStyle = androidx.compose.ui.text.TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = if (isDarkEditNameModal) Color.White else Color(0xFF17181C),
                                 fontSize = 16.sp
                             ),
                             isError = editNameError.isNotBlank(),
@@ -1176,17 +1233,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 { Text(editNameError, color = IncorrectRed) }
                             } else null,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryGreen,
+                                focusedBorderColor = Color(0xFF255FF4),
                                 unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
                                 errorBorderColor = IncorrectRed,
-                                focusedLabelColor = PrimaryGreen,
+                                focusedLabelColor = Color(0xFF255FF4),
                                 unfocusedLabelColor = TextMuted,
-                                cursorColor = PrimaryGreen,
+                                cursorColor = Color(0xFF255FF4),
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
                                 errorContainerColor = Color.Transparent,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                                focusedTextColor = if (isDarkEditNameModal) Color.White else Color(0xFF17181C),
+                                unfocusedTextColor = if (isDarkEditNameModal) Color.White else Color(0xFF17181C)
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -1234,7 +1291,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         },
                         enabled = tempNameInput.isNotBlank() && !isUpdatingName,
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp)
                     ) {

@@ -218,14 +218,13 @@ fun ResultsScreen(
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
-
-                        // Action Buttons Row
+                        // 3D Soft-Clay Action Buttons Row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Retry / Play Again / Watch Ad Button
-                            OutlinedButton(
+                            // Retry / Play Again / Watch Ad Button (3D Glossy Blue Button)
+                            Button(
                                 onClick = {
                                     SoundManager.playClickSound()
                                     if (currentHearts > 0) {
@@ -244,43 +243,81 @@ fun ResultsScreen(
                                         )
                                     }
                                 },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier
                                     .weight(1.1f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                border = BorderStroke(1.5.dp, Color(0xFF255FF4))
+                                    .height(48.dp)
+                                    .shadow(6.dp, RoundedCornerShape(16.dp))
+                                    .background(
+                                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                            listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                        ),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                             ) {
-                                Icon(
-                                    imageVector = if (currentHearts > 0) Icons.Default.Refresh else Icons.Default.OndemandVideo,
-                                    contentDescription = "Action",
-                                    tint = Color(0xFF255FF4),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = if (currentHearts > 0) "Play Again" else "Watch Ad",
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 13.sp,
-                                    color = Color(0xFF255FF4)
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (currentHearts > 0) Icons.Default.Refresh else Icons.Default.OndemandVideo,
+                                        contentDescription = "Action",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (currentHearts > 0) "Play Again" else "Watch Ad",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 13.sp,
+                                        color = Color.White
+                                    )
+                                }
                             }
 
-                            // Home Button
+                            // Home Button (3D Glossy Blue Button)
                             Button(
                                 onClick = {
                                     SoundManager.playClickSound()
                                     quizViewModel.resetQuiz()
                                     onBackToHome()
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                                shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier
                                     .weight(0.9f)
                                     .height(48.dp)
+                                    .shadow(6.dp, RoundedCornerShape(16.dp))
+                                    .background(
+                                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                            listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                        ),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                             ) {
-                                Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Home", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Home,
+                                        contentDescription = "Home",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Home",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 13.sp,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
                     }
