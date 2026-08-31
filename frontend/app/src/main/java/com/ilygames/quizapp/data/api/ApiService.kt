@@ -160,5 +160,5 @@ interface ApiService {
 
 data class RewardSyncRequest(val title: String, val description: String, val imageUrl: String?)
 data class RewardSyncResponse(val title: String, val description: String, val imageUrl: String?)
-data class AiGenerateQuizRequest(val category: String, val count: Int = 5)
+data class AiGenerateQuizRequest(val category: String, val count: Int = 5, val customQuery: String = "")
 data class AiGenerateQuizResponse(val success: Boolean, val count: Int, val msg: String?)

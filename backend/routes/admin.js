@@ -174,23 +174,63 @@ router.post('/upload-image', [auth, upload.single('image')], async (req, res) =>
   }
 });
 
+// Helper: Dynamic Wikipedia search for any user-typed topic
+async function fetchDynamicQuizItems(query, count) {
+  try {
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${Math.max(count * 2, 30)}&prop=pageimages|extracts&piprop=original|thumbnail&pithumbsize=800&format=json`;
+    const res = await fetch(searchUrl);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+
+    const items = [];
+    for (const page of pages) {
+      const title = page.title;
+      if (!title || title.includes("List of") || title.includes("Category:") || title.includes("Wikipedia:")) continue;
+      const imgUrl = page.original?.source || page.thumbnail?.source;
+      if (imgUrl) {
+        items.push({ name: title, img: imgUrl });
+      }
+    }
+    return items;
+  } catch (e) {
+    console.error('Wikipedia search error:', e);
+    return [];
+  }
+}
+
 // @route    POST api/admin/ai-generate-category-quiz
-// @desc     Auto-generate 16:9 image quizzes for Naruto, Kollywood, Cartoons, Sports, etc.
+// @desc     Auto-generate 16:9 image quizzes for Naruto, Kollywood, Cartoons, Sports, or ANY typed topic (up to 100)
 // @access   Private (Admin)
 router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) => {
-  const { category = 'naruto', count = 5 } = req.body;
+  const { category = 'naruto', count = 5, customQuery = '' } = req.body;
   try {
-    const key = category.toLowerCase().trim();
-    let items = AI_QUIZ_DATASETS[key] || AI_QUIZ_DATASETS.naruto;
-    const limit = Math.min(count, items.length);
+    const targetQuery = (customQuery || category).trim();
+    const key = targetQuery.toLowerCase();
+    let items = AI_QUIZ_DATASETS[key];
 
+    // If no static dataset exists, dynamically search Wikipedia for ANY topic typed by user!
+    if (!items || items.length === 0) {
+      items = await fetchDynamicQuizItems(targetQuery, count);
+    }
+
+    if (!items || items.length === 0) {
+      items = AI_QUIZ_DATASETS.naruto;
+    }
+
+    const limit = Math.min(count, items.length);
     const shuffled = [...items].sort(() => 0.5 - Math.random()).slice(0, limit);
     const createdQuestions = [];
 
     for (const targetItem of shuffled) {
       const correctName = targetItem.name;
-      // Pick 3 distractor option names
+      // Pick 3 distractor option names from items list
       const otherNames = items.filter(x => x.name !== correctName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
+
+      while (otherNames.length < 3) {
+        otherNames.push(`Option ${otherNames.length + 1}`);
+      }
+
       const allFour = [correctName, ...otherNames].sort(() => 0.5 - Math.random());
       const correctIdx = allFour.indexOf(correctName);
       const letterMap = ["A", "B", "C", "D"];
@@ -208,7 +248,7 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
         console.error('Failed to crop AI image to 16:9, fallback to source:', cropErr.message);
       }
 
-      const categoryLabel = key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars';
+      const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
 
       const newQ = new Question({
         question: ``, // Blank text so image card looks clean
@@ -230,7 +270,7 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
     res.json({
       success: true,
       count: createdQuestions.length,
-      msg: `Created ${createdQuestions.length} 16:9 Image Quizzes successfully!`
+      msg: `Created ${createdQuestions.length} 16:9 Image Quizzes for "${targetQuery}" successfully!`
     });
   } catch (err) {
     console.error('AI Generate Error:', err);

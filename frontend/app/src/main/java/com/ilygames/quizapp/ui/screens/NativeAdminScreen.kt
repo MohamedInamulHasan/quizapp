@@ -403,6 +403,8 @@ fun NativeAdminScreen(
     // AI 16:9 Quiz Generator State
     var showAiGeneratorModal by remember { mutableStateOf(false) }
     var selectedAiCategory by remember { mutableStateOf("naruto") }
+    var customAiQuery by remember { mutableStateOf("") }
+    var aiQuestionCount by remember { mutableStateOf(5) }
     var isGeneratingAiQuizzes by remember { mutableStateOf(false) }
 
     // Helper: Upload image file to backend server → returns full http:// URL stored on server
@@ -1974,43 +1976,72 @@ fun NativeAdminScreen(
                 },
                 text = {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            text = "Select a category below to automatically download 16:9 cropped images, generate 4 options, and insert quizzes directly into your database!",
+                            text = "Type ANY topic prompt below (or pick a preset) to search the web, download 16:9 images, auto-generate options A,B,C,D, and insert up to 100 questions into your database!",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF475467),
-                            fontSize = 13.sp
+                            fontSize = 12.sp
                         )
 
-                        Text("Select Category:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        Text("1. Type Any Topic / Keyword:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        OutlinedTextField(
+                            value = customAiQuery,
+                            onValueChange = { customAiQuery = it },
+                            label = { Text("e.g. Marvel Superheroes, Car Logos, Cities", fontSize = 11.sp) },
+                            singleLine = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(color = Color(0xFF101828), fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                            colors = defaultAdminTextFieldColors(),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
 
+                        Text("Or Pick a Preset Topic:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         val categoriesList = listOf(
-                            "naruto" to "🍥 Naruto & Anime Characters",
-                            "kollywood" to "🎬 Kollywood Tamil Stars",
-                            "cartoons" to "📺 Cartoons & Animation",
-                            "sports" to "🏏 Sports & Cricket Stars"
+                            "naruto" to "🍥 Naruto & Anime",
+                            "kollywood" to "🎬 Kollywood Stars",
+                            "cartoons" to "📺 Cartoons",
+                            "sports" to "🏏 Sports & Cricket"
                         )
 
-                        categoriesList.forEach { (catKey, catLabel) ->
-                            val isSelected = selectedAiCategory == catKey
-                            Surface(
-                                onClick = { selectedAiCategory = catKey },
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (isSelected) PrimaryGreen.copy(alpha = 0.12f) else Color(0xFFF2F4F7),
-                                border = androidx.compose.foundation.BorderStroke(1.5.dp, if (isSelected) PrimaryGreen else Color(0xFFEAECF0)),
-                                modifier = Modifier.fillMaxWidth().height(48.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            categoriesList.forEach { (catKey, catLabel) ->
+                                val isSelected = customAiQuery.isBlank() && selectedAiCategory == catKey
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(50.dp))
+                                        .background(if (isSelected) PrimaryGreen else Color(0xFFF2F4F7))
+                                        .clickable {
+                                            customAiQuery = ""
+                                            selectedAiCategory = catKey
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Text(catLabel, fontWeight = FontWeight.Bold, color = if (isSelected) PrimaryGreen else Color(0xFF1D2939), fontSize = 14.sp)
-                                    if (isSelected) {
-                                        Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(18.dp))
-                                    }
+                                    Text(catLabel, fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else Color(0xFF344054), fontSize = 10.sp)
+                                }
+                            }
+                        }
+
+                        Text("2. Number of Quizzes to Generate:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            listOf(5, 10, 20, 50, 100).forEach { cnt ->
+                                val isSelected = aiQuestionCount == cnt
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(50.dp))
+                                        .background(if (isSelected) PrimaryGreen else Color(0xFFF2F4F7))
+                                        .clickable { aiQuestionCount = cnt }
+                                        .padding(vertical = 6.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("$cnt Qs", fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else Color(0xFF344054), fontSize = 11.sp)
                                 }
                             }
                         }
@@ -2024,12 +2055,16 @@ fun NativeAdminScreen(
                                 isGeneratingAiQuizzes = true
                                 coroutineScope.launch {
                                     try {
-                                        val req = com.ilygames.quizapp.data.api.AiGenerateQuizRequest(selectedAiCategory, count = 5)
+                                        val req = com.ilygames.quizapp.data.api.AiGenerateQuizRequest(
+                                            category = selectedAiCategory,
+                                            count = aiQuestionCount,
+                                            customQuery = customAiQuery.trim()
+                                        )
                                         val res = ApiClient.apiService.aiGenerateCategoryQuiz(authToken, req)
                                         if (res.isSuccessful && res.body()?.success == true) {
                                             showAiGeneratorModal = false
                                             fetchAdminQuestions(authToken)
-                                            Toast.makeText(context, "✨ ${res.body()?.msg ?: "Created 5 16:9 Image Quizzes!"}", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "✨ ${res.body()?.msg ?: "Created 16:9 Image Quizzes!"}", Toast.LENGTH_LONG).show()
                                         } else {
                                             Toast.makeText(context, "Failed to generate AI quizzes", Toast.LENGTH_SHORT).show()
                                         }
@@ -2051,7 +2086,7 @@ fun NativeAdminScreen(
                         } else {
                             Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Generate 5 Image Quizzes (16:9)", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Generate $aiQuestionCount Image Quizzes (16:9)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
                 }
