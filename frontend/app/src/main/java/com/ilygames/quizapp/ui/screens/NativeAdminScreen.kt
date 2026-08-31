@@ -151,6 +151,23 @@ fun savePassagesToPrefs(context: Context) {
     prefs.edit().putString("saved_passages_key", json).apply()
 }
 
+fun saveQuestionsToLocalPrefs(context: Context, questions: List<Question>) {
+    val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
+    val json = Gson().toJson(questions)
+    prefs.edit().putString("saved_questions_key", json).apply()
+}
+
+fun loadQuestionsFromLocalPrefs(context: Context): List<Question> {
+    val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
+    val json = prefs.getString("saved_questions_key", null) ?: return emptyList()
+    return try {
+        val type = object : TypeToken<List<Question>>() {}.type
+        Gson().fromJson(json, type) ?: emptyList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+}
+
 fun saveRewardToPrefs(context: Context, title: String, desc: String, imgUrl: String? = globalRewardImageUrl.value, token: String = "") {
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
     prefs.edit()
@@ -473,10 +490,20 @@ fun NativeAdminScreen(
             try {
                 // Use admin/questions: returns ALL questions with imageUrl, sorted newest first
                 val resp = ApiClient.apiService.getAdminQuestions(token ?: "")
-                if (resp.isSuccessful && resp.body() != null) {
+                if (resp.isSuccessful && resp.body() != null && resp.body()!!.isNotEmpty()) {
                     questionsStateList = resp.body()!!
+                    saveQuestionsToLocalPrefs(context, questionsStateList)
+                } else {
+                    val cached = loadQuestionsFromLocalPrefs(context)
+                    if (cached.isNotEmpty()) {
+                        questionsStateList = cached
+                    }
                 }
             } catch (e: Exception) {
+                val cached = loadQuestionsFromLocalPrefs(context)
+                if (cached.isNotEmpty()) {
+                    questionsStateList = cached
+                }
             } finally {
                 isLoadingQuestions = false
             }
@@ -640,8 +667,7 @@ fun NativeAdminScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Create Single Question Button
+                                       // Create Single Question Button (3D GLOSSY ROYAL BLUE)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -654,36 +680,54 @@ fun NativeAdminScreen(
                                 questionImageUrl = ""
                                 showQuestionModal = true
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                                .shadow(6.dp, RoundedCornerShape(14.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                    ),
+                                    RoundedCornerShape(14.dp)
+                                )
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text("New", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("New", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
 
-                        // Bulk Upload Button
+                        // Bulk Upload Button (3D GLOSSY ROYAL BLUE)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 bulkTextRaw = ""
                                 showBulkUploadModal = true
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4).copy(alpha = 0.12f)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
-                            modifier = Modifier.weight(1.1f)
+                            modifier = Modifier
+                                .weight(1.1f)
+                                .height(40.dp)
+                                .shadow(6.dp, RoundedCornerShape(14.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                    ),
+                                    RoundedCornerShape(14.dp)
+                                )
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                         ) {
-                            Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = Color(0xFF255FF4), modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text("Bulk", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = Color.White, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Bulk", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
 
-
-
-                        // Delete All Button
+                        // Delete All Button (3D GLOSSY RED)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -691,24 +735,32 @@ fun NativeAdminScreen(
                                     coroutineScope.launch {
                                         try {
                                             ApiClient.apiService.deleteAllQuestions(authToken)
-                                            questionsStateList = emptyList()
-                                            Toast.makeText(context, "🗑️ All Questions Wiped from DB!", Toast.LENGTH_SHORT).show()
-                                        } catch (e: Exception) {
-                                            questionsStateList = emptyList()
-                                            Toast.makeText(context, "Cleared questions!", Toast.LENGTH_SHORT).show()
-                                        }
+                                        } catch (_: Exception) {}
                                     }
                                 }
+                                questionsStateList = emptyList()
+                                saveQuestionsToLocalPrefs(context, emptyList())
+                                Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed.copy(alpha = 0.15f)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                                .shadow(6.dp, RoundedCornerShape(14.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFFEF4444), Color(0xFFDC2626), Color(0xFF991B1B))
+                                    ),
+                                    RoundedCornerShape(14.dp)
+                                )
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                         ) {
-                            Icon(Icons.Default.DeleteForever, contentDescription = "Wipe", tint = IncorrectRed, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text("Wipe All", color = IncorrectRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
+                            Icon(Icons.Default.DeleteForever, contentDescription = "Wipe", tint = Color.White, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Wipe All", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        }             }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -819,12 +871,13 @@ fun NativeAdminScreen(
                                                         questionsStateList = questionsStateList.filter { item ->
                                                             if (!targetId.isNullOrBlank()) item.id != targetId else item.question != targetQuestionText
                                                         }
+                                                        saveQuestionsToLocalPrefs(context, questionsStateList)
                                                         if (!targetId.isNullOrBlank()) {
                                                             token?.let { authToken ->
                                                                 coroutineScope.launch {
                                                                     try {
                                                                         ApiClient.apiService.deleteQuestion(authToken, targetId)
-                                                                        Toast.makeText(context, "🗑️ Question Deleted from DB!", Toast.LENGTH_SHORT).show()
+                                                                        Toast.makeText(context, "🗑️ Question Deleted!", Toast.LENGTH_SHORT).show()
                                                                     } catch (e: Exception) {
                                                                         Toast.makeText(context, "Question removed!", Toast.LENGTH_SHORT).show()
                                                                     }
@@ -1553,24 +1606,33 @@ fun NativeAdminScreen(
                                         val res = ApiClient.apiService.bulkUploadQuestions(authToken, parsedQuestions)
                                         if (res.isSuccessful && res.body() != null) {
                                             questionsStateList = res.body()!! + questionsStateList
-                                            Toast.makeText(context, "🎉 Uploaded ${res.body()!!.size} questions to DB!", Toast.LENGTH_SHORT).show()
                                         } else {
                                             questionsStateList = parsedQuestions + questionsStateList
-                                            Toast.makeText(context, "🎉 Added ${parsedQuestions.size} questions!", Toast.LENGTH_SHORT).show()
                                         }
-                                        showBulkUploadModal = false
-                                        loadExistingQuestions()
                                     } catch (e: Exception) {
                                         questionsStateList = parsedQuestions + questionsStateList
-                                        Toast.makeText(context, "🎉 Added ${parsedQuestions.size} questions!", Toast.LENGTH_SHORT).show()
+                                    } finally {
+                                        saveQuestionsToLocalPrefs(context, questionsStateList)
                                         showBulkUploadModal = false
+                                        Toast.makeText(context, "🎉 Added ${parsedQuestions.size} questions!", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
                         Icon(Icons.Default.UploadFile, contentDescription = "Upload", tint = Color.White)
                         Spacer(modifier = Modifier.width(6.dp))
@@ -1792,6 +1854,12 @@ fun NativeAdminScreen(
                                 imageUrl = if (isImageQuiz && questionImageUrl.isNotBlank()) questionImageUrl else null
                             )
 
+                            if (editingQuestion != null && !targetId.isNullOrBlank()) {
+                                questionsStateList = questionsStateList.map { if (it.id == targetId) newQ else it }
+                            } else {
+                                questionsStateList = listOf(newQ) + questionsStateList.filter { it.id != newQ.id }
+                            }
+                            saveQuestionsToLocalPrefs(context, questionsStateList)
                             showQuestionModal = false
 
                             token?.let { authToken ->
@@ -1802,21 +1870,17 @@ fun NativeAdminScreen(
                                             if (updated.isSuccessful && updated.body() != null) {
                                                 val serverQ = updated.body()!!
                                                 questionsStateList = questionsStateList.map { if (it.id == targetId) serverQ else it }
-                                            } else {
-                                                loadExistingQuestions()
+                                                saveQuestionsToLocalPrefs(context, questionsStateList)
                                             }
                                         } else {
                                             val created = ApiClient.apiService.createQuestion(authToken, newQ)
                                             if (created.isSuccessful && created.body() != null) {
                                                 val serverQ = created.body()!!
                                                 questionsStateList = listOf(serverQ) + questionsStateList.filter { it.id != serverQ.id }
-                                            } else {
-                                                loadExistingQuestions()
+                                                saveQuestionsToLocalPrefs(context, questionsStateList)
                                             }
                                         }
-                                    } catch (e: Exception) {
-                                        loadExistingQuestions()
-                                    }
+                                    } catch (_: Exception) {}
                                 }
                             }
                             Toast.makeText(context, "🎉 Question Saved!", Toast.LENGTH_SHORT).show()
