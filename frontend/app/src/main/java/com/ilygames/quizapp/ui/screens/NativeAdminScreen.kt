@@ -151,30 +151,7 @@ fun savePassagesToPrefs(context: Context) {
     prefs.edit().putString("saved_passages_key", json).apply()
 }
 
-fun saveQuestionsToLocalPrefs(context: Context, questions: List<Question>, isWiped: Boolean = false) {
-    val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
-    val json = Gson().toJson(questions)
-    prefs.edit()
-        .putString("saved_questions_key", json)
-        .putBoolean("questions_wiped_locally_key", isWiped)
-        .apply()
-}
 
-fun isQuestionsWipedLocally(context: Context): Boolean {
-    val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
-    return prefs.getBoolean("questions_wiped_locally_key", false)
-}
-
-fun loadQuestionsFromLocalPrefs(context: Context): List<Question> {
-    val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
-    val json = prefs.getString("saved_questions_key", null) ?: return emptyList()
-    return try {
-        val type = object : TypeToken<List<Question>>() {}.type
-        Gson().fromJson(json, type) ?: emptyList()
-    } catch (e: Exception) {
-        emptyList()
-    }
-}
 
 fun saveRewardToPrefs(context: Context, title: String, desc: String, imgUrl: String? = globalRewardImageUrl.value, token: String = "") {
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
@@ -495,29 +472,16 @@ fun NativeAdminScreen(
     fun loadExistingQuestions() {
         isLoadingQuestions = true
         coroutineScope.launch {
-            val isWiped = isQuestionsWipedLocally(context)
-            val cached = loadQuestionsFromLocalPrefs(context)
-
-            if (isWiped) {
-                questionsStateList = emptyList()
-                isLoadingQuestions = false
-                return@launch
-            }
-
-            if (cached.isNotEmpty()) {
-                questionsStateList = cached
-            }
-
             try {
-                // Use admin/questions: returns ALL questions with imageUrl, sorted newest first
+                // Fetch ALL questions directly from MongoDB database
                 val resp = ApiClient.apiService.getAdminQuestions(token ?: "")
-                if (resp.isSuccessful && resp.body() != null && resp.body()!!.isNotEmpty()) {
-                    val serverList = resp.body()!!
-                    val localOnly = questionsStateList.filter { localQ -> serverList.none { s -> s.id == localQ.id || s.question == localQ.question } }
-                    questionsStateList = localOnly + serverList
-                    saveQuestionsToLocalPrefs(context, questionsStateList, isWiped = false)
+                if (resp.isSuccessful && resp.body() != null) {
+                    questionsStateList = resp.body()!!
+                } else {
+                    questionsStateList = emptyList()
                 }
             } catch (_: Exception) {
+                questionsStateList = emptyList()
             } finally {
                 isLoadingQuestions = false
             }
@@ -748,13 +712,20 @@ fun NativeAdminScreen(
                                 token?.let { authToken ->
                                     coroutineScope.launch {
                                         try {
-                                            ApiClient.apiService.deleteAllQuestions(authToken)
-                                        } catch (_: Exception) {}
+                                            val res = ApiClient.apiService.deleteAllQuestions(authToken)
+                                            if (res.isSuccessful) {
+                                                questionsStateList = emptyList()
+                                                Toast.makeText(context, "🗑️ All Questions Wiped from MongoDB!", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                questionsStateList = emptyList()
+                                                Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            questionsStateList = emptyList()
+                                            Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
                                 }
-                                questionsStateList = emptyList()
-                                saveQuestionsToLocalPrefs(context, emptyList(), isWiped = true)
-                                Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             shape = RoundedCornerShape(14.dp),
@@ -885,14 +856,13 @@ fun NativeAdminScreen(
                                                         questionsStateList = questionsStateList.filter { item ->
                                                             if (!targetId.isNullOrBlank()) item.id != targetId else item.question != targetQuestionText
                                                         }
-                                                        saveQuestionsToLocalPrefs(context, questionsStateList)
                                                         if (!targetId.isNullOrBlank()) {
                                                             token?.let { authToken ->
                                                                 coroutineScope.launch {
                                                                     try {
                                                                         ApiClient.apiService.deleteQuestion(authToken, targetId)
-                                                                        Toast.makeText(context, "🗑️ Question Deleted!", Toast.LENGTH_SHORT).show()
-                                                                    } catch (e: Exception) {
+                                                                        Toast.makeText(context, "🗑️ Question Deleted from MongoDB!", Toast.LENGTH_SHORT).show()
+                                                                    } catch (_: Exception) {
                                                                         Toast.makeText(context, "Question removed!", Toast.LENGTH_SHORT).show()
                                                                     }
                                                                 }
@@ -1620,15 +1590,16 @@ fun NativeAdminScreen(
                                         val res = ApiClient.apiService.bulkUploadQuestions(authToken, parsedQuestions)
                                         if (res.isSuccessful && res.body() != null) {
                                             questionsStateList = res.body()!! + questionsStateList
+                                            Toast.makeText(context, "🎉 Saved ${res.body()!!.size} questions to MongoDB!", Toast.LENGTH_SHORT).show()
                                         } else {
                                             questionsStateList = parsedQuestions + questionsStateList
+                                            Toast.makeText(context, "🎉 Added ${parsedQuestions.size} questions!", Toast.LENGTH_SHORT).show()
                                         }
                                     } catch (e: Exception) {
                                         questionsStateList = parsedQuestions + questionsStateList
-                                    } finally {
-                                        saveQuestionsToLocalPrefs(context, questionsStateList)
-                                        showBulkUploadModal = false
                                         Toast.makeText(context, "🎉 Added ${parsedQuestions.size} questions!", Toast.LENGTH_SHORT).show()
+                                    } finally {
+                                        showBulkUploadModal = false
                                     }
                                 }
                             }
@@ -1873,7 +1844,6 @@ fun NativeAdminScreen(
                             } else {
                                 questionsStateList = listOf(newQ) + questionsStateList.filter { it.id != newQ.id }
                             }
-                            saveQuestionsToLocalPrefs(context, questionsStateList)
                             showQuestionModal = false
 
                             token?.let { authToken ->
@@ -1884,20 +1854,18 @@ fun NativeAdminScreen(
                                             if (updated.isSuccessful && updated.body() != null) {
                                                 val serverQ = updated.body()!!
                                                 questionsStateList = questionsStateList.map { if (it.id == targetId) serverQ else it }
-                                                saveQuestionsToLocalPrefs(context, questionsStateList)
                                             }
                                         } else {
                                             val created = ApiClient.apiService.createQuestion(authToken, newQ)
                                             if (created.isSuccessful && created.body() != null) {
                                                 val serverQ = created.body()!!
                                                 questionsStateList = listOf(serverQ) + questionsStateList.filter { it.id != serverQ.id }
-                                                saveQuestionsToLocalPrefs(context, questionsStateList)
                                             }
                                         }
                                     } catch (_: Exception) {}
                                 }
                             }
-                            Toast.makeText(context, "🎉 Question Saved!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "🎉 Question Saved to MongoDB!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         shape = RoundedCornerShape(16.dp),
