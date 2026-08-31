@@ -633,21 +633,7 @@ fun NativeAdminScreen(
                             Text("Bulk", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        // AI 16:9 Quiz Generator Button (No outline border)
-                        Button(
-                            onClick = {
-                                SoundManager.playClickSound()
-                                showAiGeneratorModal = true
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen.copy(alpha = 0.15f)),
-                            shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
-                            modifier = Modifier.weight(1.3f)
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = "AI", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text("🤖 AI 16:9", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
+
 
                         // Delete All Button
                         Button(
@@ -1336,10 +1322,11 @@ fun NativeAdminScreen(
                         Text(
                             text = "Bulk Question Text Upload",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         IconButton(onClick = { showBulkUploadModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 },
@@ -1353,14 +1340,14 @@ fun NativeAdminScreen(
                         Text(
                             text = "Paste formatted text containing questions (e.g. Question 1: ..., A: ..., B: ..., C: ..., D: ..., Correct: B)",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextMuted
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         OutlinedTextField(
                             value = bulkCategory,
                             onValueChange = { bulkCategory = it },
                             label = { Text("Questions Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            placeholder = { Text("e.g. Naruto, General Knowledge", color = TextMuted) },
+                            placeholder = { Text("e.g. Naruto, General Knowledge", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryGreen,
@@ -1379,7 +1366,7 @@ fun NativeAdminScreen(
                             value = bulkTextRaw,
                             onValueChange = { bulkTextRaw = it },
                             label = { Text("Paste Formatted Questions Text Here...", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            placeholder = { Text("Question 1: ...\nA: ...\nB: ...\nC: ...\nD: ...\nCorrect: B", color = TextMuted) },
+                            placeholder = { Text("Question 1: ...\nA: ...\nB: ...\nC: ...\nD: ...\nCorrect: B", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 14.sp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryGreen,
