@@ -151,10 +151,18 @@ fun savePassagesToPrefs(context: Context) {
     prefs.edit().putString("saved_passages_key", json).apply()
 }
 
-fun saveQuestionsToLocalPrefs(context: Context, questions: List<Question>) {
+fun saveQuestionsToLocalPrefs(context: Context, questions: List<Question>, isWiped: Boolean = false) {
     val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
     val json = Gson().toJson(questions)
-    prefs.edit().putString("saved_questions_key", json).apply()
+    prefs.edit()
+        .putString("saved_questions_key", json)
+        .putBoolean("questions_wiped_locally_key", isWiped)
+        .apply()
+}
+
+fun isQuestionsWipedLocally(context: Context): Boolean {
+    val prefs = context.getSharedPreferences("admin_app_prefs", Context.MODE_PRIVATE)
+    return prefs.getBoolean("questions_wiped_locally_key", false)
 }
 
 fun loadQuestionsFromLocalPrefs(context: Context): List<Question> {
@@ -487,23 +495,29 @@ fun NativeAdminScreen(
     fun loadExistingQuestions() {
         isLoadingQuestions = true
         coroutineScope.launch {
+            val isWiped = isQuestionsWipedLocally(context)
+            val cached = loadQuestionsFromLocalPrefs(context)
+
+            if (isWiped) {
+                questionsStateList = emptyList()
+                isLoadingQuestions = false
+                return@launch
+            }
+
+            if (cached.isNotEmpty()) {
+                questionsStateList = cached
+            }
+
             try {
                 // Use admin/questions: returns ALL questions with imageUrl, sorted newest first
                 val resp = ApiClient.apiService.getAdminQuestions(token ?: "")
                 if (resp.isSuccessful && resp.body() != null && resp.body()!!.isNotEmpty()) {
-                    questionsStateList = resp.body()!!
-                    saveQuestionsToLocalPrefs(context, questionsStateList)
-                } else {
-                    val cached = loadQuestionsFromLocalPrefs(context)
-                    if (cached.isNotEmpty()) {
-                        questionsStateList = cached
-                    }
+                    val serverList = resp.body()!!
+                    val localOnly = questionsStateList.filter { localQ -> serverList.none { s -> s.id == localQ.id || s.question == localQ.question } }
+                    questionsStateList = localOnly + serverList
+                    saveQuestionsToLocalPrefs(context, questionsStateList, isWiped = false)
                 }
-            } catch (e: Exception) {
-                val cached = loadQuestionsFromLocalPrefs(context)
-                if (cached.isNotEmpty()) {
-                    questionsStateList = cached
-                }
+            } catch (_: Exception) {
             } finally {
                 isLoadingQuestions = false
             }
@@ -739,7 +753,7 @@ fun NativeAdminScreen(
                                     }
                                 }
                                 questionsStateList = emptyList()
-                                saveQuestionsToLocalPrefs(context, emptyList())
+                                saveQuestionsToLocalPrefs(context, emptyList(), isWiped = true)
                                 Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
