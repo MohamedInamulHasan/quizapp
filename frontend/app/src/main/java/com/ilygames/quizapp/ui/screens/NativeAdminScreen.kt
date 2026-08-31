@@ -494,7 +494,10 @@ fun NativeAdminScreen(
                 .statusBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // Header Bar
+            // Header Bar (3D BACK BUTTON & 3D ROYAL BLUE BADGE)
+            val isDarkAdminBack = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val adminBackBg = if (isDarkAdminBack) Color(0xFF1C273A) else Color.White
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -504,10 +507,20 @@ fun NativeAdminScreen(
                     onClick = onBack,
                     modifier = Modifier
                         .size(42.dp)
-                        .background(MaterialTheme.colorScheme.surface, CircleShape)
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        .shadow(6.dp, CircleShape)
+                        .background(adminBackBg, CircleShape)
+                        .border(
+                            1.5.dp,
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = if (isDarkAdminBack) 0.35f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDarkAdminBack) 0.5f else 0.1f)
+                                )
+                            ),
+                            CircleShape
+                        )
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = if (isDarkAdminBack) Color.White else Color(0xFF17181C))
                 }
 
                 Row(
@@ -863,7 +876,7 @@ fun NativeAdminScreen(
                                             text = q.question,
                                             style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = if (isDarkQCardAdmin) Color.White else Color(0xFF17181C)
                                         )
 
                                         val opts = q.getOptionsList()
@@ -874,7 +887,8 @@ fun NativeAdminScreen(
                                         Text(
                                             text = "$optionsText\nCorrect Option: ${q.correctAnswer}",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = TextMuted
+                                            color = if (isDarkQCardAdmin) Color.White.copy(alpha = 0.95f) else Color(0xFF334155),
+                                            fontWeight = FontWeight.Medium
                                         )
                                     }
                                 }
