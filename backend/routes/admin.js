@@ -106,6 +106,38 @@ async function cropTo16x9(buffer) {
   }
 }
 
+// Helper: Convert ANY external/Wikipedia URL to a permanent Cloudinary CDN link before saving to DB
+async function ensureCloudinaryUrl(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
+    return imageUrl;
+  }
+  if (imageUrl.includes('cloudinary.com')) {
+    return imageUrl;
+  }
+
+  try {
+    const fetchRes = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/*'
+      }
+    });
+
+    if (fetchRes.ok) {
+      const buffer = Buffer.from(await fetchRes.arrayBuffer());
+      const cropped = await cropTo16x9(buffer);
+      const cUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
+      if (cUrl && cUrl.includes('cloudinary.com')) {
+        return cUrl;
+      }
+    }
+  } catch (err) {
+    console.error('ensureCloudinaryUrl failed for:', imageUrl, err.message);
+  }
+
+  return imageUrl;
+}
+
 // Data sets for Auto AI Image Quiz Generation
 const AI_QUIZ_DATASETS = {
   naruto: [
@@ -311,20 +343,12 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       const letterMap = ["A", "B", "C", "D"];
 
       // Download source image and upload to Cloudinary CDN
-      let finalImgUrl = targetItem.img;
-      try {
-        if (targetItem.img && targetItem.img.startsWith('http')) {
-          const fetchRes = await fetch(targetItem.img, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
-          });
-          if (fetchRes.ok) {
-            const buffer = Buffer.from(await fetchRes.arrayBuffer());
-            const cropped = await cropTo16x9(buffer);
-            finalImgUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
-          }
-        }
-      } catch (cropErr) {
-        console.error('Failed to upload image to Cloudinary CDN, fallback to source URL:', cropErr.message);
+      let finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
+
+      // STRICT RULE: Only save questions with 100% valid Cloudinary CDN links!
+      if (!finalImgUrl || !finalImgUrl.includes('cloudinary.com')) {
+        console.warn(`[AI_GEN_SKIP] Skipping item "${correctName}" - Could not convert image to Cloudinary CDN link`);
+        continue;
       }
 
       const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
@@ -375,6 +399,10 @@ router.post('/questions', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ msg: 'Minimum 2 options are required for a question.' });
     }
 
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http') && !imageUrl.includes('cloudinary.com')) {
+      imageUrl = await ensureCloudinaryUrl(imageUrl);
+    }
+
     const newQuestion = new Question({
       question,
       optionA: options[0] || '',
@@ -411,6 +439,10 @@ router.put('/questions/:id', [auth, adminAuth], async (req, res) => {
 
     if (options.length < 2) {
       return res.status(400).json({ msg: 'Minimum 2 options are required for a question.' });
+    }
+
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http') && !imageUrl.includes('cloudinary.com')) {
+      imageUrl = await ensureCloudinaryUrl(imageUrl);
     }
 
     const questionFields = {
@@ -647,6 +679,32 @@ router.post('/seed', [auth, adminAuth], async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// @route    POST api/admin/clean-expired-links
+// @desc     One-click database cleaner: converts all existing Wikipedia/external image links in MongoDB into permanent Cloudinary CDN links
+// @access   Private (Admin)
+router.post('/clean-expired-links', [auth, adminAuth], async (req, res) => {
+  try {
+    const questions = await Question.find({ imageUrl: { $ne: null } });
+    let updatedCount = 0;
+
+    for (const q of questions) {
+      if (q.imageUrl && q.imageUrl.startsWith('http') && !q.imageUrl.includes('cloudinary.com')) {
+        const cUrl = await ensureCloudinaryUrl(q.imageUrl);
+        if (cUrl && cUrl.includes('cloudinary.com')) {
+          q.imageUrl = cUrl;
+          await q.save();
+          updatedCount++;
+        }
+      }
+    }
+
+    res.json({ success: true, msg: `Successfully upgraded ${updatedCount} existing questions to Cloudinary CDN links!` });
+  } catch (err) {
+    console.error('Clean links error:', err.message);
+    res.status(500).json({ success: false, msg: err.message });
   }
 });
 
