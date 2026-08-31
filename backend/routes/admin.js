@@ -259,11 +259,33 @@ router.post('/upload-image', [auth, upload.single('image')], async (req, res) =>
   }
 });
 
-// Helper: Dynamic Web Image Search for any user-typed topic (Wikipedia + Wikimedia Commons)
+// Helper: Dynamic Web Image Search for any user-typed topic (Openverse + Wikipedia)
 async function fetchDynamicQuizItems(query, count) {
   const items = [];
-  const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
+  const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36' };
 
+  // 1. Search Openverse Open Image Library for unblocked high-res photos
+  try {
+    const openverseUrl = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=${Math.max(count * 2, 20)}`;
+    const res = await fetch(openverseUrl, { headers });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.results && Array.isArray(data.results)) {
+        for (const item of data.results) {
+          if (item.url && item.title) {
+            const cleanTitle = item.title.trim().replace(/\.(jpg|jpeg|png|svg|webp)$/i, '');
+            if (cleanTitle.length > 2 && !items.some(x => x.img === item.url)) {
+              items.push({ name: cleanTitle, img: item.url });
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Openverse search error:', e.message);
+  }
+
+  // 2. Wikipedia Search API
   try {
     const searchQueries = [query, `${query} character`, `${query} series`];
     for (const q of searchQueries) {
