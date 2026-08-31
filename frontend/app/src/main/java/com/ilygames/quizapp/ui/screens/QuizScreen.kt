@@ -242,10 +242,20 @@ fun QuizScreen(
                                         .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
                                         .build()
 
-                                    coil.compose.AsyncImage(
+                                    coil.compose.SubcomposeAsyncImage(
                                         model = quizImgReq,
                                         contentDescription = "Question Image",
                                         contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                                        loading = {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(32.dp), strokeWidth = 3.dp)
+                                            }
+                                        },
+                                        error = {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                Icon(Icons.Default.BrokenImage, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(36.dp))
+                                            }
+                                        },
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .aspectRatio(16f / 9f)

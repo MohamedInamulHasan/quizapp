@@ -808,10 +808,23 @@ fun NativeAdminScreen(
                                                 .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
                                                 .build()
 
-                                            AsyncImage(
+                                            coil.compose.SubcomposeAsyncImage(
                                                 model = imgRequest,
                                                 contentDescription = "Question Image Preview",
                                                 contentScale = ContentScale.Fit,
+                                                loading = {
+                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                                    }
+                                                },
+                                                error = {
+                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                            Icon(Icons.Default.BrokenImage, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
+                                                            Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
+                                                        }
+                                                    }
+                                                },
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(150.dp)
