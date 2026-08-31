@@ -58,15 +58,15 @@ private var isDataLoadedFromPrefs = false
 
 @Composable
 fun defaultAdminTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = PrimaryGreen,
+    focusedBorderColor = Color(0xFF255FF4),
     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-    focusedLabelColor = PrimaryGreen,
+    focusedLabelColor = Color(0xFF255FF4),
     unfocusedLabelColor = TextMuted,
     focusedTextColor = MaterialTheme.colorScheme.onSurface,
     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
     focusedPlaceholderColor = TextMuted,
     unfocusedPlaceholderColor = TextMuted,
-    cursorColor = PrimaryGreen
+    cursorColor = Color(0xFF255FF4)
 )
 
 fun loadPersistedAdminData(context: Context) {
@@ -513,20 +513,23 @@ fun NativeAdminScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
-                        .background(PrimaryGreen.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                        .background(Color(0xFF255FF4).copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                        .border(1.dp, Color(0xFF255FF4), RoundedCornerShape(20.dp))
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
-                    Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = Color(0xFF255FF4), modifier = Modifier.size(18.dp))
                     Text(
                         text = "Admin Studio",
                         style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
                         fontWeight = FontWeight.Black,
-                        color = PrimaryGreen
+                        color = Color(0xFF255FF4)
                     )
                 }
 
                 // Main Settings Icon for Quiz Question Limit Configuration
+                val isDarkAdminSet = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                val adminSetBg = if (isDarkAdminSet) Color(0xFF1C273A) else Color.White
+
                 IconButton(
                     onClick = {
                         SoundManager.playClickSound()
@@ -537,13 +540,23 @@ fun NativeAdminScreen(
                     },
                     modifier = Modifier
                         .size(42.dp)
-                        .background(MaterialTheme.colorScheme.surface, CircleShape)
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.4f), CircleShape)
+                        .shadow(4.dp, CircleShape)
+                        .background(adminSetBg, CircleShape)
+                        .border(
+                            1.dp,
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = if (isDarkAdminSet) 0.35f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDarkAdminSet) 0.5f else 0.1f)
+                                )
+                            ),
+                            CircleShape
+                        )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Quiz Settings",
-                        tint = PrimaryGreen,
+                        tint = Color(0xFF255FF4),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -551,35 +564,52 @@ fun NativeAdminScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3-Tab Selector Bar
-            Row(
+            // 4-Tab 3D Soft-Clay Selector Bar
+            val isDarkTabBar = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val tabBarBg = if (isDarkTabBar) Color(0xFF1C273A) else Color.White
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .shadow(6.dp, RoundedCornerShape(20.dp))
+                    .background(tabBarBg, RoundedCornerShape(20.dp))
+                    .border(
+                        1.5.dp,
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = if (isDarkTabBar) 0.35f else 0.9f),
+                                Color.Black.copy(alpha = if (isDarkTabBar) 0.5f else 0.08f)
+                            )
+                        ),
+                        RoundedCornerShape(20.dp)
+                    )
+                    .padding(4.dp)
             ) {
-                listOf("Questions", "Passages", "Rewards", "Users").forEachIndexed { idx, label ->
-                    val isSelected = selectedTab == idx
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (isSelected) PrimaryGreen else Color.Transparent)
-                            .clickable {
-                                SoundManager.playClickSound()
-                                selectedTab = idx
-                            }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Black,
-                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                        )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    listOf("Questions", "Passages", "Rewards", "Users").forEachIndexed { idx, label ->
+                        val isSelected = selectedTab == idx
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (isSelected) Color(0xFF255FF4) else Color.Transparent)
+                                .clickable {
+                                    SoundManager.playClickSound()
+                                    selectedTab = idx
+                                }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                color = if (isSelected) Color.White else (if (isDarkTabBar) Color.White else Color(0xFF17181C))
+                            )
+                        }
                     }
                 }
             }
@@ -606,7 +636,7 @@ fun NativeAdminScreen(
                                 questionImageUrl = ""
                                 showQuestionModal = true
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                             modifier = Modifier.weight(1f)
@@ -616,21 +646,21 @@ fun NativeAdminScreen(
                             Text("New", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        // Bulk Upload Button (No outline border)
+                        // Bulk Upload Button
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 bulkTextRaw = ""
                                 showBulkUploadModal = true
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen.copy(alpha = 0.12f)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4).copy(alpha = 0.12f)),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                             modifier = Modifier.weight(1.1f)
                         ) {
-                            Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
+                            Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = Color(0xFF255FF4), modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(2.dp))
-                            Text("Bulk", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Bulk", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
 
@@ -684,12 +714,24 @@ fun NativeAdminScreen(
                             contentPadding = PaddingValues(bottom = 20.dp)
                         ) {
                             items(questionsStateList) { q ->
-                                Card(
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                val isDarkQCardAdmin = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                                val qCardBgAdmin = if (isDarkQCardAdmin) Color(0xFF1C273A) else Color.White
+
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+                                        .shadow(6.dp, RoundedCornerShape(20.dp))
+                                        .background(qCardBgAdmin, RoundedCornerShape(20.dp))
+                                        .border(
+                                            1.5.dp,
+                                            Brush.linearGradient(
+                                                colors = listOf(
+                                                    Color.White.copy(alpha = if (isDarkQCardAdmin) 0.35f else 0.9f),
+                                                    Color.Black.copy(alpha = if (isDarkQCardAdmin) 0.5f else 0.08f)
+                                                )
+                                            ),
+                                            RoundedCornerShape(20.dp)
+                                        )
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Row(
@@ -706,19 +748,19 @@ fun NativeAdminScreen(
                                                         text = q.category.uppercase(),
                                                         style = MaterialTheme.typography.labelSmall,
                                                         fontWeight = FontWeight.Black,
-                                                        color = PrimaryGreen
+                                                        color = Color(0xFF255FF4)
                                                     )
                                                 }
                                                 if (!q.imageUrl.isNullOrBlank()) {
                                                     Surface(
-                                                        color = PrimaryGreen.copy(alpha = 0.15f),
+                                                        color = Color(0xFF255FF4).copy(alpha = 0.15f),
                                                         shape = RoundedCornerShape(8.dp)
                                                     ) {
                                                         Text(
                                                             text = "🖼️ IMAGE QUIZ",
                                                             fontSize = 9.sp,
                                                             fontWeight = FontWeight.Black,
-                                                            color = PrimaryGreen,
+                                                            color = Color(0xFF255FF4),
                                                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                         )
                                                     }
@@ -747,7 +789,7 @@ fun NativeAdminScreen(
                                                     },
                                                     modifier = Modifier.size(32.dp)
                                                 ) {
-                                                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                                                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF255FF4), modifier = Modifier.size(18.dp))
                                                 }
 
                                                 // Delete Button

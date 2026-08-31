@@ -58,21 +58,24 @@ fun AdminWebViewScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Box(
                     modifier = Modifier
-                        .background(PrimaryGreen.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                        .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .background(Color(0xFF255FF4).copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                        .border(1.dp, Color(0xFF255FF4), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
-                    Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
-                    Text(
-                        text = "Admin Portal",
-                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
-                        fontWeight = FontWeight.Black,
-                        color = PrimaryGreen
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = Color(0xFF255FF4), modifier = Modifier.size(18.dp))
+                        Text(
+                            text = "ADMIN",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFF255FF4)
+                        )
+                    }
                 }
 
                 IconButton(

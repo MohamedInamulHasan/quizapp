@@ -155,7 +155,7 @@ fun QuizScreen(
                         
                         LinearProgressIndicator(
                             progress = animatedProgress,
-                            color = PrimaryGreen,
+                            color = Color(0xFF255FF4),
                             trackColor = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier
                                 .weight(1f)
@@ -167,31 +167,42 @@ fun QuizScreen(
                         Box(
                             modifier = Modifier
                                 .background(
-                                    brush = Brush.horizontalGradient(listOf(PrimaryGreen.copy(alpha = 0.2f), EmeraldGlow.copy(alpha = 0.1f))),
+                                    color = Color(0xFF255FF4).copy(alpha = 0.15f),
                                     shape = RoundedCornerShape(20.dp)
                                 )
-                                .border(1.dp, PrimaryGreen.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
+                                .border(1.dp, Color(0xFF255FF4), RoundedCornerShape(20.dp))
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
                                 text = "${state.currentQuestionIndex + 1}/${state.questions.size}",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Black,
-                                color = PrimaryGreen
+                                color = Color(0xFF255FF4)
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Timer & Score Deck
-                    Card(
-                        shape = RoundedCornerShape(50.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(0.dp),
+                    // 3D Soft-Clay Timer & Score Deck
+                    val isDarkTimerDeck = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                    val timerDeckBg = if (isDarkTimerDeck) Color(0xFF1C273A) else Color.White
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(50.dp))
+                            .shadow(6.dp, RoundedCornerShape(50.dp))
+                            .background(timerDeckBg, RoundedCornerShape(50.dp))
+                            .border(
+                                1.5.dp,
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = if (isDarkTimerDeck) 0.35f else 0.9f),
+                                        Color.Black.copy(alpha = if (isDarkTimerDeck) 0.5f else 0.08f)
+                                    )
+                                ),
+                                RoundedCornerShape(50.dp)
+                            )
                     ) {
                         Row(
                             modifier = Modifier
@@ -207,21 +218,21 @@ fun QuizScreen(
                                 Icon(
                                     imageVector = Icons.Default.Timer,
                                     contentDescription = "Timer",
-                                    tint = if (timerSeconds <= 5) IncorrectRed else PrimaryGreen,
+                                    tint = if (timerSeconds <= 5) IncorrectRed else Color(0xFF255FF4),
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
                                     text = "${timerSeconds}s remaining",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (timerSeconds <= 5) IncorrectRed else MaterialTheme.colorScheme.onSurface
+                                    color = if (timerSeconds <= 5) IncorrectRed else (if (isDarkTimerDeck) Color.White else Color(0xFF17181C))
                                 )
                             }
 
                             Text(
                                 text = "${state.score} pts",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = PrimaryGreen,
+                                color = Color(0xFF255FF4),
                                 fontWeight = FontWeight.Black
                             )
                         }
