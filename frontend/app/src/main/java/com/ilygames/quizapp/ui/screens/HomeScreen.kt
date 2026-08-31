@@ -1151,11 +1151,22 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 confirmButton = {
                     Button(
                         onClick = { showGPayProfileModal = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
-                        Text("Done", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Done", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                     }
                 }
             )
@@ -1304,14 +1315,25 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         },
                         enabled = tempNameInput.isNotBlank() && !isUpdatingName,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
                         if (isUpdatingName) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("Save Username", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Save Username", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                         }
                     }
                 }
