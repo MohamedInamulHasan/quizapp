@@ -802,15 +802,8 @@ fun NativeAdminScreen(
                                         Spacer(modifier = Modifier.height(6.dp))
 
                                         if (!q.imageUrl.isNullOrBlank()) {
-                                            val rawUrl = q.imageUrl
-                                            val finalDisplayUrl = if (rawUrl.contains("cloudinary.com") || rawUrl.contains("image-proxy") || !rawUrl.startsWith("http")) {
-                                                rawUrl
-                                            } else {
-                                                "https://quizapp-backend-jofh.onrender.com/api/quiz/image-proxy?url=" + Uri.encode(rawUrl)
-                                            }
-
                                             val imgRequest = coil.request.ImageRequest.Builder(context)
-                                                .data(finalDisplayUrl)
+                                                .data(q.imageUrl)
                                                 .crossfade(true)
                                                 .build()
 

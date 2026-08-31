@@ -106,37 +106,52 @@ async function cropTo16x9(buffer) {
   }
 }
 
-// Helper: Convert ANY external/Wikipedia URL to a permanent Cloudinary CDN link or high-speed Image Proxy link before saving to DB
+// Helper: Convert ANY external/Wikipedia URL to a permanent Cloudinary CDN link before saving to DB
 async function ensureCloudinaryUrl(imageUrl) {
   if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
     return imageUrl;
   }
-  if (imageUrl.includes('cloudinary.com') || imageUrl.includes('image-proxy')) {
+  if (imageUrl.includes('cloudinary.com')) {
     return imageUrl;
   }
 
-  try {
-    const fetchRes = await fetch(imageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 QuizAppBot/1.0',
-        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
-      }
-    });
-
-    if (fetchRes.ok) {
-      const buffer = Buffer.from(await fetchRes.arrayBuffer());
-      const cropped = await cropTo16x9(buffer);
-      const cUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
-      if (cUrl && cUrl.includes('cloudinary.com')) {
-        return cUrl;
-      }
-    }
-  } catch (err) {
-    console.error('ensureCloudinaryUrl failed for:', imageUrl, err.message);
+  // Strip any old proxy wrappers if present
+  let cleanUrl = imageUrl;
+  if (cleanUrl.includes('image-proxy?url=')) {
+    try {
+      cleanUrl = decodeURIComponent(cleanUrl.split('image-proxy?url=')[1]);
+    } catch (e) {}
   }
 
-  // High-speed Image Proxy fallback if Cloudinary upload is unavailable
-  return `https://quizapp-backend-jofh.onrender.com/api/quiz/image-proxy?url=${encodeURIComponent(imageUrl)}`;
+  const userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
+  ];
+
+  for (const ua of userAgents) {
+    try {
+      const fetchRes = await fetch(cleanUrl, {
+        headers: {
+          'User-Agent': ua,
+          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Referer': 'https://en.wikipedia.org/'
+        }
+      });
+
+      if (fetchRes.ok) {
+        const buffer = Buffer.from(await fetchRes.arrayBuffer());
+        const cropped = await cropTo16x9(buffer);
+        const cUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
+        if (cUrl && cUrl.includes('cloudinary.com')) {
+          return cUrl;
+        }
+      }
+    } catch (err) {
+      console.error('ensureCloudinaryUrl fetch error:', err.message);
+    }
+  }
+
+  return cleanUrl;
 }
 
 // Data sets for Auto AI Image Quiz Generation

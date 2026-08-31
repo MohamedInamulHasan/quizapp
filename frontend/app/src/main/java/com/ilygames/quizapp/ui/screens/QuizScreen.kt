@@ -237,15 +237,8 @@ fun QuizScreen(
                                     enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
                                             slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
                                 ) {
-                                    val rawUrl = question.imageUrl ?: ""
-                                    val finalDisplayUrl = if (rawUrl.contains("cloudinary.com") || rawUrl.contains("image-proxy") || !rawUrl.startsWith("http")) {
-                                        rawUrl
-                                    } else {
-                                        "https://quizapp-backend-jofh.onrender.com/api/quiz/image-proxy?url=" + Uri.encode(rawUrl)
-                                    }
-
                                     val quizImgReq = coil.request.ImageRequest.Builder(LocalContext.current)
-                                        .data(finalDisplayUrl)
+                                        .data(question.imageUrl)
                                         .crossfade(true)
                                         .build()
 
