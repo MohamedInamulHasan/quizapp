@@ -497,7 +497,7 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
 
             // Score Badge
             Surface(
-                color = if (isMe) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                color = if (isMe) Color(0xFF255FF4) else (if (isDarkRow) Color(0xFF131B2A) else Color(0xFFE2E8F0)),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(

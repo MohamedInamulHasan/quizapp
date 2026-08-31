@@ -60,7 +60,7 @@ fun formatMarkdownText(text: String): AnnotatedString {
     return buildAnnotatedString {
         parts.forEachIndexed { index, part ->
             if (index % 2 == 1) {
-                withStyle(SpanStyle(fontWeight = FontWeight.Black, color = PrimaryGreen)) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Black, color = Color(0xFF255FF4))) {
                     append(part)
                 }
             } else {

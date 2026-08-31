@@ -324,7 +324,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Text(
                                 text = "WELCOME BACK",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = PrimaryGreen,
+                                color = Color(0xFF255FF4),
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
                             )
@@ -351,13 +351,23 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 },
                                 modifier = Modifier
                                     .size(42.dp)
-                                    .background(MaterialTheme.colorScheme.surface, CircleShape)
-                                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                    .shadow(4.dp, CircleShape)
+                                    .background(
+                                        Brush.radialGradient(
+                                            colors = listOf(
+                                                Color(0xFF386DF5),
+                                                Color(0xFF255FF4),
+                                                Color(0xFF0B46DA)
+                                            )
+                                        ),
+                                        CircleShape
+                                    )
+                                    .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = "Settings",
-                                    tint = MaterialTheme.colorScheme.onSurface
+                                    tint = Color.White
                                 )
                             }
 
@@ -911,7 +921,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Icon(
                                 imageVector = Icons.Default.EmojiEvents,
                                 contentDescription = "Reward Prize",
-                                tint = PrimaryGreen,
+                                tint = Color(0xFF255FF4),
                                 modifier = Modifier.size(110.dp)
                             )
                         }
