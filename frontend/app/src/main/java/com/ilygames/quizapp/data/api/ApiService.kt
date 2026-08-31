@@ -22,6 +22,9 @@ interface ApiService {
         @Body request: LoginRequest
     ): Response<AuthResponse>
 
+    @POST("auth/guest")
+    suspend fun guestLogin(): Response<AuthResponse>
+
     @GET("auth/me")
     suspend fun getProfile(
         @Header("x-auth-token") token: String

@@ -1096,8 +1096,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         OutlinedTextField(
                             value = tempNameInput,
                             onValueChange = { input ->
-                                // Block spaces and special chars — only letters, digits, _ and . (max 10 chars)
-                                val filtered = input.filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(10)
+                                // Block spaces and special chars — only letters, digits, _ and . (max 20 chars)
+                                val filtered = input.filter { it.isLetterOrDigit() || it == '_' || it == '.' }.take(20)
                                 tempNameInput = filtered
                                 editNameError = ""
                             },

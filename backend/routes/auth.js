@@ -393,4 +393,55 @@ router.delete('/profile-image', auth, async (req, res) => {
   }
 });
 
+const GAMER_NAMES = [
+  'ShadowNinja', 'CosmicStar', 'SpeedRunner', 'MasterQuizzer', 'CyberPanda',
+  'NeonFalcon', 'ThunderBolt', 'PixelKnight', 'VortexGamer', 'AlphaWolf',
+  'FirePhoenix', 'HyperDragon', 'BlazeRider', 'StormTrooper', 'QuantumHero',
+  'StarGazer', 'TurboRider', 'ApexPredator', 'IronStriker', 'ElectricViper'
+];
+
+// ==========================================
+// 5. INSTANT AMONG US STYLE GUEST LOGIN
+// ==========================================
+router.post('/guest', async (req, res) => {
+  try {
+    const randomId = Math.floor(100 + Math.random() * 900);
+    const randomNamePrefix = GAMER_NAMES[Math.floor(Math.random() * GAMER_NAMES.length)];
+    const guestName = `${randomNamePrefix}_${randomId}`;
+    const guestEmail = `guest_${Date.now()}_${randomId}@quizzy.guest`;
+    
+    // Cool avatar seed
+    const avatarSeed = `quizzy_${Date.now()}_${randomId}`;
+    const profileImageUrl = `https://api.dicebear.com/7.x/bottts/png?seed=${avatarSeed}`;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(`guest_pass_${randomId}`, salt);
+
+    const user = new User({
+      name: guestName,
+      email: guestEmail,
+      password: hashedPassword,
+      coins: 100,
+      profileImageUrl: profileImageUrl,
+      isAdmin: false
+    });
+
+    await user.save();
+    console.log(`[AMONG_US_AUTO_GUEST] Created account: ID=${user._id}, Name=${guestName}`);
+
+    const userIdStr = (user._id || user.id || '').toString();
+    const payload = { user: { id: userIdStr, isAdmin: false } };
+
+    jwt.sign(payload, JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
+      if (err || !token) {
+        return res.status(500).json({ success: false, code: 'AUTH_ERROR', message: 'Guest login error' });
+      }
+      return res.status(201).json({ success: true, token, user: sanitizeUser(user) });
+    });
+  } catch (err) {
+    console.error('Guest Route Error:', err);
+    return res.status(500).json({ success: false, code: 'SERVER_ERROR', message: 'Guest login failed' });
+  }
+});
+
 module.exports = router;

@@ -126,7 +126,42 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(4.dp))
 
-                // Field 1: Username or Email
+                // Instant Gamer Entrance Button (Zero Typing / Among Us Style)
+                Button(
+                    onClick = {
+                        SoundManager.playClickSound()
+                        authViewModel.guestLogin(context)
+                    },
+                    enabled = authState !is AuthState.Loading,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryGreen,
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "🚀 Play Instantly (No Sign Up Needed)",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
+
+                // Divider "OR SIGN IN WITH ACCOUNT"
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.surfaceVariant)
+                    Text("OR SIGN IN WITH ACCOUNT", fontSize = 10.sp, fontWeight = FontWeight.Black, color = labelColor)
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.surfaceVariant)
+                }
                 OutlinedTextField(
                     value = usernameOrEmailInput,
                     onValueChange = {

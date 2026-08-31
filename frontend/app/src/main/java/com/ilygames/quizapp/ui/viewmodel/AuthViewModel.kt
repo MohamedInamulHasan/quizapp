@@ -48,7 +48,7 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 
-    // Auto login check on app startup
+    // Auto login check on app startup (Auto-creates Among Us style instant guest if first time!)
     fun tryAutoLogin(context: Context? = null) {
         if (context == null) {
             _authState.value = AuthState.Idle
@@ -59,7 +59,50 @@ class AuthViewModel : ViewModel() {
             _token.value = savedToken
             fetchProfileWithToken(savedToken)
         } else {
-            _authState.value = AuthState.Idle
+            // First time opening app: Auto-create instant Among Us style gamer guest profile!
+            guestLogin(context)
+        }
+    }
+
+    // 1-Tap Instant Guest Entrance (Among Us Style)
+    fun guestLogin(context: Context) {
+        _authState.value = AuthState.Loading
+        viewModelScope.launch {
+            try {
+                val response = ApiClient.apiService.guestLogin()
+                if (response.isSuccessful && response.body() != null) {
+                    val authResponse = response.body()!!
+                    _token.value = authResponse.token
+                    _user.value = authResponse.user
+                    saveToken(context, authResponse.token)
+                    _authState.value = AuthState.Success(authResponse.user)
+                } else {
+                    // Offline / Fallback Guest User
+                    val randomTag = (100..999).random()
+                    val fallbackUser = User(
+                        id = "guest_$randomTag",
+                        name = "ShadowNinja_$randomTag",
+                        coins = 100,
+                        profileImageUrl = "https://api.dicebear.com/7.x/bottts/png?seed=fallback_$randomTag"
+                    )
+                    _token.value = "guest_token_$randomTag"
+                    _user.value = fallbackUser
+                    saveToken(context, "guest_token_$randomTag")
+                    _authState.value = AuthState.Success(fallbackUser)
+                }
+            } catch (e: Exception) {
+                val randomTag = (100..999).random()
+                val fallbackUser = User(
+                    id = "guest_$randomTag",
+                    name = "CosmicStar_$randomTag",
+                    coins = 100,
+                    profileImageUrl = "https://api.dicebear.com/7.x/bottts/png?seed=fallback_$randomTag"
+                )
+                _token.value = "guest_token_$randomTag"
+                _user.value = fallbackUser
+                saveToken(context, "guest_token_$randomTag")
+                _authState.value = AuthState.Success(fallbackUser)
+            }
         }
     }
 
