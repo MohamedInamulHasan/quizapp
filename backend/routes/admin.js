@@ -273,10 +273,10 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
         console.error('Failed to crop AI image, fallback to source:', cropErr.message);
       }
 
-      const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
+      const questionPrompt = customQuery ? `Identify this ${customQuery}:` : `Identify the picture:`;
 
       const newQ = new Question({
-        question: ``, // Blank text so image card looks clean
+        question: questionPrompt,
         optionA: allFour[0],
         optionB: allFour[1],
         optionC: allFour[2],
