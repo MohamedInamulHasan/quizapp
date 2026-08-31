@@ -106,20 +106,20 @@ async function cropTo16x9(buffer) {
   }
 }
 
-// Helper: Convert ANY external/Wikipedia URL to a permanent Cloudinary CDN link before saving to DB
+// Helper: Convert ANY external/Wikipedia URL to a permanent Cloudinary CDN link or high-speed Image Proxy link before saving to DB
 async function ensureCloudinaryUrl(imageUrl) {
   if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
     return imageUrl;
   }
-  if (imageUrl.includes('cloudinary.com')) {
+  if (imageUrl.includes('cloudinary.com') || imageUrl.includes('image-proxy')) {
     return imageUrl;
   }
 
   try {
     const fetchRes = await fetch(imageUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'image/*'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 QuizAppBot/1.0',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
       }
     });
 
@@ -135,7 +135,8 @@ async function ensureCloudinaryUrl(imageUrl) {
     console.error('ensureCloudinaryUrl failed for:', imageUrl, err.message);
   }
 
-  return imageUrl;
+  // High-speed Image Proxy fallback if Cloudinary upload is unavailable
+  return `https://quizapp-backend-jofh.onrender.com/api/quiz/image-proxy?url=${encodeURIComponent(imageUrl)}`;
 }
 
 // Data sets for Auto AI Image Quiz Generation
@@ -342,14 +343,8 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       const correctIdx = allFour.indexOf(correctName);
       const letterMap = ["A", "B", "C", "D"];
 
-      // Download source image and upload to Cloudinary CDN
+      // Download source image and upload to Cloudinary CDN or high-speed Image Proxy link
       let finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
-
-      // STRICT RULE: Only save questions with 100% valid Cloudinary CDN links!
-      if (!finalImgUrl || !finalImgUrl.includes('cloudinary.com')) {
-        console.warn(`[AI_GEN_SKIP] Skipping item "${correctName}" - Could not convert image to Cloudinary CDN link`);
-        continue;
-      }
 
       const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
       const questionPrompt = customQuery ? `Identify this ${customQuery}:` : `Identify the picture:`;
