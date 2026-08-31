@@ -804,30 +804,49 @@ fun NativeAdminScreen(
                                                 .crossfade(true)
                                                 .build()
 
-                                            coil.compose.SubcomposeAsyncImage(
-                                                model = imgRequest,
-                                                contentDescription = "Question Image Preview",
-                                                contentScale = ContentScale.Fit,
-                                                loading = {
-                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                        CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                                                    }
-                                                },
-                                                error = {
-                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                            Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
-                                                            Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
-                                                        }
-                                                    }
-                                                },
+                                            Box(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(160.dp)
                                                     .clip(RoundedCornerShape(14.dp))
                                                     .background(Color(0xFF101828))
-                                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
-                                            )
+                                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                // 1. Ambient background fill (fills 100% with 0 black gaps!)
+                                                coil.compose.SubcomposeAsyncImage(
+                                                    model = imgRequest,
+                                                    contentDescription = null,
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .graphicsLayer { alpha = 0.45f }
+                                                )
+
+                                                // 2. Full uncropped center photo with crisp white outline border!
+                                                coil.compose.SubcomposeAsyncImage(
+                                                    model = imgRequest,
+                                                    contentDescription = "Question Image Preview",
+                                                    contentScale = ContentScale.Fit,
+                                                    loading = {
+                                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                            CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                                        }
+                                                    },
+                                                    error = {
+                                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
+                                                                Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
+                                                            }
+                                                        }
+                                                    },
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .clip(RoundedCornerShape(10.dp))
+                                                        .border(1.5.dp, Color.White, RoundedCornerShape(10.dp))
+                                                )
+                                            }
                                             Spacer(modifier = Modifier.height(8.dp))
                                         }
 
