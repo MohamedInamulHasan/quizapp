@@ -117,20 +117,31 @@ fun StudyPassagesScreen(
                         )
                     }
 
-                    Column {
-                        Text(
-                            text = "PASSAGE STUDY HUB",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFF255FF4),
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MenuBook,
+                            contentDescription = null,
+                            tint = PrimaryGreen,
+                            modifier = Modifier.size(26.dp)
                         )
-                        Text(
-                            text = "Study Passages",
-                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        Column {
+                            Text(
+                                text = "PASSAGE STUDY HUB",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = PrimaryGreen,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                text = "Study Passages",
+                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 }
 
@@ -139,7 +150,7 @@ fun StudyPassagesScreen(
                         SoundManager.playClickSound()
                         onStartDaily20Quiz()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                 ) {

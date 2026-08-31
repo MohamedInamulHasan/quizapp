@@ -344,30 +344,34 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
                         // Right-Aligned Settings Button & Clean Popup Card
                         Box {
+                            val isDarkSetBtn = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                            val setBtnBg = if (isDarkSetBtn) Color(0xFF1C273A) else Color.White
+
                             IconButton(
                                 onClick = {
                                     SoundManager.playClickSound()
                                     showSettingsMenu = !showSettingsMenu
                                 },
                                 modifier = Modifier
-                                    .size(42.dp)
-                                    .shadow(4.dp, CircleShape)
-                                    .background(
-                                        Brush.radialGradient(
+                                    .size(44.dp)
+                                    .shadow(6.dp, CircleShape)
+                                    .background(setBtnBg, CircleShape)
+                                    .border(
+                                        1.5.dp,
+                                        Brush.linearGradient(
                                             colors = listOf(
-                                                Color(0xFF386DF5),
-                                                Color(0xFF255FF4),
-                                                Color(0xFF0B46DA)
+                                                Color.White.copy(alpha = if (isDarkSetBtn) 0.35f else 0.9f),
+                                                Color.Black.copy(alpha = if (isDarkSetBtn) 0.5f else 0.1f)
                                             )
                                         ),
                                         CircleShape
                                     )
-                                    .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = "Settings",
-                                    tint = Color.White
+                                    tint = if (isDarkSetBtn) Color.White else Color(0xFF17181C),
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
 
@@ -874,20 +878,33 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             }
         }
 
-        // TODAY'S REWARD POPUP CARD (MATCHING USER'S EXACT DESIGN SPECIFICATIONS)
+        // TODAY'S REWARD POPUP CARD (3D SOFT-CLAY CONTAINER WITH GREEN TROPHY LOGO)
         if (showRewardShowcaseModal) {
+            val isDarkRewardModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val rewardModalBg = if (isDarkRewardModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showRewardShowcaseModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = rewardModalBg,
+                titleContentColor = if (isDarkRewardModal) Color.White else Color(0xFF17181C),
                 shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkRewardModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkRewardModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(32.dp)
+                ),
                 title = {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = "Today's Reward",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = if (isDarkRewardModal) Color.White else Color(0xFF17181C),
                             textAlign = TextAlign.Center,
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -921,7 +938,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Icon(
                                 imageVector = Icons.Default.EmojiEvents,
                                 contentDescription = "Reward Prize",
-                                tint = Color(0xFF255FF4),
+                                tint = PrimaryGreen,
                                 modifier = Modifier.size(110.dp)
                             )
                         }
