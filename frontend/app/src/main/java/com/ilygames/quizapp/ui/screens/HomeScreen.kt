@@ -878,19 +878,13 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             }
         }
 
-        // TODAY'S REWARD POPUP CARD (3D SOFT-CLAY CONTAINER WITH GREEN TROPHY LOGO)
+        // TODAY'S REWARD POPUP CARD (3D SOFT-CLAY CONTAINER & 3D ROYAL BLUE)
         if (showRewardShowcaseModal) {
-            val isDarkRewardModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
-            val rewardModalBg = if (isDarkRewardModal) Color(0xFF1C273A) else Color.White
+            val isDarkRewModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val rewModalBg = if (isDarkRewModal) Color(0xFF1C273A) else Color.White
 
             AlertDialog(
                 onDismissRequest = { showRewardShowcaseModal = false },
-                containerColor = rewardModalBg,
-                titleContentColor = if (isDarkRewardModal) Color.White else Color(0xFF17181C),
-                shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.border(
-                    1.5.dp,
-                    Brush.linearGradient(
                 containerColor = rewModalBg,
                 titleContentColor = if (isDarkRewModal) Color.White else Color(0xFF17181C),
                 shape = RoundedCornerShape(32.dp),
@@ -974,14 +968,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = if (isDarkRewModal) Color.White else Color(0xFF17181C)
                             )
 
                             Text(
                                 text = if (hasActiveReward) globalRewardDescription.value else "Check back tomorrow for exciting rewards and daily prizes!",
                                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp, fontSize = 14.sp),
                                 textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                color = if (isDarkRewModal) Color.White.copy(alpha = 0.8f) else Color(0xFF334155)
                             )
                         }
                     }
