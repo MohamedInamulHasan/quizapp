@@ -802,15 +802,21 @@ fun NativeAdminScreen(
                                         Spacer(modifier = Modifier.height(6.dp))
 
                                         if (!q.imageUrl.isNullOrBlank()) {
+                                            val imgRequest = coil.request.ImageRequest.Builder(context)
+                                                .data(q.imageUrl)
+                                                .crossfade(true)
+                                                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
+                                                .build()
+
                                             AsyncImage(
-                                                model = q.imageUrl,
+                                                model = imgRequest,
                                                 contentDescription = "Question Image Preview",
-                                                contentScale = ContentScale.Fit,
+                                                contentScale = ContentScale.Crop,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .height(130.dp)
+                                                    .height(140.dp)
                                                     .clip(RoundedCornerShape(12.dp))
-                                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                                    .background(Color(0xFF1D2939))
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                         }

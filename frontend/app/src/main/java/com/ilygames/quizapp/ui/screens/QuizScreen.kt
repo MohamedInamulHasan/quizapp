@@ -235,8 +235,14 @@ fun QuizScreen(
                                     enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
                                             slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
                                 ) {
+                                    val quizImgReq = coil.request.ImageRequest.Builder(LocalContext.current)
+                                        .data(question.imageUrl)
+                                        .crossfade(true)
+                                        .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
+                                        .build()
+
                                     coil.compose.AsyncImage(
-                                        model = question.imageUrl,
+                                        model = quizImgReq,
                                         contentDescription = "Question Image",
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                         modifier = Modifier

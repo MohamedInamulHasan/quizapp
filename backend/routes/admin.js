@@ -174,45 +174,56 @@ router.post('/upload-image', [auth, upload.single('image')], async (req, res) =>
   }
 });
 
-// Helper: Dynamic Wikipedia search for any user-typed topic
+// Helper: Dynamic Web Image Search for any user-typed topic (Wikipedia + Wikimedia Commons)
 async function fetchDynamicQuizItems(query, count) {
+  const items = [];
+  const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' };
+
   try {
-    const searchQueries = [
-      query,
-      `${query} characters`,
-      `${query} series`,
-      `${query} film`
-    ];
-
-    let items = [];
-
+    const searchQueries = [query, `${query} character`, `${query} series`];
     for (const q of searchQueries) {
       if (items.length >= count * 2) break;
-      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=${Math.max(count * 3, 30)}&prop=pageimages|extracts&piprop=original|thumbnail&pithumbsize=800&format=json`;
-      const res = await fetch(searchUrl, {
-        headers: {
-          'User-Agent': 'QuizAppBot/1.0 (https://quizapp.com; admin@ilygames.com)'
-        }
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const pages = data.query?.pages ? Object.values(data.query.pages) : [];
-
-      for (const page of pages) {
-        const title = page.title;
-        if (!title || title.includes("List of") || title.includes("Category:") || title.includes("Wikipedia:") || title.includes("Template:")) continue;
-        const imgUrl = page.original?.source || page.thumbnail?.source;
-        if (imgUrl && !items.some(x => x.name === title)) {
-          items.push({ name: title, img: imgUrl });
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=${Math.max(count * 3, 30)}&prop=pageimages&piprop=original|thumbnail&pithumbsize=800&format=json`;
+      const res = await fetch(wikiUrl, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+        for (const page of pages) {
+          const title = page.title;
+          if (!title || title.includes("List of") || title.includes("Category:") || title.includes("Wikipedia:") || title.includes("Template:")) continue;
+          const imgUrl = page.original?.source || page.thumbnail?.source;
+          if (imgUrl && !items.some(x => x.name === title)) {
+            items.push({ name: title, img: imgUrl });
+          }
         }
       }
     }
-
-    return items;
   } catch (e) {
-    console.error('Wikipedia search error:', e.message);
-    return [];
+    console.error('Wikipedia page search error:', e.message);
   }
+
+  // Fallback to Wikimedia Commons direct file search if items < count
+  if (items.length < count) {
+    try {
+      const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=30&prop=imageinfo&iiprop=url&format=json`;
+      const res = await fetch(commonsUrl, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+        for (const page of pages) {
+          const rawTitle = page.title.replace(/^File:/i, '').replace(/\.(jpg|jpeg|png|svg|gif|webp)$/i, '').replace(/_/g, ' ');
+          const imgUrl = page.imageinfo?.[0]?.url;
+          if (imgUrl && rawTitle && !items.some(x => x.img === imgUrl)) {
+            items.push({ name: rawTitle, img: imgUrl });
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Commons search error:', e.message);
+    }
+  }
+
+  return items;
 }
 
 // @route    POST api/admin/ai-generate-category-quiz
@@ -225,14 +236,18 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
     const key = targetQuery.toLowerCase();
     let items = AI_QUIZ_DATASETS[key];
 
-    // If no static dataset exists, dynamically search Wikipedia for ANY topic typed by user!
+    // If no static dataset exists, search web dynamically
     if (!items || items.length === 0) {
       items = await fetchDynamicQuizItems(targetQuery, count);
     }
 
-    if (!items || items.length === 0) {
-      // General fallback dataset if web search returned no images
+    // Only fallback to naruto if user did NOT enter a custom query and preset failed
+    if ((!items || items.length === 0) && !customQuery) {
       items = AI_QUIZ_DATASETS.naruto;
+    }
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ success: false, msg: `No images found online for "${targetQuery}". Try another keyword!` });
     }
 
     const limit = Math.min(count, items.length);
@@ -258,19 +273,21 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       const correctIdx = allFour.indexOf(correctName);
       const letterMap = ["A", "B", "C", "D"];
 
-      // Download source image and crop
+      // Download source image and upload to Cloudinary CDN
       let finalImgUrl = targetItem.img;
       try {
-        const fetchRes = await fetch(targetItem.img, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-        });
-        if (fetchRes.ok) {
-          const buffer = Buffer.from(await fetchRes.arrayBuffer());
-          const cropped = await cropTo16x9(buffer);
-          finalImgUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
+        if (targetItem.img && targetItem.img.startsWith('http')) {
+          const fetchRes = await fetch(targetItem.img, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+          });
+          if (fetchRes.ok) {
+            const buffer = Buffer.from(await fetchRes.arrayBuffer());
+            const cropped = await cropTo16x9(buffer);
+            finalImgUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
+          }
         }
       } catch (cropErr) {
-        console.error('Failed to crop AI image, fallback to source:', cropErr.message);
+        console.error('Failed to upload image to Cloudinary CDN, fallback to source URL:', cropErr.message);
       }
 
       const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
