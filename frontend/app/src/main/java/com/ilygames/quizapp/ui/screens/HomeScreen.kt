@@ -1268,63 +1268,38 @@ fun UnifiedEmeraldCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-    // Neumorphic Soft Clay background inspired by user's CSS (#b6cafb / #1C273A)
-    val clayBg = if (isDark) Color(0xFF1C273A) else Color(0xFFB6CAFB)
-    val textColor = if (isDark) Color.White else Color(0xFF17181C)
-    val descColor = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF2B3A60)
-
-    Box(
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
-            .shadow(12.dp, RoundedCornerShape(22.dp), spotColor = Color(0xFF000000).copy(alpha = 0.35f))
-            .background(clayBg, RoundedCornerShape(22.dp))
-            .border(
-                1.5.dp,
-                androidx.compose.ui.graphics.Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = if (isDark) 0.35f else 0.7f),
-                        Color.Black.copy(alpha = if (isDark) 0.5f else 0.15f)
-                    )
-                ),
-                RoundedCornerShape(22.dp)
-            )
+            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
             .bounceClick { onClick() }
-            .padding(16.dp)
     ) {
-        Column {
-            // Glossy 3D Sphere Icon Button (Inspired by CSS glossy sphere radio button)
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Box(
                 modifier = Modifier
                     .size(46.dp)
-                    .shadow(6.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.5f))
-                    .background(
-                        androidx.compose.ui.graphics.Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF386DF5),
-                                Color(0xFF255FF4),
-                                Color(0xFF0B46DA)
-                            )
-                        ),
-                        CircleShape
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
+                    .clip(CircleShape)
+                    .background(PrimaryGreen.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(24.dp))
+                Icon(icon, contentDescription = title, tint = PrimaryGreen, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
                 fontWeight = FontWeight.Black,
-                color = textColor
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
-                fontWeight = FontWeight.Medium,
-                color = descColor
+                color = TextMuted
             )
         }
     }
