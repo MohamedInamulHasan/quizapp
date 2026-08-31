@@ -157,80 +157,77 @@ async function ensureCloudinaryUrl(imageUrl) {
 // Data sets for Auto AI Image Quiz Generation
 const AI_QUIZ_DATASETS = {
   naruto: [
-    { name: "Naruto Uzumaki", img: "https://upload.wikimedia.org/wikipedia/en/9/9a/Naruto_Uzumaki.png" },
-    { name: "Sasuke Uchiha", img: "https://upload.wikimedia.org/wikipedia/en/9/90/Sasuke_Uchiha.png" },
-    { name: "Kakashi Hatake", img: "https://upload.wikimedia.org/wikipedia/en/f/f6/Kakashi_Hatake.png" },
-    { name: "Itachi Uchiha", img: "https://upload.wikimedia.org/wikipedia/en/7/7b/Itachi_Uchiha.png" },
-    { name: "Sakura Haruno", img: "https://upload.wikimedia.org/wikipedia/en/e/e0/Sakura_Haruno.png" },
-    { name: "Gaara of the Sand", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Gaara_naruto.png" },
-    { name: "Jiraiya", img: "https://upload.wikimedia.org/wikipedia/en/1/10/Jiraiya_%28Naruto%29.png" },
-    { name: "Tsunade", img: "https://upload.wikimedia.org/wikipedia/en/6/64/Tsunade_%28Naruto%29.png" },
-    { name: "Orochimaru", img: "https://upload.wikimedia.org/wikipedia/en/2/2f/Orochimaru_%28Naruto%29.png" },
-    { name: "Shikamaru Nara", img: "https://upload.wikimedia.org/wikipedia/en/7/70/Shikamaru_Nara.png" },
-    { name: "Minato Namikaze", img: "https://upload.wikimedia.org/wikipedia/en/8/87/Minato_Namikaze.png" },
-    { name: "Obito Uchiha", img: "https://upload.wikimedia.org/wikipedia/en/d/da/Obito_Uchiha.png" }
+    { name: "Naruto Uzumaki", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
+    { name: "Sasuke Uchiha", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
+    { name: "Kakashi Hatake", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
+    { name: "Itachi Uchiha", img: "https://images.unsplash.com/photo-1563089145-599997674d42?w=800" },
+    { name: "Sakura Haruno", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
+    { name: "Gaara of the Sand", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800" },
+    { name: "Jiraiya", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" },
+    { name: "Tsunade", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" },
+    { name: "Orochimaru", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800" },
+    { name: "Shikamaru Nara", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
+    { name: "Minato Namikaze", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800" },
+    { name: "Obito Uchiha", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800" }
   ],
   kollywood: [
-    { name: "Thalapathy Vijay", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Vijay_at_the_Leo_Success_Meet.jpg/800px-Vijay_at_the_Leo_Success_Meet.jpg" },
-    { name: "Superstar Rajinikanth", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Rajinikanth_at_the_Press_Meet_of_2.0.jpg/800px-Rajinikanth_at_the_Press_Meet_of_2.0.jpg" },
-    { name: "Ajith Kumar", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Ajith_Kumar_at_Viswasam_Press_Meet.jpg/800px-Ajith_Kumar_at_Viswasam_Press_Meet.jpg" },
-    { name: "Suriya", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Suriya_at_Soorarai_Pottru_Trailer_Launch.jpg/800px-Suriya_at_Soorarai_Pottru_Trailer_Launch.jpg" },
-    { name: "Chiyaan Vikram", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Vikram_at_Cobra_Audio_Launch.jpg/800px-Vikram_at_Cobra_Audio_Launch.jpg" },
-    { name: "Dhanush", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Dhanush_at_The_Gray_Man_Premiere.jpg/800px-Dhanush_at_The_Gray_Man_Premiere.jpg" },
-    { name: "Kamal Haasan", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Kamal_Haasan_at_Vikram_Success_Meet.jpg/800px-Kamal_Haasan_at_Vikram_Success_Meet.jpg" },
-    { name: "Sivakarthikeyan", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Sivakarthikeyan_at_Prince_Trailer_Launch.jpg/800px-Sivakarthikeyan_at_Prince_Trailer_Launch.jpg" },
-    { name: "Vijay Sethupathi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vijay_Sethupathi_at_Farzi_Press_Meet.jpg/800px-Vijay_Sethupathi_at_Farzi_Press_Meet.jpg" },
-    { name: "Karthi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Karthi_at_Ponniyin_Selvan_Press_Meet.jpg/800px-Karthi_at_Ponniyin_Selvan_Press_Meet.jpg" }
+    { name: "Thalapathy Vijay", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800" },
+    { name: "Superstar Rajinikanth", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800" },
+    { name: "Ajith Kumar", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800" },
+    { name: "Suriya", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
+    { name: "Chiyaan Vikram", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800" },
+    { name: "Dhanush", img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800" },
+    { name: "Kamal Haasan", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800" },
+    { name: "Sivakarthikeyan", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800" },
+    { name: "Vijay Sethupathi", img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=800" },
+    { name: "Karthi", img: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=800" }
   ],
   cartoons: [
-    { name: "Doraemon", img: "https://upload.wikimedia.org/wikipedia/en/b/bd/Doraemon_character.png" },
-    { name: "Shin-chan", img: "https://upload.wikimedia.org/wikipedia/en/0/07/Crayon_Shin-chan_character.png" },
-    { name: "Chhota Bheem", img: "https://upload.wikimedia.org/wikipedia/en/d/d9/Chhota_Bheem_Character.png" },
-    { name: "Jerry Mouse", img: "https://upload.wikimedia.org/wikipedia/en/2/2f/Jerry_Mouse.png" },
-    { name: "Ben 10", img: "https://upload.wikimedia.org/wikipedia/en/7/7b/Ben_10_Omniverse_title_card.png" },
-    { name: "Pikachu", img: "https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png" },
-    { name: "Oggy", img: "https://upload.wikimedia.org/wikipedia/en/6/69/Oggy_character.png" }
+    { name: "Doraemon", img: "https://images.unsplash.com/photo-1563089145-599997674d42?w=800" },
+    { name: "Shin-chan", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
+    { name: "Chhota Bheem", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
+    { name: "Jerry Mouse", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
+    { name: "Ben 10", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800" },
+    { name: "Pikachu", img: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=800" },
+    { name: "Oggy", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" }
   ],
   sports: [
-    { name: "Virat Kohli", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Virat_Kohli_during_the_product_launch_2023.jpg/800px-Virat_Kohli_during_the_product_launch_2023.jpg" },
-    { name: "MS Dhoni", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/MS_Dhoni_%28Prabal_Gurung_2016%29.jpg/800px-MS_Dhoni_%28Prabal_Gurung_2016%29.jpg" },
-    { name: "Rohit Sharma", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Rohit_Sharma_2023.jpg/800px-Rohit_Sharma_2023.jpg" },
-    { name: "Cristiano Ronaldo", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cristiano_Ronaldo_2018.jpg/800px-Cristiano_Ronaldo_2018.jpg" },
-    { name: "Lionel Messi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Lionel-Messi-Argentina-2022-World-Cup_%28cropped%29.jpg/800px-Lionel-Messi-Argentina-2022-World-Cup_%28cropped%29.jpg" }
+    { name: "Virat Kohli", img: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800" },
+    { name: "MS Dhoni", img: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800" },
+    { name: "Rohit Sharma", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800" },
+    { name: "Cristiano Ronaldo", img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" },
+    { name: "Lionel Messi", img: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800" }
   ],
   "attack on titan": [
-    { name: "Eren Yeager", img: "https://upload.wikimedia.org/wikipedia/en/2/23/Eren_Yeager_S4.png" },
-    { name: "Mikasa Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/e/e6/Mikasa_Ackerman.png" },
-    { name: "Armin Arlert", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Armin_Arlert.png" },
-    { name: "Levi Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/a/a2/Levi_Ackerman.png" },
-    { name: "Erwin Smith", img: "https://upload.wikimedia.org/wikipedia/en/3/30/Erwin_Smith.png" },
-    { name: "Reiner Braun", img: "https://upload.wikimedia.org/wikipedia/en/b/b3/Reiner_Braun.png" },
-    { name: "Hange Zoë", img: "https://upload.wikimedia.org/wikipedia/en/0/07/Hange_Zoe.png" },
-    { name: "Annie Leonhart", img: "https://upload.wikimedia.org/wikipedia/en/b/bd/Annie_Leonhart.png" }
+    { name: "Eren Yeager", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
+    { name: "Mikasa Ackerman", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
+    { name: "Armin Arlert", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
+    { name: "Levi Ackerman", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
+    { name: "Erwin Smith", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" },
+    { name: "Reiner Braun", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
+    { name: "Hange Zoë", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" },
+    { name: "Annie Leonhart", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800" }
   ],
   "attack on titans": [
-    { name: "Eren Yeager", img: "https://upload.wikimedia.org/wikipedia/en/2/23/Eren_Yeager_S4.png" },
-    { name: "Mikasa Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/e/e6/Mikasa_Ackerman.png" },
-    { name: "Armin Arlert", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Armin_Arlert.png" },
-    { name: "Levi Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/a/a2/Levi_Ackerman.png" },
-    { name: "Erwin Smith", img: "https://upload.wikimedia.org/wikipedia/en/3/30/Erwin_Smith.png" },
-    { name: "Reiner Braun", img: "https://upload.wikimedia.org/wikipedia/en/b/b3/Reiner_Braun.png" },
-    { name: "Hange Zoë", img: "https://upload.wikimedia.org/wikipedia/en/0/07/Hange_Zoe.png" },
-    { name: "Annie Leonhart", img: "https://upload.wikimedia.org/wikipedia/en/b/bd/Annie_Leonhart.png" }
+    { name: "Eren Yeager", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
+    { name: "Mikasa Ackerman", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
+    { name: "Armin Arlert", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
+    { name: "Levi Ackerman", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
+    { name: "Erwin Smith", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" }
   ],
   "aot": [
-    { name: "Eren Yeager", img: "https://upload.wikimedia.org/wikipedia/en/2/23/Eren_Yeager_S4.png" },
-    { name: "Mikasa Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/e/e6/Mikasa_Ackerman.png" },
-    { name: "Armin Arlert", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Armin_Arlert.png" },
-    { name: "Levi Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/a/a2/Levi_Ackerman.png" },
-    { name: "Erwin Smith", img: "https://upload.wikimedia.org/wikipedia/en/3/30/Erwin_Smith.png" }
+    { name: "Eren Yeager", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
+    { name: "Mikasa Ackerman", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
+    { name: "Armin Arlert", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
+    { name: "Levi Ackerman", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
+    { name: "Erwin Smith", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" }
   ],
   marvel: [
-    { name: "Iron Man", img: "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png" },
-    { name: "Spider-Man", img: "https://upload.wikimedia.org/wikipedia/en/0/0c/Spiderman50.png" },
-    { name: "Captain America", img: "https://upload.wikimedia.org/wikipedia/en/3/37/Captain_America_Shield.png" },
-    { name: "Thor", img: "https://upload.wikimedia.org/wikipedia/en/7/77/Thor_Marvel_Comics.png" },
-    { name: "Hulk", img: "https://upload.wikimedia.org/wikipedia/en/5/59/Hulk_%28comics_character%29.png" }
+    { name: "Iron Man", img: "https://images.unsplash.com/photo-1635863138275-d9b33299680b?w=800" },
+    { name: "Spider-Man", img: "https://images.unsplash.com/photo-1604200213928-ba3cf4fc8436?w=800" },
+    { name: "Captain America", img: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=800" },
+    { name: "Thor", img: "https://images.unsplash.com/photo-1568832359672-e36cf5d74f54?w=800" },
+    { name: "Hulk", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" }
   ]
 };
 
