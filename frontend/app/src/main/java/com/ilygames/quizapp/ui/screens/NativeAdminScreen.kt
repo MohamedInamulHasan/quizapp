@@ -807,7 +807,7 @@ fun NativeAdminScreen(
                                             coil.compose.SubcomposeAsyncImage(
                                                 model = imgRequest,
                                                 contentDescription = "Question Image Preview",
-                                                contentScale = ContentScale.Crop,
+                                                contentScale = ContentScale.Fit,
                                                 loading = {
                                                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                                         CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)

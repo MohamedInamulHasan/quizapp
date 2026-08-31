@@ -245,7 +245,7 @@ fun QuizScreen(
                                     coil.compose.SubcomposeAsyncImage(
                                         model = quizImgReq,
                                         contentDescription = "Question Image",
-                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                                         loading = {
                                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                                 CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(32.dp), strokeWidth = 3.dp)

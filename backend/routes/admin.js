@@ -90,13 +90,13 @@ router.get('/questions', [auth, adminAuth], async (req, res) => {
 
 const sharp = require('sharp');
 
-// Helper: Resize and crop image to fill 16:9 aspect ratio (800x450 JPEG) cleanly with 0 gaps or pillarboxing
+// Helper: Resize and fit full image into 16:9 aspect ratio (800x450 JPEG) so faces are NEVER cut off
 async function cropTo16x9(buffer) {
   try {
     return await sharp(buffer)
       .resize(800, 450, { 
-        fit: 'cover', 
-        position: 'attention' 
+        fit: 'contain', 
+        background: { r: 16, g: 24, b: 40, alpha: 1 } 
       })
       .jpeg({ quality: 90 })
       .toBuffer();
@@ -425,15 +425,15 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       }
     }
 
-    // Filter out items already created in DB
+    // Filter out items already created in DB for current pool
     let poolToUse = items.filter(x => !usedNames.has(x.name.toLowerCase().trim()));
     if (poolToUse.length === 0) {
-      poolToUse = items; // Reuse pool if user already generated all available entities
+      poolToUse = items; // Reuse items pool with freshly shuffled distractors so generation never yields 0!
     }
 
     const shuffled = [...poolToUse].sort(() => 0.5 - Math.random());
     const createdQuestions = [];
-    const batchUsedNames = new Set(usedNames);
+    const batchUsedNames = new Set(); // Deduplicate ONLY within current request batch!
 
     for (const targetItem of shuffled) {
       if (createdQuestions.length >= count) break;
@@ -441,7 +441,7 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       const correctName = targetItem.name;
       const cleanName = correctName.toLowerCase().trim();
 
-      // STRICT DEDUPLICATION: Skip if this answer was already generated in DB or current batch!
+      // Skip if this entity was already created in current request batch
       if (batchUsedNames.has(cleanName)) {
         continue;
       }
