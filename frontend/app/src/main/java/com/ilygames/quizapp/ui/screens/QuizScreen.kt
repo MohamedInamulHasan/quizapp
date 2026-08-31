@@ -1,5 +1,6 @@
 package com.ilygames.quizapp.ui.screens
 
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -236,10 +237,16 @@ fun QuizScreen(
                                     enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
                                             slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
                                 ) {
+                                    val rawUrl = question.imageUrl ?: ""
+                                    val finalDisplayUrl = if (rawUrl.contains("cloudinary.com") || rawUrl.contains("image-proxy") || !rawUrl.startsWith("http")) {
+                                        rawUrl
+                                    } else {
+                                        "https://quizapp-backend-jofh.onrender.com/api/quiz/image-proxy?url=" + Uri.encode(rawUrl)
+                                    }
+
                                     val quizImgReq = coil.request.ImageRequest.Builder(LocalContext.current)
-                                        .data(question.imageUrl)
+                                        .data(finalDisplayUrl)
                                         .crossfade(true)
-                                        .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
                                         .build()
 
                                     coil.compose.SubcomposeAsyncImage(

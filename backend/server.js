@@ -50,6 +50,36 @@ app.get('/app-ads.txt', (req, res) => {
   res.send('google.com, pub-9896007608885239, DIRECT, f08c47fec0942fa0\n');
 });
 
+// High-speed Image Proxy to stream external/Wikimedia images to mobile app without 403 blocks
+app.get('/api/quiz/image-proxy', async (req, res) => {
+  const imageUrl = req.query.url;
+  if (!imageUrl) return res.status(400).send('No image URL provided');
+
+  try {
+    const fetchRes = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+      }
+    });
+
+    if (!fetchRes.ok) {
+      return res.status(fetchRes.status).send('Failed to fetch remote image');
+    }
+
+    const contentType = fetchRes.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+
+    const arrayBuffer = await fetchRes.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    res.send(buffer);
+  } catch (err) {
+    console.error('Image proxy error:', err.message);
+    res.status(500).send('Image proxy error');
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', (req, res, next) => { req.broadcast = broadcast; next(); }, quizRoutes);
