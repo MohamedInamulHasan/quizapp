@@ -266,7 +266,8 @@ fun QuizScreen(
                                     )
                                 }
 
-                                if (!question.question.isNullOrBlank()) {
+                                 // Show Question Text Card ONLY for text questions (Hide question prompt for Image Quizzes in real quiz!)
+                                if (!question.question.isNullOrBlank() && question.imageUrl.isNullOrBlank()) {
                                     Spacer(modifier = Modifier.height(14.dp))
 
                                     // 2. Separate Question Text Card (Below Image)
