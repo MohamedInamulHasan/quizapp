@@ -467,8 +467,15 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
 
       // Fetch official accurate character image and upload to Cloudinary CDN
       let finalImgUrl = await fetchRealImageAndUploadToCloudinary(targetItem);
-      if (!finalImgUrl) {
+      if (!finalImgUrl || !finalImgUrl.startsWith('http')) {
         finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
+      }
+
+      // STRICT QUALITY GUARANTEE: Never save an Image Quiz without a valid image URL!
+      if (!finalImgUrl || !finalImgUrl.startsWith('http')) {
+        console.warn(`[AI_GEN_SKIP] Skipping "${correctName}" because no valid image URL could be generated.`);
+        batchUsedNames.delete(cleanName);
+        continue;
       }
 
       const questionPrompt = customQuery ? `Identify this ${customQuery}:` : `Identify the picture:`;

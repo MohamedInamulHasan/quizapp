@@ -1187,6 +1187,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
         if (showSignOutConfirmationModal) {
             AlertDialog(
                 onDismissRequest = { showSignOutConfirmationModal = false },
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(26.dp),
                 title = {
                     Text(
                         text = "Sign Out",
@@ -1199,6 +1201,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                     Text(
                         text = "Are you sure you want to sign out of Quizzy?",
                         style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
@@ -1209,23 +1212,22 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             .padding(top = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Pure White Cancel Button
-                        Button(
+                        // Cancel Button
+                        OutlinedButton(
                             onClick = {
                                 SoundManager.playClickSound()
                                 showSignOutConfirmationModal = false
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color(0xFF1D2939)
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
                             ),
                             shape = RoundedCornerShape(16.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFCFD4DC)),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(46.dp)
                         ) {
-                            Text("Cancel", color = Color(0xFF1D2939), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Cancel", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
 
                         // Red Sign Out Button
@@ -1249,9 +1251,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         }
                     }
                 },
-                dismissButton = null,
-                shape = RoundedCornerShape(26.dp),
-                containerColor = Color.White
+                dismissButton = null
             )
         }
     }
