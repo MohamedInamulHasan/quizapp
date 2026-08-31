@@ -244,11 +244,12 @@ fun QuizScreen(
                                     coil.compose.AsyncImage(
                                         model = quizImgReq,
                                         contentDescription = "Question Image",
-                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .aspectRatio(16f / 9f)
                                             .clip(RoundedCornerShape(22.dp))
+                                            .background(Color(0xFF101828))
                                             .border(2.5.dp, Color.White, RoundedCornerShape(22.dp))
                                     )
                                 }

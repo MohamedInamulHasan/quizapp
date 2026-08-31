@@ -811,12 +811,12 @@ fun NativeAdminScreen(
                                             AsyncImage(
                                                 model = imgRequest,
                                                 contentDescription = "Question Image Preview",
-                                                contentScale = ContentScale.Crop,
+                                                contentScale = ContentScale.Fit,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .height(140.dp)
+                                                    .height(150.dp)
                                                     .clip(RoundedCornerShape(12.dp))
-                                                    .background(Color(0xFF1D2939))
+                                                    .background(Color(0xFF101828))
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                         }
