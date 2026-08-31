@@ -1212,17 +1212,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             .padding(top = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Cancel Button
-                        OutlinedButton(
+                        // Cancel Button (High contrast container in Light & Dark mode)
+                        Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 showSignOutConfirmationModal = false
                             },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurface
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             shape = RoundedCornerShape(16.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(46.dp)
