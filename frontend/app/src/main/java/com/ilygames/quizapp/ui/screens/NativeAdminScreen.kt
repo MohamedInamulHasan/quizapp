@@ -635,7 +635,7 @@ fun NativeAdminScreen(
                             Text("Bulk", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        // AI 16:9 Quiz Generator Button
+                        /* Temporarily hidden AI 16:9 Button
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -652,6 +652,7 @@ fun NativeAdminScreen(
                             Spacer(modifier = Modifier.width(2.dp))
                             Text("🤖 AI 16:9", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
+                        */
 
                         // Delete All Button
                         Button(
@@ -805,49 +806,30 @@ fun NativeAdminScreen(
                                                 .crossfade(true)
                                                 .build()
 
-                                            Box(
+                                            coil.compose.SubcomposeAsyncImage(
+                                                model = imgRequest,
+                                                contentDescription = "Question Image Preview",
+                                                contentScale = ContentScale.Crop,
+                                                loading = {
+                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                                    }
+                                                },
+                                                error = {
+                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                            Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
+                                                            Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
+                                                        }
+                                                    }
+                                                },
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(160.dp)
                                                     .clip(RoundedCornerShape(14.dp))
                                                     .background(Color(0xFF101828))
-                                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                // 1. Ambient background fill (fills 100% with 0 black gaps!)
-                                                coil.compose.SubcomposeAsyncImage(
-                                                    model = imgRequest,
-                                                    contentDescription = null,
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .graphicsLayer { alpha = 0.45f }
-                                                )
-
-                                                // 2. Full uncropped center photo with crisp white outline border!
-                                                coil.compose.SubcomposeAsyncImage(
-                                                    model = imgRequest,
-                                                    contentDescription = "Question Image Preview",
-                                                    contentScale = ContentScale.Fit,
-                                                    loading = {
-                                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                            CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                                                        }
-                                                    },
-                                                    error = {
-                                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
-                                                                Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
-                                                            }
-                                                        }
-                                                    },
-                                                    modifier = Modifier
-                                                        .fillMaxHeight()
-                                                        .clip(RoundedCornerShape(10.dp))
-                                                        .border(1.5.dp, Color.White, RoundedCornerShape(10.dp))
-                                                )
-                                            }
+                                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+                                            )
                                             Spacer(modifier = Modifier.height(8.dp))
                                         }
 
@@ -1381,8 +1363,17 @@ fun NativeAdminScreen(
                             value = bulkCategory,
                             onValueChange = { bulkCategory = it },
                             label = { Text("Questions Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
+                            placeholder = { Text("e.g. Naruto, General Knowledge", color = TextMuted) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
-                            colors = defaultAdminTextFieldColors(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryGreen,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                                cursorColor = PrimaryGreen
+                            ),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -1391,8 +1382,17 @@ fun NativeAdminScreen(
                             value = bulkTextRaw,
                             onValueChange = { bulkTextRaw = it },
                             label = { Text("Paste Formatted Questions Text Here...", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
-                            colors = defaultAdminTextFieldColors(),
+                            placeholder = { Text("Question 1: ...\nA: ...\nB: ...\nC: ...\nD: ...\nCorrect: B", color = TextMuted) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 14.sp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryGreen,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                                cursorColor = PrimaryGreen
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(220.dp),
