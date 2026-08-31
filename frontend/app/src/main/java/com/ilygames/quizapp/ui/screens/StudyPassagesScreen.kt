@@ -121,7 +121,7 @@ fun StudyPassagesScreen(
                         Text(
                             text = "PASSAGE STUDY HUB",
                             style = MaterialTheme.typography.labelSmall,
-                            color = PrimaryGreen,
+                            color = Color(0xFF255FF4),
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
                         )
@@ -139,7 +139,7 @@ fun StudyPassagesScreen(
                         SoundManager.playClickSound()
                         onStartDaily20Quiz()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                 ) {

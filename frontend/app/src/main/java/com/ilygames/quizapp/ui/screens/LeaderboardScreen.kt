@@ -150,7 +150,7 @@ fun LeaderboardScreen(
                 Icon(
                     imageVector = Icons.Default.EmojiEvents,
                     contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = Color(0xFF255FF4),
                     modifier = Modifier.size(26.dp)
                 )
                 Text(
@@ -299,8 +299,7 @@ fun LeaderboardPodium(entries: List<LeaderboardEntry>, currentUserId: String, cu
 fun PodiumColumn(
     rank: Int,
     player: LeaderboardEntry,
-    currentUserId: String,
-    currentUserName: String,
+    currentUserId: String, currentUserName: String,
     pillarHeight: Dp,
     avatarSize: Dp,
     modifier: Modifier = Modifier
@@ -312,8 +311,8 @@ fun PodiumColumn(
     val rawImageUrl = if (isMe && !globalProfileImageUri.value.isNullOrBlank()) globalProfileImageUri.value else player.profileImageUrl
     val model = getFullProfileImageUrl(rawImageUrl)
 
-    // Uniform PrimaryGreen gradient for all 3 podium pillars
-    val pillarBrush = Brush.verticalGradient(listOf(PrimaryGreen, EmeraldGlow))
+    // Uniform 3D Royal Blue gradient for all 3 podium pillars
+    val pillarBrush = Brush.verticalGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA)))
     val avatarBg = getGoogleProfileColor(player.name)
 
     Column(
@@ -365,7 +364,7 @@ fun PodiumColumn(
             text = displayName,
             fontSize = if (rank == 1) 13.sp else 11.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isMe) PrimaryGreen else MaterialTheme.colorScheme.onBackground,
+            color = if (isMe) Color(0xFF255FF4) else MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
@@ -383,7 +382,7 @@ fun PodiumColumn(
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .background(pillarBrush)
                 .border(
-                    BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f)),
+                    BorderStroke(1.dp, Color(0xFF386DF5).copy(alpha = 0.4f)),
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -417,17 +416,26 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     val model = getFullProfileImageUrl(rawImageUrl)
     val avatarBg = getGoogleProfileColor(player.name)
 
-    Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isMe) PrimaryGreen.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(0.dp),
+    val isDarkRow = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+    val rowBg = if (isMe) Color(0xFF255FF4).copy(alpha = 0.15f) else (if (isDarkRow) Color(0xFF1C273A) else Color.White)
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(18.dp),
+                spotColor = Color.Black.copy(alpha = if (isDarkRow) 0.35f else 0.08f)
+            )
+            .background(rowBg, RoundedCornerShape(18.dp))
             .border(
-                1.dp,
-                if (isMe) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant,
+                1.5.dp,
+                if (isMe) Color(0xFF255FF4) else androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = if (isDarkRow) 0.3f else 0.9f),
+                        Color.Black.copy(alpha = if (isDarkRow) 0.4f else 0.06f)
+                    )
+                ),
                 RoundedCornerShape(18.dp)
             )
     ) {
@@ -490,7 +498,7 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
                     text = displayName,
                     fontWeight = if (isMe) FontWeight.Black else FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = if (isMe) PrimaryGreen else MaterialTheme.colorScheme.onSurface,
+                    color = if (isMe) Color(0xFF255FF4) else (if (isDarkRow) Color.White else Color(0xFF17181C)),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

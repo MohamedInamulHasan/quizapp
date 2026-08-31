@@ -89,13 +89,28 @@ fun ResultsScreen(
                 enter = fadeIn(tween(100)) + slideInVertically(tween(100, easing = FastOutSlowInEasing)) { 30 }
             ) {
                 // Single Unified Outline Quiz Summary Card (0.dp elevation shadow, clean border)
-                Card(
-                    shape = RoundedCornerShape(26.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(0.dp),
+                val isDarkRes = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                val resCardBg = if (isDarkRes) Color(0xFF1C273A) else Color.White
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.5.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(26.dp))
+                        .shadow(
+                            elevation = 14.dp,
+                            shape = RoundedCornerShape(26.dp),
+                            spotColor = Color.Black.copy(alpha = if (isDarkRes) 0.45f else 0.15f)
+                        )
+                        .background(resCardBg, RoundedCornerShape(26.dp))
+                        .border(
+                            1.5.dp,
+                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = if (isDarkRes) 0.35f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDarkRes) 0.5f else 0.08f)
+                                )
+                            ),
+                            RoundedCornerShape(26.dp)
+                        )
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -107,8 +122,18 @@ fun ResultsScreen(
                             modifier = Modifier
                                 .size(74.dp)
                                 .graphicsLayer(scaleX = trophyScale, scaleY = trophyScale)
-                                .background(PrimaryGreen.copy(alpha = 0.15f), CircleShape)
-                                .border(1.5.dp, PrimaryGreen.copy(alpha = 0.4f), CircleShape),
+                                .shadow(6.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.4f))
+                                .background(
+                                    androidx.compose.ui.graphics.Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFF386DF5),
+                                            Color(0xFF255FF4),
+                                            Color(0xFF0B46DA)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -124,7 +149,7 @@ fun ResultsScreen(
                                 text = "🎉 Quiz Completed!",
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
                                 fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = if (isDarkRes) Color.White else Color(0xFF17181C)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -146,7 +171,7 @@ fun ResultsScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.background, RoundedCornerShape(14.dp))
+                                    .background(if (isDarkRes) Color(0xFF131B2A) else Color(0xFFF1F5F9), RoundedCornerShape(14.dp))
                                     .padding(horizontal = 16.dp, vertical = 12.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
@@ -157,14 +182,14 @@ fun ResultsScreen(
                                         text = "Total Score",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = if (isDarkRes) Color.White else Color(0xFF17181C)
                                     )
                                 }
                                 Text(
                                     text = "${completeState.score} pts",
                                     fontWeight = FontWeight.Black,
                                     fontSize = 16.sp,
-                                    color = PrimaryGreen
+                                    color = Color(0xFF255FF4)
                                 )
                             }
 
@@ -172,25 +197,25 @@ fun ResultsScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.background, RoundedCornerShape(14.dp))
+                                    .background(if (isDarkRes) Color(0xFF131B2A) else Color(0xFFF1F5F9), RoundedCornerShape(14.dp))
                                     .padding(horizontal = 16.dp, vertical = 12.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    Icon(Icons.Default.Timer, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(20.dp))
+                                    Icon(Icons.Default.Timer, contentDescription = null, tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
                                     Text(
                                         text = "Time Spent",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = if (isDarkRes) Color.White else Color(0xFF17181C)
                                     )
                                 }
                                 Text(
                                     text = "${completeState.timeTaken} seconds",
                                     fontWeight = FontWeight.Black,
                                     fontSize = 15.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = if (isDarkRes) Color.White else Color(0xFF17181C)
                                 )
                             }
                         }
@@ -226,12 +251,12 @@ fun ResultsScreen(
                                     .weight(1.1f)
                                     .height(48.dp),
                                 shape = RoundedCornerShape(14.dp),
-                                border = BorderStroke(1.dp, PrimaryGreen)
+                                border = BorderStroke(1.5.dp, Color(0xFF255FF4))
                             ) {
                                 Icon(
                                     imageVector = if (currentHearts > 0) Icons.Default.Refresh else Icons.Default.OndemandVideo,
                                     contentDescription = "Action",
-                                    tint = PrimaryGreen,
+                                    tint = Color(0xFF255FF4),
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -239,7 +264,7 @@ fun ResultsScreen(
                                     text = if (currentHearts > 0) "Play Again" else "Watch Ad",
                                     fontWeight = FontWeight.Black,
                                     fontSize = 13.sp,
-                                    color = PrimaryGreen
+                                    color = Color(0xFF255FF4)
                                 )
                             }
 
@@ -250,7 +275,7 @@ fun ResultsScreen(
                                     quizViewModel.resetQuiz()
                                     onBackToHome()
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                                 shape = RoundedCornerShape(14.dp),
                                 modifier = Modifier
                                     .weight(0.9f)

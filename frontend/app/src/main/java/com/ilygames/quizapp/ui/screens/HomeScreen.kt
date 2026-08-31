@@ -367,13 +367,28 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     offset = IntOffset(0, 110),
                                     onDismissRequest = { showSettingsMenu = false }
                                 ) {
-                                    Card(
-                                        shape = RoundedCornerShape(22.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                                    val isDarkSettings = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                                    val settingsCardBg = if (isDarkSettings) Color(0xFF1C273A) else Color.White
+
+                                    Box(
                                         modifier = Modifier
                                             .width(230.dp)
-                                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
+                                            .shadow(
+                                                elevation = 12.dp,
+                                                shape = RoundedCornerShape(22.dp),
+                                                spotColor = Color.Black.copy(alpha = if (isDarkSettings) 0.45f else 0.15f)
+                                            )
+                                            .background(settingsCardBg, RoundedCornerShape(22.dp))
+                                            .border(
+                                                1.5.dp,
+                                                Brush.linearGradient(
+                                                    colors = listOf(
+                                                        Color.White.copy(alpha = if (isDarkSettings) 0.35f else 0.9f),
+                                                        Color.Black.copy(alpha = if (isDarkSettings) 0.5f else 0.08f)
+                                                    )
+                                                ),
+                                                RoundedCornerShape(22.dp)
+                                            )
                                     ) {
                                         Column(
                                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -383,7 +398,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                 text = "App Settings",
                                                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
                                                 fontWeight = FontWeight.Black,
-                                                color = MaterialTheme.colorScheme.onSurface,
+                                                color = if (isDarkSettings) Color.White else Color(0xFF17181C),
                                                 modifier = Modifier.padding(bottom = 4.dp)
                                             )
 
@@ -404,7 +419,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     Icon(
                                                         imageVector = if (ThemeState.isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
                                                         contentDescription = "Theme",
-                                                        tint = MaterialTheme.colorScheme.onSurface,
+                                                        tint = if (isDarkSettings) Color.White else Color(0xFF17181C),
                                                         modifier = Modifier.size(18.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(8.dp))
@@ -412,7 +427,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                         text = if (ThemeState.isDarkMode) "Dark Theme" else "Light Theme",
                                                         style = MaterialTheme.typography.bodyMedium,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        color = if (isDarkSettings) Color.White else Color(0xFF17181C),
                                                         fontSize = 13.sp
                                                     )
                                                 }
@@ -421,8 +436,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     onCheckedChange = { ThemeState.setDarkMode(context, it) },
                                                     colors = SwitchDefaults.colors(
                                                         checkedThumbColor = Color.White,
-                                                        checkedTrackColor = PrimaryGreen,
-                                                        uncheckedThumbColor = DarkGreen,
+                                                        checkedTrackColor = Color(0xFF255FF4),
+                                                        uncheckedThumbColor = Color(0xFF255FF4),
                                                         uncheckedTrackColor = SurfaceGray
                                                     )
                                                 )
