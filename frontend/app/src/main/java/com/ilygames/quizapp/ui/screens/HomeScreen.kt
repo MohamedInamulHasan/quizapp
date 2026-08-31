@@ -1268,7 +1268,7 @@ fun UnifiedEmeraldCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val isDark = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
 
     // 3D Soft-Clay card: Pure White in light mode, Dark (#1C273A) in dark mode
     val cardBg = if (isDark) Color(0xFF1C273A) else Color.White
