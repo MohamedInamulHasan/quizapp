@@ -154,80 +154,137 @@ async function ensureCloudinaryUrl(imageUrl) {
   return cleanUrl;
 }
 
-// Data sets for Auto AI Image Quiz Generation
+// Helper: Fetch real official image from Wikipedia for exact title & Upload to Cloudinary CDN
+async function fetchRealImageAndUploadToCloudinary(targetItem) {
+  if (targetItem.img && targetItem.img.includes('cloudinary.com')) {
+    return targetItem.img;
+  }
+
+  const wikiTitle = targetItem.wikiTitle || targetItem.name;
+  let sourceUrl = targetItem.img;
+
+  // 1. Fetch official page image from Wikipedia API for the exact title
+  try {
+    const wikiApiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle)}&prop=pageimages&piprop=original|thumbnail&pithumbsize=800&format=json`;
+    const res = await fetch(wikiApiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 QuizApp/1.0'
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+      if (pages.length > 0 && (pages[0].original?.source || pages[0].thumbnail?.source)) {
+        sourceUrl = pages[0].original?.source || pages[0].thumbnail?.source;
+      }
+    }
+  } catch (e) {
+    console.error('Wikipedia lookup error:', e.message);
+  }
+
+  if (!sourceUrl || !sourceUrl.startsWith('http')) {
+    return null;
+  }
+
+  // 2. Download official image buffer with Referer header & upload to Cloudinary
+  try {
+    const imgRes = await fetch(sourceUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        'Referer': 'https://en.wikipedia.org/'
+      }
+    });
+
+    if (imgRes.ok) {
+      const buffer = Buffer.from(await imgRes.arrayBuffer());
+      const cropped = await cropTo16x9(buffer);
+      const cUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
+      if (cUrl && cUrl.includes('cloudinary.com')) {
+        return cUrl;
+      }
+    }
+  } catch (err) {
+    console.error('Cloudinary upload error:', err.message);
+  }
+
+  return null;
+}
+
+// Data sets for Auto AI Image Quiz Generation with Exact Official Wikipedia Titles
 const AI_QUIZ_DATASETS = {
   naruto: [
-    { name: "Naruto Uzumaki", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
-    { name: "Sasuke Uchiha", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
-    { name: "Kakashi Hatake", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
-    { name: "Itachi Uchiha", img: "https://images.unsplash.com/photo-1563089145-599997674d42?w=800" },
-    { name: "Sakura Haruno", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
-    { name: "Gaara of the Sand", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800" },
-    { name: "Jiraiya", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" },
-    { name: "Tsunade", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" },
-    { name: "Orochimaru", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800" },
-    { name: "Shikamaru Nara", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
-    { name: "Minato Namikaze", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800" },
-    { name: "Obito Uchiha", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800" }
+    { name: "Naruto Uzumaki", wikiTitle: "Naruto Uzumaki" },
+    { name: "Sasuke Uchiha", wikiTitle: "Sasuke Uchiha" },
+    { name: "Kakashi Hatake", wikiTitle: "Kakashi Hatake" },
+    { name: "Itachi Uchiha", wikiTitle: "Itachi Uchiha" },
+    { name: "Sakura Haruno", wikiTitle: "Sakura Haruno" },
+    { name: "Gaara", wikiTitle: "Gaara" },
+    { name: "Jiraiya", wikiTitle: "Jiraiya (Naruto)" },
+    { name: "Tsunade", wikiTitle: "Tsunade (Naruto)" },
+    { name: "Orochimaru", wikiTitle: "Orochimaru (Naruto)" },
+    { name: "Shikamaru Nara", wikiTitle: "Shikamaru Nara" },
+    { name: "Minato Namikaze", wikiTitle: "Minato Namikaze" },
+    { name: "Obito Uchiha", wikiTitle: "Obito Uchiha" }
   ],
   kollywood: [
-    { name: "Thalapathy Vijay", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800" },
-    { name: "Superstar Rajinikanth", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800" },
-    { name: "Ajith Kumar", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800" },
-    { name: "Suriya", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
-    { name: "Chiyaan Vikram", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800" },
-    { name: "Dhanush", img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800" },
-    { name: "Kamal Haasan", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800" },
-    { name: "Sivakarthikeyan", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800" },
-    { name: "Vijay Sethupathi", img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=800" },
-    { name: "Karthi", img: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=800" }
+    { name: "Thalapathy Vijay", wikiTitle: "Vijay (actor)" },
+    { name: "Superstar Rajinikanth", wikiTitle: "Rajinikanth" },
+    { name: "Ajith Kumar", wikiTitle: "Ajith Kumar" },
+    { name: "Suriya", wikiTitle: "Suriya" },
+    { name: "Chiyaan Vikram", wikiTitle: "Vikram (actor)" },
+    { name: "Dhanush", wikiTitle: "Dhanush" },
+    { name: "Kamal Haasan", wikiTitle: "Kamal Haasan" },
+    { name: "Sivakarthikeyan", wikiTitle: "Sivakarthikeyan" },
+    { name: "Vijay Sethupathi", wikiTitle: "Vijay Sethupathi" },
+    { name: "Karthi", wikiTitle: "Karthi" }
   ],
   cartoons: [
-    { name: "Doraemon", img: "https://images.unsplash.com/photo-1563089145-599997674d42?w=800" },
-    { name: "Shin-chan", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
-    { name: "Chhota Bheem", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
-    { name: "Jerry Mouse", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
-    { name: "Ben 10", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800" },
-    { name: "Pikachu", img: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=800" },
-    { name: "Oggy", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" }
+    { name: "Doraemon", wikiTitle: "Doraemon (character)" },
+    { name: "Shin-chan", wikiTitle: "Crayon Shin-chan" },
+    { name: "Chhota Bheem", wikiTitle: "Chhota Bheem" },
+    { name: "Jerry Mouse", wikiTitle: "Jerry Mouse" },
+    { name: "Ben 10", wikiTitle: "Ben Tennyson" },
+    { name: "Pikachu", wikiTitle: "Pikachu" },
+    { name: "Oggy", wikiTitle: "Oggy and the Cockroaches" }
   ],
   sports: [
-    { name: "Virat Kohli", img: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800" },
-    { name: "MS Dhoni", img: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800" },
-    { name: "Rohit Sharma", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800" },
-    { name: "Cristiano Ronaldo", img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" },
-    { name: "Lionel Messi", img: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800" }
+    { name: "Virat Kohli", wikiTitle: "Virat Kohli" },
+    { name: "MS Dhoni", wikiTitle: "MS Dhoni" },
+    { name: "Rohit Sharma", wikiTitle: "Rohit Sharma" },
+    { name: "Cristiano Ronaldo", wikiTitle: "Cristiano Ronaldo" },
+    { name: "Lionel Messi", wikiTitle: "Lionel Messi" }
   ],
   "attack on titan": [
-    { name: "Eren Yeager", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
-    { name: "Mikasa Ackerman", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
-    { name: "Armin Arlert", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
-    { name: "Levi Ackerman", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
-    { name: "Erwin Smith", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" },
-    { name: "Reiner Braun", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" },
-    { name: "Hange Zoë", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" },
-    { name: "Annie Leonhart", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800" }
+    { name: "Eren Yeager", wikiTitle: "Eren Yeager" },
+    { name: "Mikasa Ackerman", wikiTitle: "Mikasa Ackerman" },
+    { name: "Armin Arlert", wikiTitle: "Armin Arlert" },
+    { name: "Levi Ackerman", wikiTitle: "Levi Ackerman" },
+    { name: "Erwin Smith", wikiTitle: "Erwin Smith" },
+    { name: "Reiner Braun", wikiTitle: "Reiner Braun" },
+    { name: "Hange Zoë", wikiTitle: "Hange Zoë" },
+    { name: "Annie Leonhart", wikiTitle: "Annie Leonhart" }
   ],
   "attack on titans": [
-    { name: "Eren Yeager", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
-    { name: "Mikasa Ackerman", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
-    { name: "Armin Arlert", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
-    { name: "Levi Ackerman", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
-    { name: "Erwin Smith", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" }
+    { name: "Eren Yeager", wikiTitle: "Eren Yeager" },
+    { name: "Mikasa Ackerman", wikiTitle: "Mikasa Ackerman" },
+    { name: "Armin Arlert", wikiTitle: "Armin Arlert" },
+    { name: "Levi Ackerman", wikiTitle: "Levi Ackerman" },
+    { name: "Erwin Smith", wikiTitle: "Erwin Smith" }
   ],
   "aot": [
-    { name: "Eren Yeager", img: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800" },
-    { name: "Mikasa Ackerman", img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800" },
-    { name: "Armin Arlert", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800" },
-    { name: "Levi Ackerman", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" },
-    { name: "Erwin Smith", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800" }
+    { name: "Eren Yeager", wikiTitle: "Eren Yeager" },
+    { name: "Mikasa Ackerman", wikiTitle: "Mikasa Ackerman" },
+    { name: "Armin Arlert", wikiTitle: "Armin Arlert" },
+    { name: "Levi Ackerman", wikiTitle: "Levi Ackerman" },
+    { name: "Erwin Smith", wikiTitle: "Erwin Smith" }
   ],
   marvel: [
-    { name: "Iron Man", img: "https://images.unsplash.com/photo-1635863138275-d9b33299680b?w=800" },
-    { name: "Spider-Man", img: "https://images.unsplash.com/photo-1604200213928-ba3cf4fc8436?w=800" },
-    { name: "Captain America", img: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=800" },
-    { name: "Thor", img: "https://images.unsplash.com/photo-1568832359672-e36cf5d74f54?w=800" },
-    { name: "Hulk", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800" }
+    { name: "Iron Man", wikiTitle: "Iron Man" },
+    { name: "Spider-Man", wikiTitle: "Spider-Man" },
+    { name: "Captain America", wikiTitle: "Captain America" },
+    { name: "Thor", wikiTitle: "Thor (Marvel Comics)" },
+    { name: "Hulk", wikiTitle: "Hulk" }
   ]
 };
 
@@ -377,8 +434,11 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
       const correctIdx = allFour.indexOf(correctName);
       const letterMap = ["A", "B", "C", "D"];
 
-      // Download source image and upload to Cloudinary CDN or high-speed Image Proxy link
-      let finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
+      // Fetch official accurate character image and upload to Cloudinary CDN
+      let finalImgUrl = await fetchRealImageAndUploadToCloudinary(targetItem);
+      if (!finalImgUrl) {
+        finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
+      }
 
       const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
       const questionPrompt = customQuery ? `Identify this ${customQuery}:` : `Identify the picture:`;
