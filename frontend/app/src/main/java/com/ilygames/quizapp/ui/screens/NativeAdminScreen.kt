@@ -531,16 +531,16 @@ fun NativeAdminScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
-                        .background(Color(0xFF255FF4).copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                        .background(Color(0xFF255FF4).copy(alpha = 0.25f), RoundedCornerShape(20.dp))
                         .border(1.dp, Color(0xFF255FF4), RoundedCornerShape(20.dp))
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
-                    Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = Color(0xFF255FF4), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin", tint = Color.White, modifier = Modifier.size(18.dp))
                     Text(
                         text = "Admin Studio",
                         style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFF255FF4)
+                        color = Color.White
                     )
                 }
 
@@ -574,7 +574,10 @@ fun NativeAdminScreen(
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Quiz Settings",
-                        tint = Color(0xFF255FF4),
+                        tint = if (isDarkAdminSet) Color.White else Color(0xFF17181C),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -902,7 +905,7 @@ fun NativeAdminScreen(
                 }
             }
 
-            // TAB 2: PASSAGES MANAGER
+            // TAB 2: PASSAGES MANAGER (3D GLOSSY BLUE BUTTON & 3D SOFT-CLAY CARDS)
             if (selectedTab == 1) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     Button(
@@ -914,12 +917,23 @@ fun NativeAdminScreen(
                             passageParagraph = ""
                             showPassageModal = true
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        shape = RoundedCornerShape(16.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .height(46.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
                         Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Add New Passage", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Add New Passage", color = Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -929,12 +943,24 @@ fun NativeAdminScreen(
                         contentPadding = PaddingValues(bottom = 20.dp)
                     ) {
                         items(globalPassagesList) { article ->
-                            Card(
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            val isDarkPCardAdmin = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                            val pCardBgAdmin = if (isDarkPCardAdmin) Color(0xFF1C273A) else Color.White
+
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+                                    .shadow(6.dp, RoundedCornerShape(20.dp))
+                                    .background(pCardBgAdmin, RoundedCornerShape(20.dp))
+                                    .border(
+                                        1.5.dp,
+                                        Brush.linearGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = if (isDarkPCardAdmin) 0.35f else 0.9f),
+                                                Color.Black.copy(alpha = if (isDarkPCardAdmin) 0.5f else 0.08f)
+                                            )
+                                        ),
+                                        RoundedCornerShape(20.dp)
+                                    )
                             ) {
                                 Column(modifier = Modifier.padding(18.dp)) {
                                     Row(
@@ -946,7 +972,7 @@ fun NativeAdminScreen(
                                             text = article.category,
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Black,
-                                            color = PrimaryGreen
+                                            color = Color(0xFF255FF4)
                                         )
                                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                             IconButton(
@@ -960,7 +986,7 @@ fun NativeAdminScreen(
                                                 },
                                                 modifier = Modifier.size(32.dp)
                                             ) {
-                                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF255FF4), modifier = Modifier.size(18.dp))
                                             }
 
                                             IconButton(
@@ -983,7 +1009,7 @@ fun NativeAdminScreen(
                                         text = article.title,
                                         style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
                                         fontWeight = FontWeight.Black,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = if (isDarkPCardAdmin) Color.White else Color(0xFF17181C)
                                     )
 
                                     Spacer(modifier = Modifier.height(6.dp))
@@ -991,7 +1017,7 @@ fun NativeAdminScreen(
                                     Text(
                                         text = article.paragraph,
                                         style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp, fontSize = 13.sp),
-                                        color = TextMuted,
+                                        color = if (isDarkPCardAdmin) Color.White.copy(alpha = 0.95f) else Color(0xFF334155),
                                         maxLines = 3
                                     )
                                 }
