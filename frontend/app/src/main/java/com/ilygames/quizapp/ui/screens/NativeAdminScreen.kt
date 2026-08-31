@@ -2052,6 +2052,40 @@ fun NativeAdminScreen(
 
                         Spacer(modifier = Modifier.height(2.dp))
 
+                        if (isGeneratingAiQuizzes) {
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = PrimaryGreen.copy(alpha = 0.08f)),
+                                border = BorderStroke(1.5.dp, PrimaryGreen.copy(alpha = 0.4f)),
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = PrimaryGreen,
+                                        modifier = Modifier.size(36.dp),
+                                        strokeWidth = 3.5.dp
+                                    )
+                                    Text(
+                                        text = "✨ Generating $aiQuestionCount Image Quizzes...",
+                                        fontWeight = FontWeight.Black,
+                                        color = PrimaryGreen,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = "Searching web, fetching official HD photos & uploading 16:9 widescreen Cloudinary CDN images...",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFF475467),
+                                        fontSize = 11.sp,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+
                         Text("2. Number of Quizzes to Generate:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf(5, 10, 20, 50, 100).forEach { cnt ->
@@ -2061,7 +2095,7 @@ fun NativeAdminScreen(
                                         .weight(1f)
                                         .clip(RoundedCornerShape(50.dp))
                                         .background(if (isSelected) PrimaryGreen else Color(0xFFF2F4F7))
-                                        .clickable { aiQuestionCount = cnt }
+                                        .clickable(enabled = !isGeneratingAiQuizzes) { aiQuestionCount = cnt }
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -2107,7 +2141,10 @@ fun NativeAdminScreen(
                         modifier = Modifier.fillMaxWidth().height(48.dp)
                     ) {
                         if (isGeneratingAiQuizzes) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp), strokeWidth = 2.5.dp)
+                                Text("Generating $aiQuestionCount Image Quizzes...", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
                         } else {
                             Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
