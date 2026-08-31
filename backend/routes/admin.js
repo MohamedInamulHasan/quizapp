@@ -146,6 +146,40 @@ const AI_QUIZ_DATASETS = {
     { name: "Rohit Sharma", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Rohit_Sharma_2023.jpg/800px-Rohit_Sharma_2023.jpg" },
     { name: "Cristiano Ronaldo", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cristiano_Ronaldo_2018.jpg/800px-Cristiano_Ronaldo_2018.jpg" },
     { name: "Lionel Messi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Lionel-Messi-Argentina-2022-World-Cup_%28cropped%29.jpg/800px-Lionel-Messi-Argentina-2022-World-Cup_%28cropped%29.jpg" }
+  ],
+  "attack on titan": [
+    { name: "Eren Yeager", img: "https://upload.wikimedia.org/wikipedia/en/2/23/Eren_Yeager_S4.png" },
+    { name: "Mikasa Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/e/e6/Mikasa_Ackerman.png" },
+    { name: "Armin Arlert", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Armin_Arlert.png" },
+    { name: "Levi Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/a/a2/Levi_Ackerman.png" },
+    { name: "Erwin Smith", img: "https://upload.wikimedia.org/wikipedia/en/3/30/Erwin_Smith.png" },
+    { name: "Reiner Braun", img: "https://upload.wikimedia.org/wikipedia/en/b/b3/Reiner_Braun.png" },
+    { name: "Hange Zoë", img: "https://upload.wikimedia.org/wikipedia/en/0/07/Hange_Zoe.png" },
+    { name: "Annie Leonhart", img: "https://upload.wikimedia.org/wikipedia/en/b/bd/Annie_Leonhart.png" }
+  ],
+  "attack on titans": [
+    { name: "Eren Yeager", img: "https://upload.wikimedia.org/wikipedia/en/2/23/Eren_Yeager_S4.png" },
+    { name: "Mikasa Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/e/e6/Mikasa_Ackerman.png" },
+    { name: "Armin Arlert", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Armin_Arlert.png" },
+    { name: "Levi Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/a/a2/Levi_Ackerman.png" },
+    { name: "Erwin Smith", img: "https://upload.wikimedia.org/wikipedia/en/3/30/Erwin_Smith.png" },
+    { name: "Reiner Braun", img: "https://upload.wikimedia.org/wikipedia/en/b/b3/Reiner_Braun.png" },
+    { name: "Hange Zoë", img: "https://upload.wikimedia.org/wikipedia/en/0/07/Hange_Zoe.png" },
+    { name: "Annie Leonhart", img: "https://upload.wikimedia.org/wikipedia/en/b/bd/Annie_Leonhart.png" }
+  ],
+  "aot": [
+    { name: "Eren Yeager", img: "https://upload.wikimedia.org/wikipedia/en/2/23/Eren_Yeager_S4.png" },
+    { name: "Mikasa Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/e/e6/Mikasa_Ackerman.png" },
+    { name: "Armin Arlert", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Armin_Arlert.png" },
+    { name: "Levi Ackerman", img: "https://upload.wikimedia.org/wikipedia/en/a/a2/Levi_Ackerman.png" },
+    { name: "Erwin Smith", img: "https://upload.wikimedia.org/wikipedia/en/3/30/Erwin_Smith.png" }
+  ],
+  marvel: [
+    { name: "Iron Man", img: "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png" },
+    { name: "Spider-Man", img: "https://upload.wikimedia.org/wikipedia/en/0/0c/Spiderman50.png" },
+    { name: "Captain America", img: "https://upload.wikimedia.org/wikipedia/en/3/37/Captain_America_Shield.png" },
+    { name: "Thor", img: "https://upload.wikimedia.org/wikipedia/en/7/77/Thor_Marvel_Comics.png" },
+    { name: "Hulk", img: "https://upload.wikimedia.org/wikipedia/en/5/59/Hulk_%28comics_character%29.png" }
   ]
 };
 
