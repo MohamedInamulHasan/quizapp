@@ -188,7 +188,7 @@ fun LiveQuizScreen(
                                 modifier = Modifier.padding(24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(48.dp), strokeWidth = 3.dp)
+                                CircularProgressIndicator(color = Color(0xFF255FF4), modifier = Modifier.size(48.dp), strokeWidth = 3.5.dp)
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
                                     text = "LOBBY WAITING ROOM",

@@ -81,7 +81,7 @@ fun QuizScreen(
         when (val state = quizState) {
             is QuizState.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = PrimaryGreen, strokeWidth = 3.dp, modifier = Modifier.size(36.dp))
+                    CircularProgressIndicator(color = Color(0xFF255FF4), strokeWidth = 3.5.dp, modifier = Modifier.size(42.dp))
                 }
             }
             is QuizState.Error -> {
@@ -261,7 +261,7 @@ fun QuizScreen(
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                         loading = {
                                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(32.dp), strokeWidth = 3.dp)
+                                                CircularProgressIndicator(color = Color(0xFF255FF4), modifier = Modifier.size(32.dp), strokeWidth = 3.dp)
                                             }
                                         },
                                         error = {
