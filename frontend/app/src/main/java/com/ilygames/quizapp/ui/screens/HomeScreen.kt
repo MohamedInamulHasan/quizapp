@@ -378,7 +378,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             if (showSettingsMenu) {
                                 Popup(
                                     alignment = Alignment.TopEnd,
-                                    offset = IntOffset(0, 110),
+                                    offset = androidx.compose.ui.unit.IntOffset(0, 160),
                                     onDismissRequest = { showSettingsMenu = false }
                                 ) {
                                     val isDarkSettings = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
@@ -453,7 +453,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                 )
                                             }
 
-                                            // Sound FX Switch Row
+                                            // Sound FX Switch Row (3D ROYAL BLUE SWITCH)
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -470,7 +470,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     Icon(
                                                         imageVector = if (ThemeState.isSoundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
                                                         contentDescription = "Sound",
-                                                        tint = MaterialTheme.colorScheme.onSurface,
+                                                        tint = if (isDarkSettings) Color.White else Color(0xFF17181C),
                                                         modifier = Modifier.size(18.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(8.dp))
@@ -478,7 +478,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                         text = if (ThemeState.isSoundEnabled) "Sound FX On" else "Sound Muted",
                                                         style = MaterialTheme.typography.bodyMedium,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        color = if (isDarkSettings) Color.White else Color(0xFF17181C),
                                                         fontSize = 13.sp
                                                     )
                                                 }
@@ -487,8 +487,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     onCheckedChange = { ThemeState.setSoundEnabled(context, it) },
                                                     colors = SwitchDefaults.colors(
                                                         checkedThumbColor = Color.White,
-                                                        checkedTrackColor = PrimaryGreen,
-                                                        uncheckedThumbColor = DarkGreen,
+                                                        checkedTrackColor = Color(0xFF255FF4),
+                                                        uncheckedThumbColor = Color(0xFF255FF4),
                                                         uncheckedTrackColor = SurfaceGray
                                                     )
                                                 )
