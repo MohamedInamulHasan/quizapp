@@ -412,46 +412,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                 modifier = Modifier.padding(bottom = 4.dp)
                                             )
 
-                                            // Dark Mode Switch Row
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(12.dp))
-                                                    .clickable(
-                                                        interactionSource = remember { MutableInteractionSource() },
-                                                        indication = null
-                                                    ) { ThemeState.setDarkMode(context, !ThemeState.isDarkMode) }
-                                                    .padding(vertical = 6.dp, horizontal = 4.dp),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Icon(
-                                                        imageVector = if (ThemeState.isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
-                                                        contentDescription = "Theme",
-                                                        tint = if (isDarkSettings) Color.White else Color(0xFF17181C),
-                                                        modifier = Modifier.size(18.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.width(8.dp))
-                                                    Text(
-                                                        text = if (ThemeState.isDarkMode) "Dark Theme" else "Light Theme",
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = if (isDarkSettings) Color.White else Color(0xFF17181C),
-                                                        fontSize = 13.sp
-                                                    )
-                                                }
-                                                Switch(
-                                                    checked = ThemeState.isDarkMode,
-                                                    onCheckedChange = { ThemeState.setDarkMode(context, it) },
-                                                    colors = SwitchDefaults.colors(
-                                                        checkedThumbColor = Color.White,
-                                                        checkedTrackColor = Color(0xFF255FF4),
-                                                        uncheckedThumbColor = Color(0xFF255FF4),
-                                                        uncheckedTrackColor = SurfaceGray
-                                                    )
-                                                )
-                                            }
+
 
                                             // Sound FX Switch Row (3D ROYAL BLUE SWITCH)
                                             Row(

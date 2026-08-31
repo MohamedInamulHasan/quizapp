@@ -85,42 +85,81 @@ fun QuizScreen(
                 }
             }
             is QuizState.Error -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.HelpOutline,
-                        contentDescription = "Empty",
-                        tint = TextMuted,
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "No Questions Available Yet",
-                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "The quiz database is currently empty. Tap Admin Studio on the home screen to add or Bulk Upload questions!",
-                        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-                        color = TextMuted,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = onExitQuiz,
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        shape = RoundedCornerShape(50.dp),
-                        modifier = Modifier.fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.92f)
+                            .shadow(10.dp, RoundedCornerShape(26.dp))
+                            .background(Color(0xFF1C273A), RoundedCornerShape(26.dp))
+                            .border(
+                                1.5.dp,
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.35f),
+                                        Color.Black.copy(alpha = 0.5f)
+                                    )
+                                ),
+                                RoundedCornerShape(26.dp)
+                            )
+                            .padding(26.dp)
                     ) {
-                        Text("GO BACK TO HOME", color = Color.White, fontWeight = FontWeight.Black)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .background(Color(0xFF255FF4).copy(alpha = 0.15f), CircleShape)
+                                    .border(1.5.dp, Color(0xFF255FF4), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.HelpOutline,
+                                    contentDescription = "Empty",
+                                    tint = Color(0xFF255FF4),
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No Questions Available Yet",
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "The quiz database is currently empty. Tap Admin Studio on the home screen to add or Bulk Upload questions!",
+                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
+                                color = Color.White.copy(alpha = 0.75f),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = onExitQuiz,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(vertical = 12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .shadow(6.dp, RoundedCornerShape(16.dp))
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                        ),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                            ) {
+                                Text("GO BACK TO HOME", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                            }
+                        }
                     }
                 }
             }

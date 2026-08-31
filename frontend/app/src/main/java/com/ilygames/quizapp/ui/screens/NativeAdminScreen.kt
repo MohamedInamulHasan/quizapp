@@ -556,10 +556,14 @@ fun NativeAdminScreen(
                 IconButton(
                     onClick = {
                         SoundManager.playClickSound()
-                        tempLimitText = globalQuizQuestionLimit.value.toString()
-                        tempTimerText = globalQuizTimerSeconds.value.toString()
-                        tempChances = globalQuizChances.value
-                        showQuizSettingsModal = true
+                        if (showQuizSettingsModal) {
+                            showQuizSettingsModal = false
+                        } else {
+                            tempLimitText = globalQuizQuestionLimit.value.toString()
+                            tempTimerText = globalQuizTimerSeconds.value.toString()
+                            tempChances = globalQuizChances.value
+                            showQuizSettingsModal = true
+                        }
                     },
                     modifier = Modifier
                         .size(42.dp)
