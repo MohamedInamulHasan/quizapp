@@ -1268,38 +1268,69 @@ fun UnifiedEmeraldCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
+    // 3D Soft-Clay card: Pure White in light mode, Dark (#1C273A) in dark mode
+    val cardBg = if (isDark) Color(0xFF1C273A) else Color.White
+    val textColor = if (isDark) Color.White else Color(0xFF17181C)
+    val descColor = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF5A6E85)
+
+    Box(
         modifier = modifier
-            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
+            .shadow(
+                elevation = 10.dp,
+                shape = RoundedCornerShape(22.dp),
+                spotColor = Color.Black.copy(alpha = if (isDark) 0.45f else 0.12f),
+                ambientColor = Color.Black.copy(alpha = if (isDark) 0.35f else 0.08f)
+            )
+            .background(cardBg, RoundedCornerShape(22.dp))
+            .border(
+                1.5.dp,
+                androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = if (isDark) 0.35f else 0.9f),
+                        Color.Black.copy(alpha = if (isDark) 0.5f else 0.08f)
+                    )
+                ),
+                RoundedCornerShape(22.dp)
+            )
             .bounceClick { onClick() }
+            .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column {
+            // Glossy 3D Blue Sphere Icon Button (From your CSS radio button styling)
             Box(
                 modifier = Modifier
                     .size(46.dp)
-                    .clip(CircleShape)
-                    .background(PrimaryGreen.copy(alpha = 0.15f)),
+                    .shadow(6.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.5f))
+                    .background(
+                        androidx.compose.ui.graphics.Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF386DF5),
+                                Color(0xFF255FF4),
+                                Color(0xFF0B46DA)
+                            )
+                        ),
+                        CircleShape
+                    )
+                    .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = title, tint = PrimaryGreen, modifier = Modifier.size(24.dp))
+                Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp),
                 fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurface
+                color = textColor
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
-                color = TextMuted
+                fontWeight = FontWeight.Medium,
+                color = descColor
             )
         }
     }
