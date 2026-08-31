@@ -659,14 +659,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     text = "HIGH SCORE :",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = PrimaryGreen,
+                                    color = Color(0xFF255FF4),
                                     letterSpacing = 0.5.sp
                                 )
                                 Text(
                                     text = "${user?.highScore ?: 0} pts",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = PrimaryGreen
+                                    color = Color(0xFF255FF4)
                                 )
                             }
                         }
@@ -674,15 +674,32 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 }
             }
 
-            // 3. GREEN GRADIENT DAILY QUIZ CARD (SLIGHTLY BIGGER, NO TAGS, NO HEARTS, BOUNCE CLICK ANIMATION)
+            // 3. 3D ROYAL BLUE DAILY QUIZ CHALLENGE CARD WITH 3D GLOSSY WHITE BUTTON
             item {
-                Card(
-                    shape = RoundedCornerShape(26.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    elevation = CardDefaults.cardElevation(0.dp),
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(26.dp))
+                        .shadow(
+                            elevation = 14.dp,
+                            shape = RoundedCornerShape(26.dp),
+                            spotColor = Color(0xFF0B46DA).copy(alpha = 0.5f)
+                        )
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                            ),
+                            shape = RoundedCornerShape(26.dp)
+                        )
+                        .border(
+                            1.5.dp,
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.6f),
+                                    Color(0xFF386DF5).copy(alpha = 0.3f)
+                                )
+                            ),
+                            RoundedCornerShape(26.dp)
+                        )
                         .bounceClick {
                             SoundManager.playClickSound()
                             if (dailyAttemptsLeft > 0) {
@@ -701,76 +718,76 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 )
                             }
                         }
+                        .padding(20.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(PrimaryGreen, EmeraldGlow)
-                                ),
-                                shape = RoundedCornerShape(26.dp)
-                            )
-                            .border(1.dp, ElectricMint.copy(alpha = 0.4f), RoundedCornerShape(26.dp))
-                            .padding(20.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "Daily Quiz Challenge",
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
+                    Column {
+                        Text(
+                            text = "Daily Quiz Challenge",
+                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
 
-                            Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                            Text(
-                                text = "Answer fast-paced questions, earn instant points, climb the global leaderboard & win today's reward!",
-                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-                                color = Color.White.copy(alpha = 0.95f)
-                            )
+                        Text(
+                            text = "Answer fast-paced questions, earn instant points, climb the global leaderboard & win today's reward!",
+                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
+                            color = Color.White.copy(alpha = 0.95f)
+                        )
 
-                            Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(50.dp))
-                                    .background(Color.White)
-                                    .padding(vertical = 12.dp, horizontal = 20.dp),
-                                contentAlignment = Alignment.Center
+                        // 3D GLOSSY WHITE START QUIZ BUTTON
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(8.dp, RoundedCornerShape(50.dp), spotColor = Color.Black.copy(alpha = 0.25f))
+                                .background(Color.White, RoundedCornerShape(50.dp))
+                                .border(
+                                    1.5.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White,
+                                            Color(0xFFE2E8F0)
+                                        )
+                                    ),
+                                    RoundedCornerShape(50.dp)
+                                )
+                                .padding(vertical = 13.dp, horizontal = 20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Text(
-                                        text = if (dailyAttemptsLeft > 0) "START QUIZ NOW" else "WATCH AD",
-                                        style = MaterialTheme.typography.titleSmall.copy(fontSize = 13.sp),
-                                        fontWeight = FontWeight.Black,
-                                        color = if (dailyAttemptsLeft > 0) DarkGreen else PrimaryGreen
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Icon(
-                                        imageVector = if (dailyAttemptsLeft > 0) Icons.Default.PlayArrow else Icons.Default.OndemandVideo,
-                                        contentDescription = "Action",
-                                        tint = if (dailyAttemptsLeft > 0) DarkGreen else PrimaryGreen,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
+                                Text(
+                                    text = if (dailyAttemptsLeft > 0) "START QUIZ NOW" else "WATCH AD",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 14.sp),
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF0B46DA)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(
+                                    imageVector = if (dailyAttemptsLeft > 0) Icons.Default.PlayArrow else Icons.Default.OndemandVideo,
+                                    contentDescription = "Action",
+                                    tint = Color(0xFF0B46DA),
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // 4. UNIFIED 2x2 FEATURE GRID (GRADIENT GREEN OUTLINE & TACTILE BOUNCE ANIMATION)
+            // 4. UNIFIED 2x2 FEATURE GRID (3D ROYAL BLUE STYLING)
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
                         text = "EXPLORE & REWARDS",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Black,
-                        color = PrimaryGreen,
+                        color = Color(0xFF255FF4),
                         letterSpacing = 1.sp
                     )
 

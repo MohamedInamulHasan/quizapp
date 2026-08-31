@@ -309,28 +309,39 @@ fun QuizScreen(
                                     enter = fadeIn(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) + 
                                             slideInVertically(tween(400, delayMillis = 0, easing = FastOutSlowInEasing)) { 40 }
                                 ) {
-                                    Card(
-                                        shape = RoundedCornerShape(26.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        elevation = CardDefaults.cardElevation(0.dp),
+                                    val isDarkQCard = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                                    val qCardBg = if (isDarkQCard) Color(0xFF1C273A) else Color.White
+
+                                    Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(26.dp))
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(22.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Text(
-                                                text = question.question,
-                                                style = MaterialTheme.typography.titleLarge.copy(lineHeight = 30.sp, fontSize = 19.sp),
-                                                fontWeight = FontWeight.Black,
-                                                textAlign = TextAlign.Center,
-                                                color = MaterialTheme.colorScheme.onSurface
+                                            .shadow(
+                                                elevation = 10.dp,
+                                                shape = RoundedCornerShape(26.dp),
+                                                spotColor = Color.Black.copy(alpha = if (isDarkQCard) 0.45f else 0.12f),
+                                                ambientColor = Color.Black.copy(alpha = if (isDarkQCard) 0.35f else 0.08f)
                                             )
-                                        }
+                                            .background(qCardBg, RoundedCornerShape(26.dp))
+                                            .border(
+                                                1.5.dp,
+                                                Brush.linearGradient(
+                                                    colors = listOf(
+                                                        Color.White.copy(alpha = if (isDarkQCard) 0.35f else 0.9f),
+                                                        Color.Black.copy(alpha = if (isDarkQCard) 0.5f else 0.08f)
+                                                    )
+                                                ),
+                                                RoundedCornerShape(26.dp)
+                                            )
+                                            .padding(22.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = question.question,
+                                            style = MaterialTheme.typography.titleLarge.copy(lineHeight = 30.sp, fontSize = 19.sp),
+                                            fontWeight = FontWeight.Black,
+                                            textAlign = TextAlign.Center,
+                                            color = if (isDarkQCard) Color.White else Color(0xFF17181C)
+                                        )
                                     }
                                 }
                             }
@@ -420,15 +431,10 @@ fun CleanHighlightOptionRow(
         else -> if (isDarkQuiz) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.08f)
     }
 
-    val labelBgColor = when {
-        isSelected && isCorrectOption -> CorrectGreen
-        isSelected && !isCorrectOption -> IncorrectRed
-        else -> PrimaryGreen.copy(alpha = 0.15f)
-    }
-
-    val labelTextColor = when {
-        isSelected -> Color.White
-        else -> PrimaryGreen
+    val badgeBrush = when {
+        isSelected && isCorrectOption -> Brush.radialGradient(listOf(CorrectGreen, DarkGreen))
+        isSelected && !isCorrectOption -> Brush.radialGradient(listOf(IncorrectRed, Color(0xFF991B1B)))
+        else -> Brush.radialGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA)))
     }
 
     Box(
@@ -440,7 +446,16 @@ fun CleanHighlightOptionRow(
                 spotColor = Color.Black.copy(alpha = if (isDarkQuiz) 0.35f else 0.08f)
             )
             .background(backgroundColor, RoundedCornerShape(20.dp))
-            .border(1.5.dp, borderColor, RoundedCornerShape(20.dp))
+            .border(
+                1.5.dp,
+                if (isSelected) Brush.linearGradient(listOf(borderColor, borderColor)) else Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = if (isDarkQuiz) 0.35f else 0.9f),
+                        Color.Black.copy(alpha = if (isDarkQuiz) 0.5f else 0.08f)
+                    )
+                ),
+                RoundedCornerShape(20.dp)
+            )
             .clickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                 indication = null,
@@ -455,19 +470,20 @@ fun CleanHighlightOptionRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // 3D Glossy Blue Sphere Option Letter Badge (A, B, C, D)
             Box(
                 modifier = Modifier
-                    .size(38.dp)
-                    .shadow(3.dp, CircleShape, spotColor = PrimaryGreen.copy(alpha = 0.3f))
-                    .background(labelBgColor, CircleShape)
-                    .border(1.dp, Color.White.copy(alpha = 0.5f), CircleShape),
+                    .size(40.dp)
+                    .shadow(4.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.4f))
+                    .background(badgeBrush, CircleShape)
+                    .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = label,
                     fontWeight = FontWeight.Black,
-                    fontSize = 15.sp,
-                    color = labelTextColor
+                    fontSize = 16.sp,
+                    color = Color.White
                 )
             }
 
