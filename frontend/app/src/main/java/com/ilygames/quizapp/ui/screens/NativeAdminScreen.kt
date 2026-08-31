@@ -203,8 +203,8 @@ fun ProfessionalImageDropzone(
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp))
-                    Text("Uploading image...", fontSize = 12.sp, color = PrimaryGreen, fontWeight = FontWeight.Bold)
+                    CircularProgressIndicator(color = Color(0xFF255FF4), modifier = Modifier.size(24.dp))
+                    Text("Uploading image...", fontSize = 12.sp, color = Color(0xFF255FF4), fontWeight = FontWeight.Bold)
                 }
             }
         } else if (!currentImageUrl.isNullOrBlank()) {
@@ -227,7 +227,7 @@ fun ProfessionalImageDropzone(
         ) {
             Button(
                 onClick = onPickGallery,
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(vertical = 8.dp)
@@ -240,23 +240,27 @@ fun ProfessionalImageDropzone(
             OutlinedButton(
                 onClick = { showUrlInput = !showUrlInput },
                 shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, PrimaryGreen),
+                border = BorderStroke(1.dp, Color(0xFF255FF4)),
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                Icon(Icons.Default.Link, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(15.dp))
+                Icon(Icons.Default.Link, contentDescription = null, tint = Color(0xFF255FF4), modifier = Modifier.size(15.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(if (showUrlInput) "Hide URL" else "Paste URL", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(if (showUrlInput) "Hide URL" else "Paste URL", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
 
         if (showUrlInput) {
             OutlinedTextField(
-                value = if (currentImageUrl == "uploading...") "" else (currentImageUrl ?: ""),
+                value = currentImageUrl ?: "",
                 onValueChange = onUrlChange,
-                label = { Text("Direct Image URL", color = PrimaryGreen, fontSize = 11.sp) },
+                label = { Text("Direct Image URL", color = Color(0xFF255FF4), fontSize = 11.sp) },
+                placeholder = { Text("https://example.com/photo.jpg", fontSize = 11.sp, color = TextMuted) },
                 textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface),
-                colors = defaultAdminTextFieldColors(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF255FF4),
+                    cursorColor = Color(0xFF255FF4)
+                ),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp)
@@ -1601,7 +1605,7 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = questionText,
                             onValueChange = { questionText = it },
-                            label = { Text(if (isImageQuiz) "Question Text (Optional)" else "Question Text", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text(if (isImageQuiz) "Question Text (Optional)" else "Question Text", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text(if (isImageQuiz) "Optional (e.g. Identify this picture)" else "Type question text here...", color = TextMuted, fontSize = 12.sp) },
                             textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
@@ -1610,7 +1614,7 @@ fun NativeAdminScreen(
                             shape = RoundedCornerShape(10.dp)
                         )
 
-                        Text("Answer Choices", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        Text("Answer Choices", fontWeight = FontWeight.Bold, color = Color(0xFF255FF4), fontSize = 12.sp)
                         dynamicOptions.forEachIndexed { idx, optVal ->
                             val letterLabel = if (idx < 26) ('A' + idx).toString() else (idx + 1).toString()
                             Row(
@@ -1621,7 +1625,7 @@ fun NativeAdminScreen(
                                 OutlinedTextField(
                                     value = optVal,
                                     onValueChange = { newValue -> dynamicOptions[idx] = newValue },
-                                    label = { Text("Option $letterLabel", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                                    label = { Text("Option $letterLabel", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 11.sp) },
                                     placeholder = { Text("Enter choice $letterLabel", color = TextMuted, fontSize = 11.sp) },
                                     textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
                                     colors = defaultAdminTextFieldColors(),
@@ -1643,16 +1647,16 @@ fun NativeAdminScreen(
                         OutlinedButton(
                             onClick = { dynamicOptions.add("") },
                             shape = RoundedCornerShape(10.dp),
-                            border = BorderStroke(1.dp, PrimaryGreen),
+                            border = BorderStroke(1.dp, Color(0xFF255FF4)),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
                             modifier = Modifier.height(30.dp)
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(13.dp))
+                            Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF255FF4), modifier = Modifier.size(13.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Option", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Add Option", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        Text("Correct Answer Choice", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        Text("Correct Answer Choice", fontWeight = FontWeight.Bold, color = Color(0xFF255FF4), fontSize = 12.sp)
                         val optionLetters = dynamicOptions.indices.map { idx -> if (idx < 26) ('A' + idx).toString() else (idx + 1).toString() }
                         val chunkedOptions = optionLetters.chunked(5)
                         Column(
@@ -1674,8 +1678,8 @@ fun NativeAdminScreen(
                                                 .width(48.dp)
                                                 .height(36.dp)
                                                 .clip(RoundedCornerShape(10.dp))
-                                                .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                                                .border(1.dp, if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                                                .background(if (isSelected) Color(0xFF255FF4) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                                                .border(1.dp, if (isSelected) Color(0xFF255FF4) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
                                                 .clickable { correctAnswer = letter },
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -1751,13 +1755,22 @@ fun NativeAdminScreen(
                             }
                             Toast.makeText(context, "🎉 Question Saved!", Toast.LENGTH_SHORT).show()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp),
-                        shape = RoundedCornerShape(12.dp)
+                            .height(48.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
-                        Text("Save Question", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Save Question", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                     }
                 }
             )
