@@ -14,6 +14,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,6 +40,9 @@ fun ReadingQuizScreen(
         )
     }
 
+    val isDarkScreen = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+    val screenHeaderBg = if (isDarkScreen) Color(0xFF1C273A) else Color.White
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +54,7 @@ fun ReadingQuizScreen(
                 .statusBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // Header Bar (Back button on left, Passage Study Title centered - exact Leaderboard Header format)
+            // Header Bar (3D Back button on left, 3D Royal Blue Book Icon & Title centered)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -60,13 +66,23 @@ fun ReadingQuizScreen(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .size(42.dp)
-                        .background(MaterialTheme.colorScheme.surface, CircleShape)
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        .shadow(4.dp, CircleShape)
+                        .background(screenHeaderBg, CircleShape)
+                        .border(
+                            1.dp,
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = if (isDarkScreen) 0.35f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDarkScreen) 0.5f else 0.1f)
+                                )
+                            ),
+                            CircleShape
+                        )
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
+                        tint = if (isDarkScreen) Color.White else Color(0xFF17181C)
                     )
                 }
 
@@ -77,14 +93,14 @@ fun ReadingQuizScreen(
                     Icon(
                         imageVector = Icons.Default.MenuBook,
                         contentDescription = null,
-                        tint = PrimaryGreen,
+                        tint = Color(0xFF255FF4),
                         modifier = Modifier.size(26.dp)
                     )
                     Text(
                         text = "Passage Study",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = if (isDarkScreen) Color.White else Color(0xFF17181C)
                     )
                 }
             }
@@ -101,14 +117,14 @@ fun ReadingQuizScreen(
                         Icon(
                             imageVector = Icons.Default.MenuBook,
                             contentDescription = "Empty",
-                            tint = TextMuted,
+                            tint = Color(0xFF255FF4),
                             modifier = Modifier.size(54.dp)
                         )
                         Text(
                             text = "No Study Passages Available",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isDarkScreen) Color.White else Color(0xFF17181C)
                         )
                         Text(
                             text = "Passages created in Admin Studio will appear here.",
@@ -119,41 +135,56 @@ fun ReadingQuizScreen(
                     }
                 }
             } else {
-                // Clean Passage Cards List (Title and Passage content only)
+                // 3D Soft-Clay Passage Cards List
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(bottom = 20.dp)
                 ) {
                     items(activeUnits) { unit ->
-                        Card(
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            elevation = CardDefaults.cardElevation(0.dp),
+                        val isDarkUnitCard = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                        val unitCardBg = if (isDarkUnitCard) Color(0xFF1C273A) else Color.White
+
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
+                                .shadow(8.dp, RoundedCornerShape(24.dp))
+                                .background(unitCardBg, RoundedCornerShape(24.dp))
+                                .border(
+                                    1.5.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkUnitCard) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkUnitCard) 0.5f else 0.08f)
+                                        )
+                                    ),
+                                    RoundedCornerShape(24.dp)
+                                )
+                                .padding(22.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(22.dp)
-                            ) {
+                            Column {
                                 Text(
                                     text = unit.title,
                                     style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
                                     fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = if (isDarkUnitCard) Color.White else Color(0xFF17181C)
                                 )
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                )
 
                                 Spacer(modifier = Modifier.height(14.dp))
 
                                 Text(
-                                    text = unit.paragraph,
+                                    text = formatMarkdownText(unit.paragraph),
                                     style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp, fontSize = 15.sp),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
+                                    color = if (isDarkUnitCard) Color.White.copy(alpha = 0.95f) else Color(0xFF334155)
                                 )
                             }
                         }
