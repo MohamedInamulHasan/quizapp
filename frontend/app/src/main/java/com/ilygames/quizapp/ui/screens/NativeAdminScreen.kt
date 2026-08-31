@@ -1948,7 +1948,7 @@ fun NativeAdminScreen(
             )
         }
 
-        // AI 16:9 QUIZ GENERATOR MODAL
+        // AI QUIZ GENERATOR MODAL
         if (showAiGeneratorModal) {
             AlertDialog(
                 onDismissRequest = { if (!isGeneratingAiQuizzes) showAiGeneratorModal = false },
@@ -1963,7 +1963,7 @@ fun NativeAdminScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(22.dp))
                             Text(
-                                text = "AI 16:9 Quiz Generator",
+                                text = "AI Quiz Generator",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black,
                                 color = Color(0xFF101828)
@@ -1979,10 +1979,10 @@ fun NativeAdminScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Type ANY topic prompt below (or pick a preset) to search the web, download 16:9 images, auto-generate options A,B,C,D, and insert up to 100 questions into your database!",
+                            text = "Type ANY topic prompt below (or pick a preset) to search the web, download images, auto-generate options A,B,C,D, and insert up to 100 questions into your database!",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF475467),
                             fontSize = 12.sp
@@ -1992,7 +1992,7 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = customAiQuery,
                             onValueChange = { customAiQuery = it },
-                            label = { Text("e.g. Marvel Superheroes, Car Logos, Cities", fontSize = 11.sp) },
+                            label = { Text("e.g. Marvel Superheroes, Car Logos, Attack on Titan", fontSize = 11.sp) },
                             singleLine = true,
                             textStyle = androidx.compose.ui.text.TextStyle(color = Color(0xFF101828), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
@@ -2001,32 +2001,40 @@ fun NativeAdminScreen(
                         )
 
                         Text("Or Pick a Preset Topic:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
-                        val categoriesList = listOf(
-                            "naruto" to "🍥 Naruto & Anime",
-                            "kollywood" to "🎬 Kollywood Stars",
-                            "cartoons" to "📺 Cartoons",
-                            "sports" to "🏏 Sports & Cricket"
-                        )
 
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            categoriesList.forEach { (catKey, catLabel) ->
-                                val isSelected = customAiQuery.isBlank() && selectedAiCategory == catKey
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(50.dp))
-                                        .background(if (isSelected) PrimaryGreen else Color(0xFFF2F4F7))
-                                        .clickable {
-                                            customAiQuery = ""
-                                            selectedAiCategory = catKey
+                        // 2x2 Grid of Preset Cards
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val row1 = listOf("naruto" to "🍥 Naruto & Anime", "kollywood" to "🎬 Kollywood Stars")
+                            val row2 = listOf("cartoons" to "📺 Cartoons", "sports" to "🏏 Sports & Cricket")
+
+                            listOf(row1, row2).forEach { rowItems ->
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    rowItems.forEach { (catKey, catLabel) ->
+                                        val isSelected = customAiQuery.isBlank() && selectedAiCategory == catKey
+                                        Surface(
+                                            onClick = {
+                                                customAiQuery = ""
+                                                selectedAiCategory = catKey
+                                            },
+                                            shape = RoundedCornerShape(14.dp),
+                                            color = if (isSelected) PrimaryGreen.copy(alpha = 0.12f) else Color(0xFFF8F9FA),
+                                            border = androidx.compose.foundation.BorderStroke(1.5.dp, if (isSelected) PrimaryGreen else Color(0xFFE4E7EC)),
+                                            modifier = Modifier.weight(1f).height(44.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                Text(catLabel, fontWeight = FontWeight.Bold, color = if (isSelected) PrimaryGreen else Color(0xFF344054), fontSize = 11.sp, maxLines = 1)
+                                            }
                                         }
-                                        .padding(vertical = 6.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(catLabel, fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else Color(0xFF344054), fontSize = 10.sp)
+                                    }
                                 }
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(2.dp))
 
                         Text("2. Number of Quizzes to Generate:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -2038,7 +2046,7 @@ fun NativeAdminScreen(
                                         .clip(RoundedCornerShape(50.dp))
                                         .background(if (isSelected) PrimaryGreen else Color(0xFFF2F4F7))
                                         .clickable { aiQuestionCount = cnt }
-                                        .padding(vertical = 6.dp),
+                                        .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text("$cnt Qs", fontWeight = FontWeight.Bold, color = if (isSelected) Color.White else Color(0xFF344054), fontSize = 11.sp)
@@ -2064,9 +2072,9 @@ fun NativeAdminScreen(
                                         if (res.isSuccessful && res.body()?.success == true) {
                                             showAiGeneratorModal = false
                                             loadExistingQuestions()
-                                            Toast.makeText(context, "✨ ${res.body()?.msg ?: "Created 16:9 Image Quizzes!"}", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "✨ ${res.body()?.msg ?: "Created Image Quizzes!"}", Toast.LENGTH_LONG).show()
                                         } else {
-                                            Toast.makeText(context, "Failed to generate AI quizzes", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Failed to generate AI quizzes. Try another keyword.", Toast.LENGTH_LONG).show()
                                         }
                                     } catch (e: Exception) {
                                         Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
@@ -2086,7 +2094,7 @@ fun NativeAdminScreen(
                         } else {
                             Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Generate $aiQuestionCount Image Quizzes (16:9)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Generate $aiQuestionCount Image Quizzes", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
                 }

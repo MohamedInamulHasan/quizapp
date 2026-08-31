@@ -177,30 +177,46 @@ router.post('/upload-image', [auth, upload.single('image')], async (req, res) =>
 // Helper: Dynamic Wikipedia search for any user-typed topic
 async function fetchDynamicQuizItems(query, count) {
   try {
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${Math.max(count * 2, 30)}&prop=pageimages|extracts&piprop=original|thumbnail&pithumbsize=800&format=json`;
-    const res = await fetch(searchUrl);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+    const searchQueries = [
+      query,
+      `${query} characters`,
+      `${query} series`,
+      `${query} film`
+    ];
 
-    const items = [];
-    for (const page of pages) {
-      const title = page.title;
-      if (!title || title.includes("List of") || title.includes("Category:") || title.includes("Wikipedia:")) continue;
-      const imgUrl = page.original?.source || page.thumbnail?.source;
-      if (imgUrl) {
-        items.push({ name: title, img: imgUrl });
+    let items = [];
+
+    for (const q of searchQueries) {
+      if (items.length >= count * 2) break;
+      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=${Math.max(count * 3, 30)}&prop=pageimages|extracts&piprop=original|thumbnail&pithumbsize=800&format=json`;
+      const res = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'QuizAppBot/1.0 (https://quizapp.com; admin@ilygames.com)'
+        }
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const pages = data.query?.pages ? Object.values(data.query.pages) : [];
+
+      for (const page of pages) {
+        const title = page.title;
+        if (!title || title.includes("List of") || title.includes("Category:") || title.includes("Wikipedia:") || title.includes("Template:")) continue;
+        const imgUrl = page.original?.source || page.thumbnail?.source;
+        if (imgUrl && !items.some(x => x.name === title)) {
+          items.push({ name: title, img: imgUrl });
+        }
       }
     }
+
     return items;
   } catch (e) {
-    console.error('Wikipedia search error:', e);
+    console.error('Wikipedia search error:', e.message);
     return [];
   }
 }
 
 // @route    POST api/admin/ai-generate-category-quiz
-// @desc     Auto-generate 16:9 image quizzes for Naruto, Kollywood, Cartoons, Sports, or ANY typed topic (up to 100)
+// @desc     Auto-generate image quizzes for Naruto, Kollywood, Cartoons, Sports, or ANY typed topic (up to 100)
 // @access   Private (Admin)
 router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) => {
   const { category = 'naruto', count = 5, customQuery = '' } = req.body;
@@ -215,6 +231,7 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
     }
 
     if (!items || items.length === 0) {
+      // General fallback dataset if web search returned no images
       items = AI_QUIZ_DATASETS.naruto;
     }
 
@@ -225,27 +242,35 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
     for (const targetItem of shuffled) {
       const correctName = targetItem.name;
       // Pick 3 distractor option names from items list
-      const otherNames = items.filter(x => x.name !== correctName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
+      let otherNames = items.filter(x => x.name !== correctName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
 
+      const fallbackDistractors = ["Eren Yeager", "Mikasa Ackerman", "Armin Arlert", "Levi Ackerman", "Naruto Uzumaki", "Sasuke Uchiha", "Kakashi Hatake", "Thalapathy Vijay", "Ajith Kumar", "Suriya"];
       while (otherNames.length < 3) {
-        otherNames.push(`Option ${otherNames.length + 1}`);
+        const extra = fallbackDistractors.filter(x => x !== correctName && !otherNames.includes(x));
+        if (extra.length > 0) {
+          otherNames.push(extra[Math.floor(Math.random() * extra.length)]);
+        } else {
+          otherNames.push(`Option ${otherNames.length + 1}`);
+        }
       }
 
       const allFour = [correctName, ...otherNames].sort(() => 0.5 - Math.random());
       const correctIdx = allFour.indexOf(correctName);
       const letterMap = ["A", "B", "C", "D"];
 
-      // Download source image and crop to 16:9
+      // Download source image and crop
       let finalImgUrl = targetItem.img;
       try {
-        const fetchRes = await fetch(targetItem.img);
+        const fetchRes = await fetch(targetItem.img, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+        });
         if (fetchRes.ok) {
           const buffer = Buffer.from(await fetchRes.arrayBuffer());
           const cropped = await cropTo16x9(buffer);
-          finalImgUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_16x9');
+          finalImgUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_gen');
         }
       } catch (cropErr) {
-        console.error('Failed to crop AI image to 16:9, fallback to source:', cropErr.message);
+        console.error('Failed to crop AI image, fallback to source:', cropErr.message);
       }
 
       const categoryLabel = customQuery ? customQuery : (key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars');
@@ -270,11 +295,11 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
     res.json({
       success: true,
       count: createdQuestions.length,
-      msg: `Created ${createdQuestions.length} 16:9 Image Quizzes for "${targetQuery}" successfully!`
+      msg: `Created ${createdQuestions.length} Image Quizzes for "${targetQuery}" successfully!`
     });
   } catch (err) {
-    console.error('AI Generate Error:', err);
-    res.status(500).json({ success: false, msg: 'Server error generating AI quizzes' });
+    console.error('AI Generate Error:', err.message);
+    res.status(500).json({ success: false, msg: err.message || 'Server error generating AI quizzes' });
   }
 });
 
