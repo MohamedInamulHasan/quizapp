@@ -1349,13 +1349,26 @@ fun NativeAdminScreen(
             }
         }
 
-        // BULK QUESTION UPLOAD MODAL
+        // BULK QUESTION UPLOAD MODAL (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showBulkUploadModal) {
+            val isDarkBulkModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val bulkModalBg = if (isDarkBulkModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showBulkUploadModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(26.dp),
+                containerColor = bulkModalBg,
+                titleContentColor = if (isDarkBulkModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkBulkModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkBulkModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1366,10 +1379,26 @@ fun NativeAdminScreen(
                             text = "Bulk Question Text Upload",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isDarkBulkModal) Color.White else Color(0xFF17181C)
                         )
-                        IconButton(onClick = { showBulkUploadModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        IconButton(
+                            onClick = { showBulkUploadModal = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(bulkModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkBulkModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkBulkModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkBulkModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -1383,23 +1412,21 @@ fun NativeAdminScreen(
                         Text(
                             text = "Paste formatted text containing questions (e.g. Question 1: ..., A: ..., B: ..., C: ..., D: ..., Correct: B)",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = TextMuted
                         )
 
                         OutlinedTextField(
                             value = bulkCategory,
                             onValueChange = { bulkCategory = it },
-                            label = { Text("Questions Category", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            placeholder = { Text("e.g. Naruto, General Knowledge", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 15.sp),
+                            label = { Text("Questions Category", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold) },
+                            placeholder = { Text("e.g. Naruto, General Knowledge", color = TextMuted.copy(alpha = 0.6f)) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkBulkModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Bold, fontSize = 15.sp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryGreen,
+                                focusedBorderColor = Color(0xFF255FF4),
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                                cursorColor = PrimaryGreen
+                                focusedTextColor = if (isDarkBulkModal) Color.White else Color(0xFF17181C),
+                                unfocusedTextColor = if (isDarkBulkModal) Color.White else Color(0xFF17181C),
+                                cursorColor = Color(0xFF255FF4)
                             ),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -1408,17 +1435,15 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = bulkTextRaw,
                             onValueChange = { bulkTextRaw = it },
-                            label = { Text("Paste Formatted Questions Text Here...", color = PrimaryGreen, fontWeight = FontWeight.Bold) },
-                            placeholder = { Text("Question 1: ...\nA: ...\nB: ...\nC: ...\nD: ...\nCorrect: B", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 14.sp),
+                            label = { Text("Paste Formatted Questions Text Here...", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold) },
+                            placeholder = { Text("Question 1: ...\nA: ...\nB: ...\nC: ...\nD: ...\nCorrect: B", color = TextMuted.copy(alpha = 0.6f)) },
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkBulkModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Medium, fontSize = 14.sp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryGreen,
+                                focusedBorderColor = Color(0xFF255FF4),
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                                cursorColor = PrimaryGreen
+                                focusedTextColor = if (isDarkBulkModal) Color.White else Color(0xFF17181C),
+                                unfocusedTextColor = if (isDarkBulkModal) Color.White else Color(0xFF17181C),
+                                cursorColor = Color(0xFF255FF4)
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1459,7 +1484,7 @@ fun NativeAdminScreen(
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -1471,13 +1496,26 @@ fun NativeAdminScreen(
             )
         }
 
-        // QUESTION CREATOR / EDIT MODAL (NORMAL COMPACT FORM)
+        // QUESTION CREATOR / EDIT MODAL (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showQuestionModal) {
+            val isDarkQModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val qModalBg = if (isDarkQModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showQuestionModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(24.dp),
+                containerColor = qModalBg,
+                titleContentColor = if (isDarkQModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkQModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkQModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1485,13 +1523,29 @@ fun NativeAdminScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (editingQuestion != null) "Edit Question" else "Create Question",
+                            text = if (editingQuestion == null) "Create Quiz Question" else "Edit Quiz Question",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.Black,
+                            color = if (isDarkQModal) Color.White else Color(0xFF17181C)
                         )
-                        IconButton(onClick = { showQuestionModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = { showQuestionModal = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(qModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkQModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkQModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkQModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -1695,13 +1749,26 @@ fun NativeAdminScreen(
             )
         }
 
-        // PASSAGES MODAL (NORMAL COMPACT FORM)
+        // PASSAGES MODAL (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showPassageModal) {
+            val isDarkPModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val pModalBg = if (isDarkPModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showPassageModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(24.dp),
+                containerColor = pModalBg,
+                titleContentColor = if (isDarkPModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkPModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkPModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1711,11 +1778,27 @@ fun NativeAdminScreen(
                         Text(
                             text = if (editingPassage != null) "Edit Study Passage" else "Add Study Passage",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.Black,
+                            color = if (isDarkPModal) Color.White else Color(0xFF17181C)
                         )
-                        IconButton(onClick = { showPassageModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = { showPassageModal = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(pModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkPModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkPModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkPModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -1730,9 +1813,9 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = passageCategory,
                             onValueChange = { passageCategory = it },
-                            label = { Text("Passage Category", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text("Passage Category", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("e.g. GENERAL KNOWLEDGE or SCIENCE", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkPModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
@@ -1742,9 +1825,9 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = passageTitle,
                             onValueChange = { passageTitle = it },
-                            label = { Text("Passage Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text("Passage Title", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("e.g. The Wonders of Solar Energy", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkPModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
@@ -1754,9 +1837,9 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = passageParagraph,
                             onValueChange = { passageParagraph = it },
-                            label = { Text("Passage Reading Content", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text("Passage Reading Content", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("Type or paste reading passage paragraph text here...", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkPModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Medium, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth().height(120.dp),
                             shape = RoundedCornerShape(10.dp)
@@ -1789,7 +1872,7 @@ fun NativeAdminScreen(
                             showPassageModal = false
                             Toast.makeText(context, "📚 Passage Saved Successfully!", Toast.LENGTH_SHORT).show()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                         modifier = Modifier.fillMaxWidth().height(46.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -1799,13 +1882,26 @@ fun NativeAdminScreen(
             )
         }
 
-        // QUIZ SETTINGS MODAL (NORMAL COMPACT FORM)
+        // QUIZ SETTINGS MODAL (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showQuizSettingsModal) {
+            val isDarkSModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val sModalBg = if (isDarkSModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showQuizSettingsModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(24.dp),
+                containerColor = sModalBg,
+                titleContentColor = if (isDarkSModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkSModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkSModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1815,11 +1911,27 @@ fun NativeAdminScreen(
                         Text(
                             text = "Admin Quiz Settings",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.Black,
+                            color = if (isDarkSModal) Color.White else Color(0xFF17181C)
                         )
-                        IconButton(onClick = { showQuizSettingsModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = { showQuizSettingsModal = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(sModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkSModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkSModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkSModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -1831,7 +1943,7 @@ fun NativeAdminScreen(
                             .padding(vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text("Question Timer (Seconds)", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        Text("Question Timer (Seconds)", fontWeight = FontWeight.Bold, color = Color(0xFF255FF4), fontSize = 12.sp)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf(5, 10, 15, 20, 30, 45).forEach { preset ->
                                 val isSelected = tempTimerText == preset.toString()
@@ -1839,7 +1951,7 @@ fun NativeAdminScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(50.dp))
-                                        .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+                                        .background(if (isSelected) Color(0xFF255FF4) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                                         .clickable { tempTimerText = preset.toString() }
                                         .padding(vertical = 6.dp),
                                     contentAlignment = Alignment.Center
@@ -1851,15 +1963,15 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = tempTimerText,
                             onValueChange = { tempTimerText = it },
-                            label = { Text("Custom Seconds per Question", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                            label = { Text("Custom Seconds per Question", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 11.sp) },
                             singleLine = true,
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkSModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp)
                         )
 
-                        Text("Questions Shown per Quiz", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+                        Text("Questions Shown per Quiz", fontWeight = FontWeight.Bold, color = Color(0xFF255FF4), fontSize = 12.sp)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf(5, 10, 15, 20, 30, 50).forEach { preset ->
                                 val isSelected = tempLimitText == preset.toString()
@@ -1867,7 +1979,7 @@ fun NativeAdminScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(50.dp))
-                                        .background(if (isSelected) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+                                        .background(if (isSelected) Color(0xFF255FF4) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                                         .clickable { tempLimitText = preset.toString() }
                                         .padding(vertical = 6.dp),
                                     contentAlignment = Alignment.Center
@@ -1879,15 +1991,15 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = tempLimitText,
                             onValueChange = { tempLimitText = it },
-                            label = { Text("Custom Question Limit", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+                            label = { Text("Custom Question Limit", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 11.sp) },
                             singleLine = true,
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkSModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp)
                         )
 
-                        Divider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+                        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
 
                         Text("Reset User Scores", fontWeight = FontWeight.Bold, color = IncorrectRed, fontSize = 12.sp)
 
@@ -1915,7 +2027,7 @@ fun NativeAdminScreen(
                             showQuizSettingsModal = false
                             Toast.makeText(context, "⚙️ Settings Saved! $limit Qs | ${timerSec}s timer", Toast.LENGTH_SHORT).show()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                         modifier = Modifier.fillMaxWidth().height(46.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
