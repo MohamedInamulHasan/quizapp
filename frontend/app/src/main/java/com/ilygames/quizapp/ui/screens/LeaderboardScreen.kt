@@ -421,7 +421,7 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
             .background(rowBg, RoundedCornerShape(18.dp))
             .border(
                 1.5.dp,
-                if (isMe) Color(0xFF255FF4) else androidx.compose.ui.graphics.Brush.linearGradient(
+                if (isMe) Brush.linearGradient(listOf(Color(0xFF255FF4), Color(0xFF255FF4))) else Brush.linearGradient(
                     colors = listOf(
                         Color.White.copy(alpha = if (isDarkRow) 0.3f else 0.9f),
                         Color.Black.copy(alpha = if (isDarkRow) 0.4f else 0.06f)
