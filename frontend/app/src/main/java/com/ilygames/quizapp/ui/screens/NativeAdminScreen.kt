@@ -645,7 +645,8 @@ fun NativeAdminScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                       // Create Single Question Button (3D GLOSSY ROYAL BLUE)
+                    ) {
+                        // Create Single Question Button (3D GLOSSY ROYAL BLUE)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -745,7 +746,7 @@ fun NativeAdminScreen(
                             Icon(Icons.Default.DeleteForever, contentDescription = "Wipe", tint = Color.White, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Wipe All", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
-                        }             }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
