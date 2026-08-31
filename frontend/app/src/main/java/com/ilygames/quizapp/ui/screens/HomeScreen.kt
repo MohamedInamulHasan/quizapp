@@ -904,7 +904,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             text = "TODAY'S REWARD",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFF255FF4),
+                            color = if (isDarkRewModal) Color.White else Color(0xFF17181C),
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
                         IconButton(
@@ -951,7 +951,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Icon(
                                 imageVector = Icons.Default.EmojiEvents,
                                 contentDescription = "Reward Prize",
-                                tint = Color(0xFF255FF4),
+                                tint = if (isDarkRewModal) Color.White else Color(0xFF17181C),
                                 modifier = Modifier.size(110.dp)
                             )
                         }
