@@ -88,26 +88,153 @@ router.get('/questions', [auth, adminAuth], async (req, res) => {
   }
 });
 
+const sharp = require('sharp');
+
+// Helper: Auto-crop image buffer to exact 16:9 aspect ratio (800x450 JPEG)
+async function cropTo16x9(buffer) {
+  try {
+    return await sharp(buffer)
+      .resize(800, 450, { fit: 'cover', position: 'center' })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  } catch (err) {
+    console.error('Sharp crop error:', err);
+    return buffer;
+  }
+}
+
+// Data sets for Auto AI Image Quiz Generation
+const AI_QUIZ_DATASETS = {
+  naruto: [
+    { name: "Naruto Uzumaki", img: "https://upload.wikimedia.org/wikipedia/en/9/9a/Naruto_Uzumaki.png" },
+    { name: "Sasuke Uchiha", img: "https://upload.wikimedia.org/wikipedia/en/9/90/Sasuke_Uchiha.png" },
+    { name: "Kakashi Hatake", img: "https://upload.wikimedia.org/wikipedia/en/f/f6/Kakashi_Hatake.png" },
+    { name: "Itachi Uchiha", img: "https://upload.wikimedia.org/wikipedia/en/7/7b/Itachi_Uchiha.png" },
+    { name: "Sakura Haruno", img: "https://upload.wikimedia.org/wikipedia/en/e/e0/Sakura_Haruno.png" },
+    { name: "Gaara of the Sand", img: "https://upload.wikimedia.org/wikipedia/en/5/52/Gaara_naruto.png" },
+    { name: "Jiraiya", img: "https://upload.wikimedia.org/wikipedia/en/1/10/Jiraiya_%28Naruto%29.png" },
+    { name: "Tsunade", img: "https://upload.wikimedia.org/wikipedia/en/6/64/Tsunade_%28Naruto%29.png" },
+    { name: "Orochimaru", img: "https://upload.wikimedia.org/wikipedia/en/2/2f/Orochimaru_%28Naruto%29.png" },
+    { name: "Shikamaru Nara", img: "https://upload.wikimedia.org/wikipedia/en/7/70/Shikamaru_Nara.png" },
+    { name: "Minato Namikaze", img: "https://upload.wikimedia.org/wikipedia/en/8/87/Minato_Namikaze.png" },
+    { name: "Obito Uchiha", img: "https://upload.wikimedia.org/wikipedia/en/d/da/Obito_Uchiha.png" }
+  ],
+  kollywood: [
+    { name: "Thalapathy Vijay", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Vijay_at_the_Leo_Success_Meet.jpg/800px-Vijay_at_the_Leo_Success_Meet.jpg" },
+    { name: "Superstar Rajinikanth", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Rajinikanth_at_the_Press_Meet_of_2.0.jpg/800px-Rajinikanth_at_the_Press_Meet_of_2.0.jpg" },
+    { name: "Ajith Kumar", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Ajith_Kumar_at_Viswasam_Press_Meet.jpg/800px-Ajith_Kumar_at_Viswasam_Press_Meet.jpg" },
+    { name: "Suriya", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Suriya_at_Soorarai_Pottru_Trailer_Launch.jpg/800px-Suriya_at_Soorarai_Pottru_Trailer_Launch.jpg" },
+    { name: "Chiyaan Vikram", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Vikram_at_Cobra_Audio_Launch.jpg/800px-Vikram_at_Cobra_Audio_Launch.jpg" },
+    { name: "Dhanush", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Dhanush_at_The_Gray_Man_Premiere.jpg/800px-Dhanush_at_The_Gray_Man_Premiere.jpg" },
+    { name: "Kamal Haasan", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Kamal_Haasan_at_Vikram_Success_Meet.jpg/800px-Kamal_Haasan_at_Vikram_Success_Meet.jpg" },
+    { name: "Sivakarthikeyan", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Sivakarthikeyan_at_Prince_Trailer_Launch.jpg/800px-Sivakarthikeyan_at_Prince_Trailer_Launch.jpg" },
+    { name: "Vijay Sethupathi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vijay_Sethupathi_at_Farzi_Press_Meet.jpg/800px-Vijay_Sethupathi_at_Farzi_Press_Meet.jpg" },
+    { name: "Karthi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Karthi_at_Ponniyin_Selvan_Press_Meet.jpg/800px-Karthi_at_Ponniyin_Selvan_Press_Meet.jpg" }
+  ],
+  cartoons: [
+    { name: "Doraemon", img: "https://upload.wikimedia.org/wikipedia/en/b/bd/Doraemon_character.png" },
+    { name: "Shin-chan", img: "https://upload.wikimedia.org/wikipedia/en/0/07/Crayon_Shin-chan_character.png" },
+    { name: "Chhota Bheem", img: "https://upload.wikimedia.org/wikipedia/en/d/d9/Chhota_Bheem_Character.png" },
+    { name: "Jerry Mouse", img: "https://upload.wikimedia.org/wikipedia/en/2/2f/Jerry_Mouse.png" },
+    { name: "Ben 10", img: "https://upload.wikimedia.org/wikipedia/en/7/7b/Ben_10_Omniverse_title_card.png" },
+    { name: "Pikachu", img: "https://upload.wikimedia.org/wikipedia/en/a/a6/Pok%C3%A9mon_Pikachu_art.png" },
+    { name: "Oggy", img: "https://upload.wikimedia.org/wikipedia/en/6/69/Oggy_character.png" }
+  ],
+  sports: [
+    { name: "Virat Kohli", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Virat_Kohli_during_the_product_launch_2023.jpg/800px-Virat_Kohli_during_the_product_launch_2023.jpg" },
+    { name: "MS Dhoni", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/MS_Dhoni_%28Prabal_Gurung_2016%29.jpg/800px-MS_Dhoni_%28Prabal_Gurung_2016%29.jpg" },
+    { name: "Rohit Sharma", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Rohit_Sharma_2023.jpg/800px-Rohit_Sharma_2023.jpg" },
+    { name: "Cristiano Ronaldo", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cristiano_Ronaldo_2018.jpg/800px-Cristiano_Ronaldo_2018.jpg" },
+    { name: "Lionel Messi", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Lionel-Messi-Argentina-2022-World-Cup_%28cropped%29.jpg/800px-Lionel-Messi-Argentina-2022-World-Cup_%28cropped%29.jpg" }
+  ]
+};
+
 // @route    POST api/admin/upload-image
-// @desc     Upload image to Cloudinary CDN
+// @desc     Upload image to Cloudinary CDN with automatic 16:9 aspect ratio cropping
 // @access   Private
 router.post('/upload-image', [auth, upload.single('image')], async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, msg: 'No file uploaded' });
     }
-    const mimeType = req.file.mimetype || 'image/jpeg';
-    const imageUrl = await uploadToCloudinary(req.file.buffer, mimeType, 'quizapp_uploads');
+
+    // Auto-crop image to 16:9 aspect ratio!
+    const croppedBuffer = await cropTo16x9(req.file.buffer);
+    const imageUrl = await uploadToCloudinary(croppedBuffer, 'image/jpeg', 'quizapp_uploads');
 
     res.json({
       success: true,
       imageUrl: imageUrl,
       url: imageUrl,
-      msg: 'Image uploaded successfully to Cloudinary'
+      msg: 'Image cropped to 16:9 and uploaded successfully'
     });
   } catch (err) {
     console.error('Upload image error:', err);
     res.status(500).json({ success: false, msg: err.message || 'Failed to upload image' });
+  }
+});
+
+// @route    POST api/admin/ai-generate-category-quiz
+// @desc     Auto-generate 16:9 image quizzes for Naruto, Kollywood, Cartoons, Sports, etc.
+// @access   Private (Admin)
+router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) => {
+  const { category = 'naruto', count = 5 } = req.body;
+  try {
+    const key = category.toLowerCase().trim();
+    let items = AI_QUIZ_DATASETS[key] || AI_QUIZ_DATASETS.naruto;
+    const limit = Math.min(count, items.length);
+
+    const shuffled = [...items].sort(() => 0.5 - Math.random()).slice(0, limit);
+    const createdQuestions = [];
+
+    for (const targetItem of shuffled) {
+      const correctName = targetItem.name;
+      // Pick 3 distractor option names
+      const otherNames = items.filter(x => x.name !== correctName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const allFour = [correctName, ...otherNames].sort(() => 0.5 - Math.random());
+      const correctIdx = allFour.indexOf(correctName);
+      const letterMap = ["A", "B", "C", "D"];
+
+      // Download source image and crop to 16:9
+      let finalImgUrl = targetItem.img;
+      try {
+        const fetchRes = await fetch(targetItem.img);
+        if (fetchRes.ok) {
+          const buffer = Buffer.from(await fetchRes.arrayBuffer());
+          const cropped = await cropTo16x9(buffer);
+          finalImgUrl = await uploadToCloudinary(cropped, 'image/jpeg', 'quizapp_ai_16x9');
+        }
+      } catch (cropErr) {
+        console.error('Failed to crop AI image to 16:9, fallback to source:', cropErr.message);
+      }
+
+      const categoryLabel = key === 'naruto' ? 'Anime Quiz' : key === 'kollywood' ? 'Kollywood Cinema' : key === 'cartoons' ? 'Cartoons' : 'Sports Stars';
+
+      const newQ = new Question({
+        question: ``, // Blank text so image card looks clean
+        optionA: allFour[0],
+        optionB: allFour[1],
+        optionC: allFour[2],
+        optionD: allFour[3],
+        options: allFour,
+        correctAnswer: letterMap[correctIdx],
+        category: categoryLabel,
+        difficulty: 'medium',
+        imageUrl: finalImgUrl
+      });
+
+      await newQ.save();
+      createdQuestions.push(newQ);
+    }
+
+    res.json({
+      success: true,
+      count: createdQuestions.length,
+      msg: `Created ${createdQuestions.length} 16:9 Image Quizzes successfully!`
+    });
+  } catch (err) {
+    console.error('AI Generate Error:', err);
+    res.status(500).json({ success: false, msg: 'Server error generating AI quizzes' });
   }
 });
 

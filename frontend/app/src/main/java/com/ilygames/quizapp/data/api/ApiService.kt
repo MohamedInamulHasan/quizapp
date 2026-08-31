@@ -150,7 +150,15 @@ interface ApiService {
     suspend fun resetScores(
         @Header("x-auth-token") token: String
     ): Response<Unit>
+
+    @POST("admin/ai-generate-category-quiz")
+    suspend fun aiGenerateCategoryQuiz(
+        @Header("x-auth-token") token: String,
+        @Body request: AiGenerateQuizRequest
+    ): Response<AiGenerateQuizResponse>
 }
 
 data class RewardSyncRequest(val title: String, val description: String, val imageUrl: String?)
 data class RewardSyncResponse(val title: String, val description: String, val imageUrl: String?)
+data class AiGenerateQuizRequest(val category: String, val count: Int = 5)
+data class AiGenerateQuizResponse(val success: Boolean, val count: Int, val msg: String?)

@@ -400,6 +400,11 @@ fun NativeAdminScreen(
     var showRewardModal by remember { mutableStateOf(false) }
     var showResetScoresConfirmModal by remember { mutableStateOf(false) }
 
+    // AI 16:9 Quiz Generator State
+    var showAiGeneratorModal by remember { mutableStateOf(false) }
+    var selectedAiCategory by remember { mutableStateOf("naruto") }
+    var isGeneratingAiQuizzes by remember { mutableStateOf(false) }
+
     // Helper: Upload image file to backend server → returns full http:// URL stored on server
     suspend fun uploadImageToServer(uri: Uri, prefix: String): String? {
         return try {
@@ -623,11 +628,29 @@ fun NativeAdminScreen(
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                             modifier = Modifier
                                 .border(1.dp, PrimaryGreen, RoundedCornerShape(14.dp))
-                                .weight(1.2f)
+                                .weight(1.1f)
                         ) {
                             Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(2.dp))
-                            Text("Bulk Upload", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Bulk", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+
+                        // AI 16:9 Quiz Generator Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                showAiGeneratorModal = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen.copy(alpha = 0.15f)),
+                            shape = RoundedCornerShape(14.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                            modifier = Modifier
+                                .border(1.dp, PrimaryGreen, RoundedCornerShape(14.dp))
+                                .weight(1.3f)
+                        ) {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = "AI", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text("🤖 AI 16:9", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
                         // Delete All Button
@@ -1920,6 +1943,118 @@ fun NativeAdminScreen(
                 },
                 dismissButton = null,
                 shape = RoundedCornerShape(26.dp)
+            )
+        }
+
+        // AI 16:9 QUIZ GENERATOR MODAL
+        if (showAiGeneratorModal) {
+            AlertDialog(
+                onDismissRequest = { if (!isGeneratingAiQuizzes) showAiGeneratorModal = false },
+                containerColor = Color.White,
+                shape = RoundedCornerShape(26.dp),
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(22.dp))
+                            Text(
+                                text = "AI 16:9 Quiz Generator",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF101828)
+                            )
+                        }
+                        IconButton(onClick = { if (!isGeneratingAiQuizzes) showAiGeneratorModal = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                        }
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Select a category below to automatically download 16:9 cropped images, generate 4 options, and insert quizzes directly into your database!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF475467),
+                            fontSize = 13.sp
+                        )
+
+                        Text("Select Category:", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 12.sp)
+
+                        val categoriesList = listOf(
+                            "naruto" to "🍥 Naruto & Anime Characters",
+                            "kollywood" to "🎬 Kollywood Tamil Stars",
+                            "cartoons" to "📺 Cartoons & Animation",
+                            "sports" to "🏏 Sports & Cricket Stars"
+                        )
+
+                        categoriesList.forEach { (catKey, catLabel) ->
+                            val isSelected = selectedAiCategory == catKey
+                            Surface(
+                                onClick = { selectedAiCategory = catKey },
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (isSelected) PrimaryGreen.copy(alpha = 0.12f) else Color(0xFFF2F4F7),
+                                border = androidx.compose.foundation.BorderStroke(1.5.dp, if (isSelected) PrimaryGreen else Color(0xFFEAECF0)),
+                                modifier = Modifier.fillMaxWidth().height(48.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(catLabel, fontWeight = FontWeight.Bold, color = if (isSelected) PrimaryGreen else Color(0xFF1D2939), fontSize = 14.sp)
+                                    if (isSelected) {
+                                        Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            token?.let { authToken ->
+                                isGeneratingAiQuizzes = true
+                                coroutineScope.launch {
+                                    try {
+                                        val req = com.ilygames.quizapp.data.api.AiGenerateQuizRequest(selectedAiCategory, count = 5)
+                                        val res = ApiClient.apiService.aiGenerateCategoryQuiz(authToken, req)
+                                        if (res.isSuccessful && res.body()?.success == true) {
+                                            showAiGeneratorModal = false
+                                            fetchAdminQuestions(authToken)
+                                            Toast.makeText(context, "✨ ${res.body()?.msg ?: "Created 5 16:9 Image Quizzes!"}", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            Toast.makeText(context, "Failed to generate AI quizzes", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                    } finally {
+                                        isGeneratingAiQuizzes = false
+                                    }
+                                }
+                            }
+                        },
+                        enabled = !isGeneratingAiQuizzes,
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                        if (isGeneratingAiQuizzes) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Generate 5 Image Quizzes (16:9)", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             )
         }
 

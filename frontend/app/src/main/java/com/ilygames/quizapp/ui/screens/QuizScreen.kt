@@ -241,7 +241,7 @@ fun QuizScreen(
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(220.dp)
+                                            .aspectRatio(16f / 9f)
                                             .clip(RoundedCornerShape(22.dp))
                                             .border(2.5.dp, Color.White, RoundedCornerShape(22.dp))
                                     )
