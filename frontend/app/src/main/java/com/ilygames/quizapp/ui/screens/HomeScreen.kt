@@ -891,9 +891,15 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 modifier = Modifier.border(
                     1.5.dp,
                     Brush.linearGradient(
+                containerColor = rewModalBg,
+                titleContentColor = if (isDarkRewModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(32.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = if (isDarkRewardModal) 0.35f else 0.9f),
-                            Color.Black.copy(alpha = if (isDarkRewardModal) 0.5f else 0.08f)
+                            Color.White.copy(alpha = if (isDarkRewModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkRewModal) 0.5f else 0.08f)
                         )
                     ),
                     RoundedCornerShape(32.dp)
@@ -901,18 +907,31 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 title = {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Today's Reward",
-                            style = MaterialTheme.typography.headlineSmall,
+                            text = "TODAY'S REWARD",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
-                            color = if (isDarkRewardModal) Color.White else Color(0xFF17181C),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align(Alignment.Center)
+                            color = Color(0xFF255FF4),
+                            modifier = Modifier.align(Alignment.CenterStart)
                         )
                         IconButton(
                             onClick = { showRewardShowcaseModal = false },
-                            modifier = Modifier.align(Alignment.CenterEnd)
+                            modifier = Modifier
+                                .size(36.dp)
+                                .align(Alignment.CenterEnd)
+                                .shadow(4.dp, CircleShape)
+                                .background(rewModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkRewModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkRewModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkRewModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -938,7 +957,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             Icon(
                                 imageVector = Icons.Default.EmojiEvents,
                                 contentDescription = "Reward Prize",
-                                tint = PrimaryGreen,
+                                tint = Color(0xFF255FF4),
                                 modifier = Modifier.size(110.dp)
                             )
                         }

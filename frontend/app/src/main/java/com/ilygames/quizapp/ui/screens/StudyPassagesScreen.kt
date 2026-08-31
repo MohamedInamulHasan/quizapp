@@ -91,11 +91,14 @@ fun StudyPassagesScreen(
                 .statusBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // 1. REDESIGNED TOP HEADER BAR
+            // 1. REDESIGNED TOP HEADER BAR (3D SOFT-CLAY & 3D ROYAL BLUE)
+            val isDarkHubHeader = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val hubHeaderBg = if (isDarkHubHeader) Color(0xFF1C273A) else Color.White
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -107,13 +110,23 @@ fun StudyPassagesScreen(
                         onClick = onBack,
                         modifier = Modifier
                             .size(42.dp)
-                            .background(MaterialTheme.colorScheme.surface, CircleShape)
-                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                            .shadow(4.dp, CircleShape)
+                            .background(hubHeaderBg, CircleShape)
+                            .border(
+                                1.dp,
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = if (isDarkHubHeader) 0.35f else 0.9f),
+                                        Color.Black.copy(alpha = if (isDarkHubHeader) 0.5f else 0.1f)
+                                    )
+                                ),
+                                CircleShape
+                            )
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = if (isDarkHubHeader) Color.White else Color(0xFF17181C)
                         )
                     }
 
@@ -124,14 +137,14 @@ fun StudyPassagesScreen(
                         Icon(
                             imageVector = Icons.Default.MenuBook,
                             contentDescription = null,
-                            tint = PrimaryGreen,
+                            tint = Color(0xFF255FF4),
                             modifier = Modifier.size(26.dp)
                         )
                         Column {
                             Text(
                                 text = "PASSAGE STUDY HUB",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = PrimaryGreen,
+                                color = Color(0xFF255FF4),
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
                             )
@@ -139,7 +152,7 @@ fun StudyPassagesScreen(
                                 text = "Study Passages",
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
                                 fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onBackground
+                                color = if (isDarkHubHeader) Color.White else Color(0xFF17181C)
                             )
                         }
                     }
@@ -150,9 +163,18 @@ fun StudyPassagesScreen(
                         SoundManager.playClickSound()
                         onStartDaily20Quiz()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     shape = RoundedCornerShape(20.dp),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .shadow(6.dp, RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                            ),
+                            RoundedCornerShape(20.dp)
+                        )
+                        .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
