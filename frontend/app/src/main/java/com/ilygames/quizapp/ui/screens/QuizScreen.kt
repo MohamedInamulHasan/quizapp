@@ -315,11 +315,7 @@ fun QuizScreen(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .shadow(
-                                                elevation = 10.dp,
-                                                shape = RoundedCornerShape(26.dp),
-                                                spotColor = Color.Black.copy(alpha = if (isDarkQCard) 0.45f else 0.12f)
-                                            )
+                                            .shadow(10.dp, RoundedCornerShape(26.dp))
                                             .background(qCardBg, RoundedCornerShape(26.dp))
                                             .border(
                                                 1.5.dp,
@@ -439,11 +435,7 @@ fun CleanHighlightOptionRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = if (isDarkQuiz) 0.35f else 0.08f)
-            )
+            .shadow(6.dp, RoundedCornerShape(20.dp))
             .background(backgroundColor, RoundedCornerShape(20.dp))
             .border(
                 1.5.dp,
@@ -473,7 +465,7 @@ fun CleanHighlightOptionRow(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .shadow(4.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.4f))
+                    .shadow(4.dp, CircleShape)
                     .background(badgeBrush, CircleShape)
                     .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                 contentAlignment = Alignment.Center

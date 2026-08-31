@@ -95,11 +95,7 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 14.dp,
-                            shape = RoundedCornerShape(26.dp),
-                            spotColor = Color.Black.copy(alpha = if (isDarkRes) 0.45f else 0.15f)
-                        )
+                        .shadow(12.dp, RoundedCornerShape(26.dp))
                         .background(resCardBg, RoundedCornerShape(26.dp))
                         .border(
                             1.5.dp,
@@ -122,7 +118,7 @@ fun ResultsScreen(
                             modifier = Modifier
                                 .size(74.dp)
                                 .graphicsLayer(scaleX = trophyScale, scaleY = trophyScale)
-                                .shadow(6.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.4f))
+                                .shadow(6.dp, CircleShape)
                                 .background(
                                     androidx.compose.ui.graphics.Brush.radialGradient(
                                         colors = listOf(

@@ -229,11 +229,7 @@ fun LeaderboardPodium(entries: List<LeaderboardEntry>, currentUserId: String, cu
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(26.dp),
-                spotColor = Color.Black.copy(alpha = if (isDarkLdr) 0.45f else 0.12f)
-            )
+            .shadow(10.dp, RoundedCornerShape(26.dp))
             .background(ldrCardBg, RoundedCornerShape(26.dp))
             .border(
                 1.5.dp,
@@ -421,11 +417,7 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 6.dp,
-                shape = RoundedCornerShape(18.dp),
-                spotColor = Color.Black.copy(alpha = if (isDarkRow) 0.35f else 0.08f)
-            )
+            .shadow(6.dp, RoundedCornerShape(18.dp))
             .background(rowBg, RoundedCornerShape(18.dp))
             .border(
                 1.5.dp,

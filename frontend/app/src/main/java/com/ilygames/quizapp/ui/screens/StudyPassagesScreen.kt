@@ -174,11 +174,7 @@ fun StudyPassagesScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(
-                                elevation = 8.dp,
-                                shape = RoundedCornerShape(22.dp),
-                                spotColor = Color.Black.copy(alpha = if (isDarkArt) 0.45f else 0.1f)
-                            )
+                            .shadow(8.dp, RoundedCornerShape(22.dp))
                             .background(artCardBg, RoundedCornerShape(22.dp))
                             .border(
                                 1.5.dp,

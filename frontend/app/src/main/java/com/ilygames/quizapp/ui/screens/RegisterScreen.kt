@@ -103,7 +103,7 @@ fun RegisterScreen(
                 Box(
                     modifier = Modifier
                         .size(68.dp)
-                        .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = PrimaryGreen.copy(alpha = 0.35f))
+                        .shadow(8.dp, RoundedCornerShape(20.dp))
                         .background(PrimaryGreen, RoundedCornerShape(20.dp)),
                     contentAlignment = Alignment.Center
                 ) {

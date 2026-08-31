@@ -373,11 +373,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     Box(
                                         modifier = Modifier
                                             .width(230.dp)
-                                            .shadow(
-                                                elevation = 12.dp,
-                                                shape = RoundedCornerShape(22.dp),
-                                                spotColor = Color.Black.copy(alpha = if (isDarkSettings) 0.45f else 0.15f)
-                                            )
+                                            .shadow(12.dp, RoundedCornerShape(22.dp))
                                             .background(settingsCardBg, RoundedCornerShape(22.dp))
                                             .border(
                                                 1.5.dp,
@@ -569,11 +565,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 10.dp,
-                            shape = RoundedCornerShape(24.dp),
-                            spotColor = Color.Black.copy(alpha = if (isDarkHeader) 0.45f else 0.12f)
-                        )
+                        .shadow(10.dp, RoundedCornerShape(24.dp))
                         .background(scoreCardBg, RoundedCornerShape(24.dp))
                         .border(
                             1.5.dp,
@@ -693,11 +685,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 14.dp,
-                            shape = RoundedCornerShape(26.dp),
-                            spotColor = Color(0xFF0B46DA).copy(alpha = 0.5f)
-                        )
+                        .shadow(12.dp, RoundedCornerShape(26.dp))
                         .background(
                             brush = Brush.linearGradient(
                                 colors = listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
@@ -756,7 +744,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .shadow(8.dp, RoundedCornerShape(50.dp), spotColor = Color.Black.copy(alpha = 0.25f))
+                                .shadow(8.dp, RoundedCornerShape(50.dp))
                                 .background(Color.White, RoundedCornerShape(50.dp))
                                 .border(
                                     1.5.dp,
@@ -1324,11 +1312,7 @@ fun UnifiedEmeraldCard(
 
     Box(
         modifier = modifier
-            .shadow(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(22.dp),
-                spotColor = Color.Black.copy(alpha = if (isDark) 0.45f else 0.12f)
-            )
+            .shadow(10.dp, RoundedCornerShape(22.dp))
             .background(cardBg, RoundedCornerShape(22.dp))
             .border(
                 1.5.dp,
@@ -1348,7 +1332,7 @@ fun UnifiedEmeraldCard(
             Box(
                 modifier = Modifier
                     .size(46.dp)
-                    .shadow(6.dp, CircleShape, spotColor = Color(0xFF0B46DA).copy(alpha = 0.5f))
+                    .shadow(6.dp, CircleShape)
                     .background(
                         androidx.compose.ui.graphics.Brush.radialGradient(
                             colors = listOf(

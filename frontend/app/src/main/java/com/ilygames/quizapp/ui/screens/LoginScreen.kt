@@ -98,7 +98,7 @@ fun LoginScreen(
                 Box(
                     modifier = Modifier
                         .size(72.dp)
-                        .shadow(8.dp, RoundedCornerShape(22.dp), spotColor = PrimaryGreen.copy(alpha = 0.35f))
+                        .shadow(8.dp, RoundedCornerShape(22.dp))
                         .background(PrimaryGreen, RoundedCornerShape(22.dp)),
                     contentAlignment = Alignment.Center
                 ) {

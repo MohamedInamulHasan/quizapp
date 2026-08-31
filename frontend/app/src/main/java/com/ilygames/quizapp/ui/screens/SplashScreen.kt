@@ -70,7 +70,7 @@ fun SplashScreen(
             Box(
                 modifier = Modifier
                     .size(110.dp)
-                    .shadow(12.dp, RoundedCornerShape(32.dp), spotColor = titleColor.copy(alpha = 0.3f))
+                    .shadow(12.dp, RoundedCornerShape(32.dp))
                     .background(titleColor, RoundedCornerShape(32.dp)),
                 contentAlignment = Alignment.Center
             ) {
