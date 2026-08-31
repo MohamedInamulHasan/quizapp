@@ -253,7 +253,7 @@ fun QuizScreen(
                                         },
                                         error = {
                                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                Icon(Icons.Default.BrokenImage, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(36.dp))
+                                                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(36.dp))
                                             }
                                         },
                                         modifier = Modifier

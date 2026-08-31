@@ -820,7 +820,7 @@ fun NativeAdminScreen(
                                                 error = {
                                                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                            Icon(Icons.Default.BrokenImage, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
+                                                            Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
                                                             Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
                                                         }
                                                     }
