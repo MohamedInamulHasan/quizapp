@@ -880,13 +880,15 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             )
                         }
 
+                        val hasActiveReward = !globalRewardTitle.value.isNullOrBlank()
+
                         // BELOW TITLE & DESCRIPTION (DIRECTLY BELOW IMAGE)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = globalRewardTitle.value,
+                                text = if (hasActiveReward) globalRewardTitle.value else "No Active Reward Today",
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Center,
@@ -894,7 +896,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             )
 
                             Text(
-                                text = globalRewardDescription.value,
+                                text = if (hasActiveReward) globalRewardDescription.value else "Check back tomorrow for exciting rewards and daily prizes!",
                                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp, fontSize = 14.sp),
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)

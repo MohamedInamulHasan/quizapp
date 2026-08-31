@@ -616,26 +616,24 @@ fun NativeAdminScreen(
                             Text("New", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        // Bulk Upload Button
+                        // Bulk Upload Button (No outline border)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 bulkTextRaw = ""
                                 showBulkUploadModal = true
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen.copy(alpha = 0.12f)),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
-                            modifier = Modifier
-                                .border(1.dp, PrimaryGreen, RoundedCornerShape(14.dp))
-                                .weight(1.1f)
+                            modifier = Modifier.weight(1.1f)
                         ) {
                             Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(2.dp))
                             Text("Bulk", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
 
-                        /* Temporarily hidden AI 16:9 Button
+                        // AI 16:9 Quiz Generator Button (No outline border)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -644,15 +642,12 @@ fun NativeAdminScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen.copy(alpha = 0.15f)),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
-                            modifier = Modifier
-                                .border(1.dp, PrimaryGreen, RoundedCornerShape(14.dp))
-                                .weight(1.3f)
+                            modifier = Modifier.weight(1.3f)
                         ) {
                             Icon(Icons.Default.AutoAwesome, contentDescription = "AI", tint = PrimaryGreen, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(2.dp))
                             Text("🤖 AI 16:9", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
-                        */
 
                         // Delete All Button
                         Button(
@@ -720,12 +715,14 @@ fun NativeAdminScreen(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                                             ) {
-                                                Text(
-                                                    text = q.category.uppercase(),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    fontWeight = FontWeight.Black,
-                                                    color = PrimaryGreen
-                                                )
+                                                if (!q.category.equals("GENERAL", ignoreCase = true) && q.category.isNotBlank()) {
+                                                    Text(
+                                                        text = q.category.uppercase(),
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        fontWeight = FontWeight.Black,
+                                                        color = PrimaryGreen
+                                                    )
+                                                }
                                                 if (!q.imageUrl.isNullOrBlank()) {
                                                     Surface(
                                                         color = PrimaryGreen.copy(alpha = 0.15f),
