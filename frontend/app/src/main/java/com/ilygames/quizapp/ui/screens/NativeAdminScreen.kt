@@ -1027,7 +1027,7 @@ fun NativeAdminScreen(
                 }
             }
 
-            // TAB 3: REWARDS MANAGER (Matching Questions & Passages Layout)
+            // TAB 3: REWARDS MANAGER (3D GLOSSY BLUE BUTTON & 3D SOFT-CLAY CARDS)
             if (selectedTab == 2) {
                 val isRewardPublished = globalRewardTitle.value.isNotBlank()
 
@@ -1040,12 +1040,23 @@ fun NativeAdminScreen(
                             inputRewardImgUrl = globalRewardImageUrl.value ?: ""
                             showRewardModal = true
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        shape = RoundedCornerShape(16.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .height(46.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
                         Icon(Icons.Default.Add, contentDescription = "Publish", tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (isRewardPublished) "Edit Daily Prize" else "Publish New Reward", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(if (isRewardPublished) "Edit Daily Prize" else "Publish New Reward", color = Color.White, fontWeight = FontWeight.Black, fontSize = 13.sp)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -1056,12 +1067,24 @@ fun NativeAdminScreen(
                             contentPadding = PaddingValues(bottom = 20.dp)
                         ) {
                             item {
-                                Card(
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                val isDarkRCardAdmin = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                                val rCardBgAdmin = if (isDarkRCardAdmin) Color(0xFF1C273A) else Color.White
+
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+                                        .shadow(6.dp, RoundedCornerShape(20.dp))
+                                        .background(rCardBgAdmin, RoundedCornerShape(20.dp))
+                                        .border(
+                                            1.5.dp,
+                                            Brush.linearGradient(
+                                                colors = listOf(
+                                                    Color.White.copy(alpha = if (isDarkRCardAdmin) 0.35f else 0.9f),
+                                                    Color.Black.copy(alpha = if (isDarkRCardAdmin) 0.5f else 0.08f)
+                                                )
+                                            ),
+                                            RoundedCornerShape(20.dp)
+                                        )
                                 ) {
                                     Column(modifier = Modifier.padding(18.dp)) {
                                         Row(
@@ -1073,7 +1096,7 @@ fun NativeAdminScreen(
                                                 text = "DAILY REWARD PRIZE",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Black,
-                                                color = PrimaryGreen
+                                                color = Color(0xFF255FF4)
                                             )
                                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                                 IconButton(
@@ -1086,34 +1109,16 @@ fun NativeAdminScreen(
                                                     },
                                                     modifier = Modifier.size(32.dp)
                                                 ) {
-                                                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                                                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF255FF4), modifier = Modifier.size(18.dp))
                                                 }
 
                                                 IconButton(
                                                     onClick = {
                                                         SoundManager.playClickSound()
-                                                        inputRewardTitle = ""
-                                                        inputRewardDesc = ""
-                                                        inputRewardImgUrl = ""
                                                         globalRewardTitle.value = ""
                                                         globalRewardDescription.value = ""
                                                         globalRewardImageUrl.value = null
                                                         saveRewardToPrefs(context, "", "", null, token ?: "")
-                                                        Toast.makeText(context, "🗑️ Reward Prize Deleted!", Toast.LENGTH_SHORT).show()
-                                                    },
-                                                    modifier = Modifier.size(32.dp)
-                                                ) {
-                                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = IncorrectRed, modifier = Modifier.size(18.dp))
-                                                }
-                                            }
-                                        }
-
-                                        if (!globalRewardImageUrl.value.isNullOrBlank()) {
-                                            Spacer(modifier = Modifier.height(10.dp))
-                                            AsyncImage(
-                                                model = globalRewardImageUrl.value,
-                                                contentDescription = "Reward Image",
-                                                contentScale = ContentScale.Crop,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(180.dp)
@@ -1178,11 +1183,12 @@ fun NativeAdminScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val isDarkUTitleAdmin = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
                         Text(
                             text = "Registered Users Directory (${usersList.size})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isDarkUTitleAdmin) Color.White else Color(0xFF17181C)
                         )
                         Button(
                             onClick = {
@@ -1201,13 +1207,23 @@ fun NativeAdminScreen(
                                     isLoadingUsers = false
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            shape = RoundedCornerShape(14.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                            modifier = Modifier
+                                .height(38.dp)
+                                .shadow(6.dp, RoundedCornerShape(14.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                    ),
+                                    RoundedCornerShape(14.dp)
+                                )
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.White, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Refresh", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Refresh", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
                     }
 
@@ -1215,7 +1231,7 @@ fun NativeAdminScreen(
 
                     if (isLoadingUsers) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = PrimaryGreen)
+                            CircularProgressIndicator(color = Color(0xFF255FF4))
                         }
                     } else if (usersList.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -1228,12 +1244,24 @@ fun NativeAdminScreen(
                         ) {
                             val validUsers = usersList.filter { !it.name.isNullOrBlank() }.sortedBy { it.name ?: "" }
                             items(validUsers) { user ->
-                                Surface(
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = MaterialTheme.colorScheme.surface,
+                                val isDarkUCardAdmin = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                                val uCardBgAdmin = if (isDarkUCardAdmin) Color(0xFF1C273A) else Color.White
+
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
+                                        .shadow(6.dp, RoundedCornerShape(18.dp))
+                                        .background(uCardBgAdmin, RoundedCornerShape(18.dp))
+                                        .border(
+                                            1.5.dp,
+                                            Brush.linearGradient(
+                                                colors = listOf(
+                                                    Color.White.copy(alpha = if (isDarkUCardAdmin) 0.35f else 0.9f),
+                                                    Color.Black.copy(alpha = if (isDarkUCardAdmin) 0.5f else 0.08f)
+                                                )
+                                            ),
+                                            RoundedCornerShape(18.dp)
+                                        )
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -1255,25 +1283,25 @@ fun NativeAdminScreen(
                                                     modifier = Modifier
                                                         .size(44.dp)
                                                         .clip(CircleShape)
-                                                        .border(1.5.dp, if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                                        .border(1.5.dp, if (user.isAdmin == true) Color(0xFF255FF4) else MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                                                 )
                                             } else {
                                                 Box(
                                                     modifier = Modifier
                                                         .size(44.dp)
                                                         .background(
-                                                            if (user.isAdmin == true) PrimaryGreen.copy(alpha = 0.15f)
+                                                            if (user.isAdmin == true) Color(0xFF255FF4).copy(alpha = 0.15f)
                                                             else MaterialTheme.colorScheme.surfaceVariant,
                                                             CircleShape
                                                         )
-                                                        .border(1.5.dp, if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                                                        .border(1.5.dp, if (user.isAdmin == true) Color(0xFF255FF4) else MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     Text(
                                                         text = (user.name?.firstOrNull()?.uppercaseChar() ?: '?').toString(),
                                                         fontWeight = FontWeight.Black,
                                                         fontSize = 18.sp,
-                                                        color = if (user.isAdmin == true) PrimaryGreen else MaterialTheme.colorScheme.onSurface
+                                                        color = if (user.isAdmin == true) Color(0xFF255FF4) else (if (isDarkUCardAdmin) Color.White else Color(0xFF17181C))
                                                     )
                                                 }
                                             }
@@ -1287,18 +1315,18 @@ fun NativeAdminScreen(
                                                         text = user.name ?: "Unknown",
                                                         fontWeight = FontWeight.Black,
                                                         fontSize = 15.sp,
-                                                        color = MaterialTheme.colorScheme.onSurface
+                                                        color = if (isDarkUCardAdmin) Color.White else Color(0xFF17181C)
                                                     )
                                                     if (user.isAdmin == true) {
                                                         Surface(
                                                             shape = RoundedCornerShape(6.dp),
-                                                            color = PrimaryGreen.copy(alpha = 0.15f)
+                                                            color = Color(0xFF255FF4).copy(alpha = 0.15f)
                                                         ) {
                                                             Text(
                                                                 text = "ADMIN",
                                                                 fontSize = 9.sp,
                                                                 fontWeight = FontWeight.Black,
-                                                                color = PrimaryGreen,
+                                                                color = Color(0xFF255FF4),
                                                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                                             )
                                                         }
@@ -1307,7 +1335,7 @@ fun NativeAdminScreen(
                                                 Text(
                                                     text = user.email ?: "",
                                                     fontSize = 12.sp,
-                                                    color = TextMuted
+                                                    color = if (isDarkUCardAdmin) Color.White.copy(alpha = 0.7f) else TextMuted
                                                 )
                                             }
                                         }
@@ -2367,13 +2395,26 @@ fun NativeAdminScreen(
             )
         }
 
-        // REWARD PRIZE MODAL (NORMAL COMPACT FORM)
+        // REWARD PRIZE MODAL (3D SOFT-CLAY CARD & 3D ROYAL BLUE)
         if (showRewardModal) {
+            val isDarkRModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val rModalBg = if (isDarkRModal) Color(0xFF1C273A) else Color.White
+
             AlertDialog(
                 onDismissRequest = { showRewardModal = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                shape = RoundedCornerShape(24.dp),
+                containerColor = rModalBg,
+                titleContentColor = if (isDarkRModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(28.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkRModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkRModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(28.dp)
+                ),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -2383,11 +2424,27 @@ fun NativeAdminScreen(
                         Text(
                             text = if (globalRewardTitle.value.isNotBlank()) "Edit Daily Reward" else "Publish Daily Reward",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.Black,
+                            color = if (isDarkRModal) Color.White else Color(0xFF17181C)
                         )
-                        IconButton(onClick = { showRewardModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                        IconButton(
+                            onClick = { showRewardModal = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(rModalBg, CircleShape)
+                                .border(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = if (isDarkRModal) 0.35f else 0.9f),
+                                            Color.Black.copy(alpha = if (isDarkRModal) 0.5f else 0.1f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkRModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
                         }
                     }
                 },
@@ -2411,9 +2468,9 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = inputRewardTitle,
                             onValueChange = { inputRewardTitle = it },
-                            label = { Text("Prize Name / Title", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text("Prize Name / Title", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("e.g. Smart Thermal Water Bottle", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkRModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
@@ -2423,9 +2480,9 @@ fun NativeAdminScreen(
                         OutlinedTextField(
                             value = inputRewardDesc,
                             onValueChange = { inputRewardDesc = it },
-                            label = { Text("Prize Specifications & Details", color = PrimaryGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                            label = { Text("Prize Specifications & Details", color = Color(0xFF255FF4), fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                             placeholder = { Text("e.g. 500ml Stainless Steel with LED Display", color = TextMuted, fontSize = 12.sp) },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 13.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = if (isDarkRModal) Color.White else Color(0xFF17181C), fontWeight = FontWeight.Medium, fontSize = 13.sp),
                             colors = defaultAdminTextFieldColors(),
                             modifier = Modifier.fillMaxWidth().height(90.dp),
                             shape = RoundedCornerShape(10.dp)
@@ -2446,11 +2503,22 @@ fun NativeAdminScreen(
                                 Toast.makeText(context, "⚠️ Please enter a Prize Title!", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                        modifier = Modifier.fillMaxWidth().height(46.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                     ) {
-                        Text("Publish Prize", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Publish Prize", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                     }
                 }
             )
