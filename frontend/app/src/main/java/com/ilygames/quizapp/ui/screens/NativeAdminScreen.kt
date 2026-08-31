@@ -578,9 +578,6 @@ fun NativeAdminScreen(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -1119,6 +1116,21 @@ fun NativeAdminScreen(
                                                         globalRewardDescription.value = ""
                                                         globalRewardImageUrl.value = null
                                                         saveRewardToPrefs(context, "", "", null, token ?: "")
+                                                        Toast.makeText(context, "🗑️ Reward Prize Removed!", Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    modifier = Modifier.size(32.dp)
+                                                ) {
+                                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = IncorrectRed, modifier = Modifier.size(18.dp))
+                                                }
+                                            }
+                                        }
+
+                                        if (!globalRewardImageUrl.value.isNullOrBlank()) {
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                            AsyncImage(
+                                                model = globalRewardImageUrl.value,
+                                                contentDescription = "Reward Image",
+                                                contentScale = ContentScale.Crop,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(180.dp)
@@ -1133,7 +1145,7 @@ fun NativeAdminScreen(
                                             text = globalRewardTitle.value,
                                             style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
                                             fontWeight = FontWeight.Black,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = if (isDarkRCardAdmin) Color.White else Color(0xFF17181C)
                                         )
 
                                         if (globalRewardDescription.value.isNotBlank()) {
@@ -1141,7 +1153,7 @@ fun NativeAdminScreen(
                                             Text(
                                                 text = globalRewardDescription.value,
                                                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp, fontSize = 13.sp),
-                                                color = TextMuted
+                                                color = if (isDarkRCardAdmin) Color.White.copy(alpha = 0.95f) else Color(0xFF334155)
                                             )
                                         }
                                     }
