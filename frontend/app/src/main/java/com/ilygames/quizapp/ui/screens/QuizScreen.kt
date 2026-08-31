@@ -404,35 +404,41 @@ fun CleanHighlightOptionRow(
     val isAnswered = selectedOption != null
     val isCorrectOption = optionKey == correctAnswer
 
+    val isDarkQuiz = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+    val baseBg = if (isDarkQuiz) Color(0xFF1C273A) else Color.White
+
     val backgroundColor = when {
-        isSelected && isCorrectOption -> CorrectGreen.copy(alpha = 0.15f)
-        isSelected && !isCorrectOption -> IncorrectRed.copy(alpha = 0.15f)
-        else -> MaterialTheme.colorScheme.surface
+        isSelected && isCorrectOption -> CorrectGreen.copy(alpha = 0.18f)
+        isSelected && !isCorrectOption -> IncorrectRed.copy(alpha = 0.18f)
+        else -> baseBg
     }
 
     val borderColor = when {
         isSelected && isCorrectOption -> CorrectGreen
         isSelected && !isCorrectOption -> IncorrectRed
-        else -> MaterialTheme.colorScheme.surfaceVariant
+        else -> if (isDarkQuiz) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.08f)
     }
 
     val labelBgColor = when {
         isSelected && isCorrectOption -> CorrectGreen
         isSelected && !isCorrectOption -> IncorrectRed
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        else -> PrimaryGreen.copy(alpha = 0.15f)
     }
 
     val labelTextColor = when {
         isSelected -> Color.White
-        else -> MaterialTheme.colorScheme.onSurface
+        else -> PrimaryGreen
     }
 
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(0.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color.Black.copy(alpha = if (isDarkQuiz) 0.35f else 0.08f)
+            )
+            .background(backgroundColor, RoundedCornerShape(20.dp))
             .border(1.5.dp, borderColor, RoundedCornerShape(20.dp))
             .clickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
@@ -450,8 +456,10 @@ fun CleanHighlightOptionRow(
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .background(labelBgColor, CircleShape),
+                    .size(38.dp)
+                    .shadow(3.dp, CircleShape, spotColor = PrimaryGreen.copy(alpha = 0.3f))
+                    .background(labelBgColor, CircleShape)
+                    .border(1.dp, Color.White.copy(alpha = 0.5f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -466,7 +474,7 @@ fun CleanHighlightOptionRow(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 22.sp),
                 fontWeight = if (isSelected || (isAnswered && isCorrectOption)) FontWeight.Black else FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = if (isDarkQuiz) Color.White else Color(0xFF17181C),
                 modifier = Modifier.weight(1f)
             )
         }

@@ -222,15 +222,28 @@ fun LeaderboardPodium(entries: List<LeaderboardEntry>, currentUserId: String, cu
     val second = entries.getOrNull(1)
     val third  = entries.getOrNull(2)
 
-    Card(
-        shape = RoundedCornerShape(26.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(0.dp),
+    val isDarkLdr = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+    val ldrCardBg = if (isDarkLdr) Color(0xFF1C273A) else Color.White
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 10.dp,
+                shape = RoundedCornerShape(26.dp),
+                spotColor = Color.Black.copy(alpha = if (isDarkLdr) 0.45f else 0.12f),
+                ambientColor = Color.Black.copy(alpha = if (isDarkLdr) 0.35f else 0.08f)
+            )
+            .background(ldrCardBg, RoundedCornerShape(26.dp))
             .border(
-                BorderStroke(1.5.dp, Brush.linearGradient(colors = listOf(PrimaryGreen.copy(alpha = 0.4f), EmeraldGlow.copy(alpha = 0.2f)))),
-                shape = RoundedCornerShape(26.dp)
+                1.5.dp,
+                androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = if (isDarkLdr) 0.35f else 0.9f),
+                        Color.Black.copy(alpha = if (isDarkLdr) 0.5f else 0.08f)
+                    )
+                ),
+                RoundedCornerShape(26.dp)
             )
     ) {
         Box(

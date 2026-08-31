@@ -548,13 +548,29 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
             // 2. RESTRUCTURED SCORE & CHANCES CARD (Centered CHANCES title, matching heart emojis, Latest score above High score)
             item {
-                Card(
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                val isDarkHeader = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                val scoreCardBg = if (isDarkHeader) Color(0xFF1C273A) else Color.White
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
+                        .shadow(
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            spotColor = Color.Black.copy(alpha = if (isDarkHeader) 0.45f else 0.12f),
+                            ambientColor = Color.Black.copy(alpha = if (isDarkHeader) 0.35f else 0.08f)
+                        )
+                        .background(scoreCardBg, RoundedCornerShape(24.dp))
+                        .border(
+                            1.5.dp,
+                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = if (isDarkHeader) 0.35f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDarkHeader) 0.5f else 0.08f)
+                                )
+                            ),
+                            RoundedCornerShape(24.dp)
+                        )
                 ) {
                     Row(
                         modifier = Modifier

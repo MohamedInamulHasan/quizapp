@@ -167,28 +167,43 @@ fun StudyPassagesScreen(
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 items(globalPassagesList) { article ->
-                    Card(
-                        shape = RoundedCornerShape(22.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(0.dp),
+                    val isDarkArt = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                    val artCardBg = if (isDarkArt) Color(0xFF1C273A) else Color.White
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(22.dp))
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(22.dp),
+                                spotColor = Color.Black.copy(alpha = if (isDarkArt) 0.45f else 0.1f),
+                                ambientColor = Color.Black.copy(alpha = if (isDarkArt) 0.35f else 0.05f)
+                            )
+                            .background(artCardBg, RoundedCornerShape(22.dp))
+                            .border(
+                                1.5.dp,
+                                androidx.compose.ui.graphics.Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = if (isDarkArt) 0.35f else 0.9f),
+                                        Color.Black.copy(alpha = if (isDarkArt) 0.5f else 0.08f)
+                                    )
+                                ),
+                                RoundedCornerShape(22.dp)
+                            )
+                            .padding(20.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp)
-                        ) {
+                        Column {
                             Text(
                                 text = article.title,
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
                                 fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = if (isDarkArt) Color.White else Color(0xFF17181C)
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = formatMarkdownText(article.paragraph),
                                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp, fontSize = 14.sp),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                                color = if (isDarkArt) Color.White.copy(alpha = 0.9f) else Color(0xFF2C3E6B)
                             )
                         }
                     }
