@@ -242,35 +242,27 @@ fun QuizScreen(
                                         .crossfade(true)
                                         .build()
 
-                                    Box(
+                                    coil.compose.SubcomposeAsyncImage(
+                                        model = quizImgReq,
+                                        contentDescription = "Question Image",
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                        loading = {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(32.dp), strokeWidth = 3.dp)
+                                            }
+                                        },
+                                        error = {
+                                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(36.dp))
+                                            }
+                                        },
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .aspectRatio(16f / 9f)
                                             .clip(RoundedCornerShape(22.dp))
                                             .background(Color(0xFF101828))
-                                            .border(2.5.dp, Color.White, RoundedCornerShape(22.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        coil.compose.SubcomposeAsyncImage(
-                                            model = quizImgReq,
-                                            contentDescription = "Question Image",
-                                            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-                                            loading = {
-                                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(32.dp), strokeWidth = 3.dp)
-                                                }
-                                            },
-                                            error = {
-                                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                    Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(36.dp))
-                                                }
-                                            },
-                                            modifier = Modifier
-                                                .fillMaxHeight()
-                                                .clip(RoundedCornerShape(14.dp))
-                                                .border(1.5.dp, Color.White.copy(alpha = 0.9f), RoundedCornerShape(14.dp))
-                                        )
-                                    }
+                                            .border(2.5.dp, Color.White, RoundedCornerShape(22.dp))
+                                    )
                                 }
 
                                 if (!question.question.isNullOrBlank()) {

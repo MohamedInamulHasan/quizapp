@@ -90,13 +90,13 @@ router.get('/questions', [auth, adminAuth], async (req, res) => {
 
 const sharp = require('sharp');
 
-// Helper: Fit full image into 16:9 aspect ratio (800x450 JPEG) without cropping out any part of the image
+// Helper: Resize and crop image to fill 16:9 aspect ratio (800x450 JPEG) cleanly with 0 gaps or pillarboxing
 async function cropTo16x9(buffer) {
   try {
     return await sharp(buffer)
       .resize(800, 450, { 
-        fit: 'contain', 
-        background: { r: 16, g: 24, b: 40, alpha: 1 } 
+        fit: 'cover', 
+        position: 'attention' 
       })
       .jpeg({ quality: 90 })
       .toBuffer();

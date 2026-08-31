@@ -206,25 +206,17 @@ fun ProfessionalImageDropzone(
                 }
             }
         } else if (!currentImageUrl.isNullOrBlank()) {
-            Box(
+            AsyncImage(
+                model = currentImageUrl,
+                contentDescription = "Preview",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(150.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(Color(0xFF101828))
-                    .border(2.dp, Color.White, RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = currentImageUrl,
-                    contentDescription = "Preview",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(10.dp))
-                        .border(1.5.dp, Color.White.copy(alpha = 0.9f), RoundedCornerShape(10.dp))
-                )
-            }
+                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+            )
         }
 
         Row(
@@ -812,38 +804,30 @@ fun NativeAdminScreen(
                                                 .crossfade(true)
                                                 .build()
 
-                                            Box(
+                                            coil.compose.SubcomposeAsyncImage(
+                                                model = imgRequest,
+                                                contentDescription = "Question Image Preview",
+                                                contentScale = ContentScale.Crop,
+                                                loading = {
+                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                                    }
+                                                },
+                                                error = {
+                                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                            Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
+                                                            Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
+                                                        }
+                                                    }
+                                                },
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height(160.dp)
                                                     .clip(RoundedCornerShape(14.dp))
                                                     .background(Color(0xFF101828))
-                                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                coil.compose.SubcomposeAsyncImage(
-                                                    model = imgRequest,
-                                                    contentDescription = "Question Image Preview",
-                                                    contentScale = ContentScale.Fit,
-                                                    loading = {
-                                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                            CircularProgressIndicator(color = PrimaryGreen, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                                                        }
-                                                    },
-                                                    error = {
-                                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = IncorrectRed, modifier = Modifier.size(24.dp))
-                                                                Text("Image Link Expired", fontSize = 9.sp, color = TextMuted)
-                                                            }
-                                                        }
-                                                    },
-                                                    modifier = Modifier
-                                                        .fillMaxHeight()
-                                                        .clip(RoundedCornerShape(10.dp))
-                                                        .border(1.5.dp, Color.White.copy(alpha = 0.9f), RoundedCornerShape(10.dp))
-                                                )
-                                            }
+                                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+                                            )
                                             Spacer(modifier = Modifier.height(8.dp))
                                         }
 
