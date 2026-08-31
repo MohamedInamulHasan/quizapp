@@ -2063,7 +2063,7 @@ fun NativeAdminScreen(
                                         val res = ApiClient.apiService.aiGenerateCategoryQuiz(authToken, req)
                                         if (res.isSuccessful && res.body()?.success == true) {
                                             showAiGeneratorModal = false
-                                            fetchAdminQuestions(authToken)
+                                            loadExistingQuestions()
                                             Toast.makeText(context, "✨ ${res.body()?.msg ?: "Created 16:9 Image Quizzes!"}", Toast.LENGTH_LONG).show()
                                         } else {
                                             Toast.makeText(context, "Failed to generate AI quizzes", Toast.LENGTH_SHORT).show()
