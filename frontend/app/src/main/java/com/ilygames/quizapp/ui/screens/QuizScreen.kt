@@ -185,11 +185,21 @@ fun QuizScreen(
                         IconButton(
                             onClick = onExitQuiz,
                             modifier = Modifier
-                                .size(42.dp)
-                                .background(MaterialTheme.colorScheme.surface, CircleShape)
-                                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                .size(44.dp)
+                                .shadow(6.dp, CircleShape)
+                                .background(Color(0xFF1C273A), CircleShape)
+                                .border(
+                                    1.5.dp,
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.45f),
+                                            Color.Black.copy(alpha = 0.6f)
+                                        )
+                                    ),
+                                    CircleShape
+                                )
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "Exit Quiz", tint = MaterialTheme.colorScheme.onSurface)
+                            Icon(Icons.Default.Close, contentDescription = "Exit Quiz", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                         
                         LinearProgressIndicator(

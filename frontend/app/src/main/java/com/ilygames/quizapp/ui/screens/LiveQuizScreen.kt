@@ -89,11 +89,21 @@ fun LiveQuizScreen(
                             onBack()
                         },
                         modifier = Modifier
-                            .size(40.dp)
-                            .background(GlassSurface, CircleShape)
-                            .border(1.dp, GlassBorder, CircleShape)
+                            .size(44.dp)
+                            .shadow(6.dp, CircleShape)
+                            .background(Color(0xFF1C273A), CircleShape)
+                            .border(
+                                1.5.dp,
+                                androidx.compose.ui.graphics.Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.45f),
+                                        Color.Black.copy(alpha = 0.6f)
+                                    )
+                                ),
+                                CircleShape
+                            )
                     ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextWhite)
+                        Icon(androidx.compose.material.icons.filled.Close, contentDescription = "Close", tint = Color.White, modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
