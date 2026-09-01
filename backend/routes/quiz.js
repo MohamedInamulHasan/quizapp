@@ -206,6 +206,26 @@ function cleanOptionTitle(rawTitle) {
 
 // Preset topic trivia knowledge bank for instant, 100% perfect natural questions
 const TOPIC_PRESETS = {
+  fruits: [
+    { q: "Which fruit is bright yellow when ripe and known as the 'King of Fruits'?", correct: "Mango", options: ["Mango", "Apple", "Orange", "Guava"] },
+    { q: "Which fruit is long, yellow when ripe, and peeled before eating?", correct: "Banana", options: ["Banana", "Apple", "Pineapple", "Papaya"] },
+    { q: "Which citrus fruit is famous for its bright color and rich Vitamin C content?", correct: "Orange", options: ["Orange", "Banana", "Coconut", "Watermelon"] },
+    { q: "Which fruit has green skin, sweet pink flesh, and small edible seeds?", correct: "Guava", options: ["Guava", "Apple", "Mango", "Peach"] },
+    { q: "Which large fruit is green on the outside, red inside, and contains over 90% water?", correct: "Watermelon", options: ["Watermelon", "Papaya", "Pineapple", "Mango"] },
+    { q: "Which tropical fruit has spiky skin, sweet yellow flesh, and a crown of leaves?", correct: "Pineapple", options: ["Pineapple", "Mango", "Papaya", "Banana"] },
+    { q: "Which red fruit is famously associated with 'An ___ a day keeps the doctor away'?", correct: "Apple", options: ["Apple", "Orange", "Banana", "Guava"] },
+    { q: "Which fruit is world-famous for being cultivated in Salem & Krishnagiri districts in Tamil Nadu?", correct: "Mango", options: ["Mango", "Banana", "Apple", "Grapes"] },
+    { q: "Which fruit has orange flesh, round black seeds inside, and is rich in papain enzyme?", correct: "Papaya", options: ["Papaya", "Mango", "Guava", "Watermelon"] },
+    { q: "Which purple or green fruit grows in large bunches on vines?", correct: "Grapes", options: ["Grapes", "Banana", "Apple", "Orange"] }
+  ],
+  fruit: [
+    { q: "Which fruit is bright yellow when ripe and known as the 'King of Fruits'?", correct: "Mango", options: ["Mango", "Apple", "Orange", "Guava"] },
+    { q: "Which fruit is long, yellow when ripe, and peeled before eating?", correct: "Banana", options: ["Banana", "Apple", "Pineapple", "Papaya"] },
+    { q: "Which citrus fruit is famous for its bright color and rich Vitamin C content?", correct: "Orange", options: ["Orange", "Banana", "Coconut", "Watermelon"] },
+    { q: "Which fruit has green skin, sweet pink flesh, and small edible seeds?", correct: "Guava", options: ["Guava", "Apple", "Mango", "Peach"] },
+    { q: "Which large fruit is green on the outside, red inside, and contains over 90% water?", correct: "Watermelon", options: ["Watermelon", "Papaya", "Pineapple", "Mango"] },
+    { q: "Which red fruit is famously associated with 'An ___ a day keeps the doctor away'?", correct: "Apple", options: ["Apple", "Orange", "Banana", "Guava"] }
+  ],
   naruto: [
     { q: "In Naruto, who is known as the 'Copy Ninja' and leader of Team 7?", correct: "Kakashi Hatake", options: ["Kakashi Hatake", "Naruto Uzumaki", "Sasuke Uchiha", "Itachi Uchiha"] },
     { q: "Which character harbors the Nine-Tailed Fox (Kurama) inside them?", correct: "Naruto Uzumaki", options: ["Naruto Uzumaki", "Gaara", "Rock Lee", "Shikamaru Nara"] },
@@ -348,9 +368,8 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
       const correctIdx = allFour.indexOf(cleanTitle);
       const letterMap = ["A", "B", "C", "D"];
 
-      const questionText = snippetText.length > 20
-        ? `Regarding ${cleanPrompt}: Which place/item is described by: "${snippetText.substring(0, 90)}..."?`
-        : `Which of the following is directly associated with ${cleanPrompt}?`;
+      // Clean natural 1-sentence question without raw HTML/wiki quotes
+      const questionText = `Regarding ${cleanPrompt}: Which of the following is directly associated with ${cleanPrompt}?`;
 
       questions.push({
         _id: `custom_${Date.now()}_${i}`,
