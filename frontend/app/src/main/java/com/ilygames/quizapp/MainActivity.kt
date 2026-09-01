@@ -69,7 +69,7 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = "splash",
         enterTransition = { fadeIn(animationSpec = tween(80)) },
         exitTransition = { fadeOut(animationSpec = tween(80)) },
         popEnterTransition = { fadeIn(animationSpec = tween(80)) },

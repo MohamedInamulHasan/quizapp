@@ -11,6 +11,7 @@ object SoundManager {
     private var correctSoundId: Int = 0
     private var wrongSoundId: Int = 0
     private var fastTickSoundId: Int = 0
+    private var clickSoundId: Int = 0
 
     fun init(context: Context) {
         if (soundPool != null) return
@@ -21,13 +22,14 @@ object SoundManager {
                 .build()
 
             soundPool = SoundPool.Builder()
-                .setMaxStreams(6)
+                .setMaxStreams(8)
                 .setAudioAttributes(audioAttributes)
                 .build()
 
             correctSoundId = soundPool?.load(context, R.raw.correct_sound, 1) ?: 0
             wrongSoundId = soundPool?.load(context, R.raw.wrong_sound, 1) ?: 0
             fastTickSoundId = soundPool?.load(context, R.raw.clock_tick_fast, 1) ?: 0
+            clickSoundId = soundPool?.load(context, R.raw.tap, 1) ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -51,7 +53,7 @@ object SoundManager {
         }
     }
 
-    // ⏱️ Fast urgent ticking sound effect directly loaded from R.raw.clock_tick_fast media resource
+    // ⏱️ Fast urgent ticking sound effect
     fun playFastUrgentTick() {
         if (!ThemeState.isSoundEnabled || soundPool == null || fastTickSoundId == 0) return
         try {
@@ -61,9 +63,18 @@ object SoundManager {
         }
     }
 
+    // 🎵 Custom Tap sound effect for card clicks, buttons, and options
+    fun playClickSound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || clickSoundId == 0) return
+        try {
+            soundPool?.play(clickSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun playClockTick() {}
     fun playWhooshSound() {}
-    fun playClickSound() {}
     fun playOptionPopSound() {}
     fun playSuccessChime() {}
 }
