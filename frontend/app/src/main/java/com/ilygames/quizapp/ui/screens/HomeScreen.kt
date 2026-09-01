@@ -82,6 +82,7 @@ fun HomeScreen(
 ) {
     val user by authViewModel.user.collectAsState()
     var showSettingsMenu by remember { mutableStateOf(false) }
+    var lastSettingsClickTime by remember { mutableLongStateOf(0L) }
     var showSignOutConfirmationModal by remember { mutableStateOf(false) }
     var showRewardShowcaseModal by remember { mutableStateOf(false) }
     var showEditNameModal by remember { mutableStateOf(false) }
@@ -350,7 +351,11 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             IconButton(
                                 onClick = {
                                     SoundManager.playClickSound()
-                                    showSettingsMenu = !showSettingsMenu
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastSettingsClickTime > 250L) {
+                                        lastSettingsClickTime = now
+                                        showSettingsMenu = !showSettingsMenu
+                                    }
                                 },
                                 modifier = Modifier
                                     .size(44.dp)
@@ -379,27 +384,35 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 Popup(
                                     alignment = Alignment.TopEnd,
                                     offset = androidx.compose.ui.unit.IntOffset(0, 160),
-                                    onDismissRequest = { showSettingsMenu = false }
+                                    onDismissRequest = {
+                                        lastSettingsClickTime = System.currentTimeMillis()
+                                        showSettingsMenu = false
+                                    }
                                 ) {
                                     val isDarkSettings = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
                                     val settingsCardBg = if (isDarkSettings) Color(0xFF1C273A) else Color.White
 
-                                    Box(
-                                        modifier = Modifier
-                                            .width(230.dp)
-                                            .shadow(12.dp, RoundedCornerShape(22.dp))
-                                            .background(settingsCardBg, RoundedCornerShape(22.dp))
-                                            .border(
-                                                1.5.dp,
-                                                Brush.linearGradient(
-                                                    colors = listOf(
-                                                        Color.White.copy(alpha = if (isDarkSettings) 0.35f else 0.9f),
-                                                        Color.Black.copy(alpha = if (isDarkSettings) 0.5f else 0.08f)
-                                                    )
-                                                ),
-                                                RoundedCornerShape(22.dp)
-                                            )
+                                    androidx.compose.animation.AnimatedVisibility(
+                                        visible = showSettingsMenu,
+                                        enter = androidx.compose.animation.fadeIn(animationSpec = tween(220)) + androidx.compose.animation.expandVertically(animationSpec = tween(220)),
+                                        exit = androidx.compose.animation.fadeOut(animationSpec = tween(220)) + androidx.compose.animation.shrinkVertically(animationSpec = tween(220))
                                     ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(230.dp)
+                                                .shadow(12.dp, RoundedCornerShape(22.dp))
+                                                .background(settingsCardBg, RoundedCornerShape(22.dp))
+                                                .border(
+                                                    1.5.dp,
+                                                    Brush.linearGradient(
+                                                        colors = listOf(
+                                                            Color.White.copy(alpha = if (isDarkSettings) 0.35f else 0.9f),
+                                                            Color.Black.copy(alpha = if (isDarkSettings) 0.5f else 0.08f)
+                                                        )
+                                                    ),
+                                                    RoundedCornerShape(22.dp)
+                                                )
+                                        ) {
                                         Column(
                                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                                             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -526,6 +539,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                         }
                                     }
                                 }
+                            }
                             }
                         }
                     }
