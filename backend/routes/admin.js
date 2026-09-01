@@ -604,7 +604,7 @@ router.put('/questions/:id', [auth, adminAuth], async (req, res) => {
 });
 
 // @route    POST api/admin/questions/bulk
-// @desc     Bulk upload array of questions
+// @desc     Bulk upload array of questions with automatic image lookup & 16:9 Cloudinary conversion
 // @access   Private (Admin)
 router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
   try {
@@ -613,10 +613,38 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ msg: 'Please provide an array of questions' });
     }
 
-    // Auto-convert all external image URLs to 16:9 Cloudinary CDN links before saving to MongoDB
+    // Auto-convert external URLs AND auto-fetch real images for missing/broken image links
     for (let i = 0; i < questionsArray.length; i++) {
-      if (questionsArray[i].imageUrl && typeof questionsArray[i].imageUrl === 'string' && questionsArray[i].imageUrl.startsWith('http') && !questionsArray[i].imageUrl.includes('cloudinary.com')) {
-        questionsArray[i].imageUrl = await ensureCloudinaryUrl(questionsArray[i].imageUrl);
+      const q = questionsArray[i];
+
+      // 1. If external URL is provided, convert to Cloudinary
+      if (q.imageUrl && typeof q.imageUrl === 'string' && q.imageUrl.startsWith('http') && !q.imageUrl.includes('cloudinary.com')) {
+        q.imageUrl = await ensureCloudinaryUrl(q.imageUrl);
+      }
+
+      // 2. If imageUrl is missing or broken, auto-fetch real image from Wikipedia/Openverse for the answer target!
+      if (!q.imageUrl || !q.imageUrl.startsWith('http') || !q.imageUrl.includes('cloudinary.com')) {
+        let answerTarget = "";
+        if (q.correctAnswer === "A" || q.correctAnswer === "1") answerTarget = q.optionA;
+        else if (q.correctAnswer === "B" || q.correctAnswer === "2") answerTarget = q.optionB;
+        else if (q.correctAnswer === "C" || q.correctAnswer === "3") answerTarget = q.optionC;
+        else if (q.correctAnswer === "D" || q.correctAnswer === "4") answerTarget = q.optionD;
+        else answerTarget = q.optionA || q.question;
+
+        if (answerTarget && answerTarget.trim().length > 0) {
+          console.log(`[BULK_AUTO_IMAGE] Auto-fetching 16:9 Cloudinary image for target: "${answerTarget}"...`);
+          let autoImg = await fetchRealImageAndUploadToCloudinary({ name: answerTarget.trim() });
+          if (!autoImg) {
+            const dynamicItems = await fetchDynamicQuizItems(answerTarget.trim(), 1);
+            if (dynamicItems && dynamicItems.length > 0) {
+              autoImg = await ensureCloudinaryUrl(dynamicItems[0].img);
+            }
+          }
+          if (autoImg && autoImg.includes('cloudinary.com')) {
+            q.imageUrl = autoImg;
+            console.log(`[BULK_AUTO_IMAGE] ✅ Attached Cloudinary URL for "${answerTarget}": ${autoImg}`);
+          }
+        }
       }
     }
 
