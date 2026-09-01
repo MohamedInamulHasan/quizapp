@@ -13,8 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -99,10 +99,8 @@ fun LeaderboardScreen(
 ) {
     val leaderboard by quizViewModel.leaderboard.collectAsState()
 
-    // Auto-refresh leaderboard: play swoosh sound after 1s delay (perfect fit with rising bars!), then refresh every 15s
+    // Auto-refresh leaderboard: quietly refresh every 15s while screen is open
     LaunchedEffect(Unit) {
-        delay(1000L)
-        SoundManager.playWhooshSound()
         while (true) {
             quizViewModel.loadLeaderboard(token, true)
             delay(15_000L)
@@ -119,6 +117,9 @@ fun LeaderboardScreen(
             }
     }
 
+    val isDarkHeader = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+    val backBtnBg = if (isDarkHeader) Color(0xFF1C273A) else Color.White
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -133,18 +134,33 @@ fun LeaderboardScreen(
                 .padding(bottom = 20.dp),
             contentAlignment = Alignment.Center
         ) {
+            // 3D Soft-Clay Glossy Back Icon Button
             IconButton(
-                onClick = onBack,
+                onClick = {
+                    SoundManager.playClickSound()
+                    onBack()
+                },
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .size(42.dp)
-                    .background(MaterialTheme.colorScheme.surface, CircleShape)
-                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                    .size(44.dp)
+                    .shadow(6.dp, CircleShape)
+                    .background(backBtnBg, CircleShape)
+                    .border(
+                        1.5.dp,
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = if (isDarkHeader) 0.35f else 0.9f),
+                                Color.Black.copy(alpha = if (isDarkHeader) 0.5f else 0.08f)
+                            )
+                        ),
+                        CircleShape
+                    )
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = if (isDarkHeader) Color.White else Color(0xFF17181C),
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -213,7 +229,10 @@ fun LeaderboardScreen(
                     }
                 }
 
-                itemsIndexed(validLeaderboard) { _, player ->
+                itemsIndexed(
+                    items = validLeaderboard,
+                    key = { _, player -> if (player.id.isNotBlank()) player.id else player.name }
+                ) { _, player ->
                     LeaderboardRow(player = player, currentUserId = currentUserId, currentUserName = currentUserName)
                 }
             }
@@ -310,7 +329,7 @@ fun PodiumColumn(
     avatarSize: Dp,
     modifier: Modifier = Modifier
 ) {
-    var animationTriggered by remember { mutableStateOf(false) }
+    var animationTriggered by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         delay(rank * 120L)
         animationTriggered = true
@@ -425,7 +444,7 @@ fun PodiumColumn(
 // ─── Leaderboard Row (Staggered Waterfall Slide & Arrange Animation) ─────────────────
 @Composable
 fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserName: String) {
-    var isCardVisible by remember { mutableStateOf(false) }
+    var isCardVisible by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(player.rank) {
         delay((player.rank * 70L).coerceAtMost(700L))
         isCardVisible = true
