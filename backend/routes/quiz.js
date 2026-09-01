@@ -190,7 +190,21 @@ function cleanUserPrompt(raw) {
   return s.trim() || raw.trim();
 }
 
-// Preset topic trivia knowledge bank for instant, perfect questions
+function normalizeKey(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Clean option titles by stripping Wiki suffixes like ", Tamil Nadu", "(film)", etc.
+function cleanOptionTitle(rawTitle) {
+  if (!rawTitle) return "Option";
+  let t = rawTitle
+    .replace(/,\s*(Tamil Nadu|India|USA|Japan|character|film|actor|series|district).*/gi, '')
+    .replace(/\s*\([^)]*\)/g, '')
+    .trim();
+  return t || rawTitle.trim();
+}
+
+// Preset topic trivia knowledge bank for instant, 100% perfect natural questions
 const TOPIC_PRESETS = {
   naruto: [
     { q: "In Naruto, who is known as the 'Copy Ninja' and leader of Team 7?", correct: "Kakashi Hatake", options: ["Kakashi Hatake", "Naruto Uzumaki", "Sasuke Uchiha", "Itachi Uchiha"] },
@@ -211,7 +225,6 @@ const TOPIC_PRESETS = {
     { q: "Who composed the blockbuster soundtrack for the Tamil movie 'Leo' (2023)?", correct: "Anirudh Ravichander", options: ["Anirudh Ravichander", "A.R. Rahman", "Harris Jayaraj", "Yuvan Shankar Raja"] },
     { q: "Which famous actor played the lead role in 'Vikram' (2022)?", correct: "Kamal Haasan", options: ["Kamal Haasan", "Vijay", "Suriya", "Karthi"] },
     { q: "Who directed the LCU (Lokesh Cinematic Universe) movie 'Kaithi'?", correct: "Lokesh Kanagaraj", options: ["Lokesh Kanagaraj", "Nelson", "Atlee", "Shankar"] },
-    { q: "Which Tamil film won the Oscar award for Best Original Song with 'Naatu Naatu' singer composer team?", correct: "RRR", options: ["RRR", "Jailer", "Vikram", "Etharkkum Thunindhavan"] },
     { q: "Which Tamil actor is popularly called 'Thala' by millions of fans?", correct: "Ajith Kumar", options: ["Ajith Kumar", "Vijay", "Vikram", "Dhanush"] },
     { q: "Who played the dual role of Rolex in Lokesh Kanagaraj's 'Vikram'?", correct: "Suriya", options: ["Suriya", "Karthi", "Vijay Sethupathi", "Fahadh Faasil"] },
     { q: "Which famous director directed the blockbuster film 'Jailer' starring Rajinikanth?", correct: "Nelson Dilipkumar", options: ["Nelson Dilipkumar", "Atlee", "Lokesh Kanagaraj", "Shankar"] }
@@ -227,10 +240,13 @@ const TOPIC_PRESETS = {
     { q: "Which Italian club did Ronaldo play for between 2018 and 2021?", correct: "Juventus", options: ["Juventus", "AC Milan", "Inter Milan", "Roma"] }
   ],
   tamilnadu: [
+    { q: "Which district in Tamil Nadu is world-famous as the 'Mango Capital' of South India?", correct: "Krishnagiri", options: ["Krishnagiri", "Salem", "Madurai", "Coimbatore"] },
     { q: "What is the capital city of the Indian state of Tamil Nadu?", correct: "Chennai", options: ["Chennai", "Madurai", "Coimbatore", "Trichy"] },
+    { q: "Which famous fruit variety from Salem & Krishnagiri in Tamil Nadu is world-renowned?", correct: "Malgova Mango", options: ["Malgova Mango", "Alphonso Mango", "Nagpur Orange", "Kashmir Apple"] },
     { q: "Which ancient river is considered the primary lifeline of Tamil Nadu?", correct: "Kaveri (Cauvery)", options: ["Kaveri (Cauvery)", "Vaigai", "Thamirabarani", "Godavari"] },
     { q: "Which imperial dynasty built the world-famous Brihadeeswarar Temple in Thanjavur?", correct: "Chola Dynasty", options: ["Chola Dynasty", "Pandya Dynasty", "Chera Dynasty", "Pallava Dynasty"] },
     { q: "What is the official state language of Tamil Nadu?", correct: "Tamil", options: ["Tamil", "Telugu", "Kannada", "Malayalam"] },
+    { q: "Which city in Tamil Nadu is famous worldwide for its delicious GI-tagged Halwa?", correct: "Tirunelveli", options: ["Tirunelveli", "Madurai", "Srivilliputhur", "Dindigul"] },
     { q: "Which coastal town in Tamil Nadu is famous for its ancient Shore Temple and rock carvings?", correct: "Mamallapuram", options: ["Mamallapuram", "Rameswaram", "Kanyakumari", "Nagapattinam"] },
     { q: "Which hill station in Tamil Nadu is famously known as the 'Queen of Hill Stations'?", correct: "Ooty", options: ["Ooty", "Kodaikanal", "Yercaud", "Valparai"] }
   ]
@@ -239,11 +255,11 @@ const TOPIC_PRESETS = {
 // Dynamic search fallback for ANY typed prompt
 async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
   const cleanPrompt = cleanUserPrompt(rawQuery);
-  const key = cleanPrompt.toLowerCase();
+  const normalizedUserKey = normalizeKey(cleanPrompt);
 
-  // 1. Check preset match
+  // 1. Check normalized preset match (e.g. "tamilnadu" in "tamilnadufruits")
   for (const presetKey in TOPIC_PRESETS) {
-    if (key.includes(presetKey) || presetKey.includes(key)) {
+    if (normalizedUserKey.includes(presetKey) || presetKey.includes(normalizedUserKey)) {
       const items = TOPIC_PRESETS[presetKey];
       return items.map((item, idx) => {
         const shuffledOpts = [...item.options].sort(() => 0.5 - Math.random());
@@ -269,37 +285,72 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
 
   // 2. Fetch from Wikipedia search if not preset
   try {
-    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanPrompt)}&utf8=&format=json&srlimit=30`;
-    const wikiRes = await fetch(wikiUrl, { headers: { 'User-Agent': 'QuizApp/3.0' } });
+    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanPrompt)}&utf8=&format=json&srlimit=40`;
+    const wikiRes = await fetch(wikiUrl, { headers: { 'User-Agent': 'QuizApp/4.0' } });
     if (!wikiRes.ok) return [];
     const wikiData = await wikiRes.json();
     const searchResults = (wikiData.query && wikiData.query.search) ? wikiData.query.search : [];
 
     if (searchResults.length === 0) return [];
 
-    // Extract real titles from Wikipedia search to create accurate distractors
-    const allTitles = searchResults.map(x => x.title).filter(t => t.length > 2 && t.length < 35);
+    // Filter out meta Wikipedia pages (pandemics, demographics, lists)
+    const validResults = searchResults.filter(x => {
+      const t = x.title.toLowerCase();
+      return !t.includes('pandemic') && !t.includes('demographics') && !t.includes('geography of') && !t.includes('history of') && !t.includes('list of');
+    });
+
+    const poolToUse = validResults.length > 0 ? validResults : searchResults;
+    const cleanTitles = poolToUse.map(x => cleanOptionTitle(x.title)).filter(t => t.length > 1 && t.length < 30);
     const questions = [];
 
-    for (let i = 0; i < searchResults.length && questions.length < targetCount; i++) {
-      const item = searchResults[i];
-      const title = item.title;
-      const cleanSnippet = item.snippet.replace(/<[^>]*>?/gm, '').replace(/&quot;/g, '"').replace(/&#039;/g, "'").trim();
+    for (let i = 0; i < poolToUse.length && questions.length < targetCount; i++) {
+      const item = poolToUse[i];
+      const rawTitle = item.title;
+      const cleanTitle = cleanOptionTitle(rawTitle);
 
-      // Pick 3 related distractors from the Wikipedia search result titles
-      const relatedDistractors = allTitles.filter(x => x.toLowerCase() !== title.toLowerCase()).sort(() => 0.5 - Math.random()).slice(0, 3);
+      // Clean snippet: remove HTML tags, IPA phonetic brackets (IPA: [kiɾuʂɳaɡiɾi]), quotes
+      let snippetText = item.snippet
+        .replace(/<[^>]*>?/gm, '')
+        .replace(/\(IPA:[^)]*\)/gi, '')
+        .replace(/\(\[.*?\]\)/g, '')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
 
-      while (relatedDistractors.length < 3) {
-        relatedDistractors.push(`Option ${relatedDistractors.length + 1}`);
+      // Redact title inside snippet so it NEVER spoils the answer!
+      const titleRegex = new RegExp(rawTitle.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
+      snippetText = snippetText.replace(titleRegex, '___');
+
+      const cleanRegex = new RegExp(cleanTitle.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
+      snippetText = snippetText.replace(cleanRegex, '___');
+
+      // Build 3 unique distractors
+      const distractorCandidates = Array.from(new Set(
+        cleanTitles.filter(t => t.toLowerCase() !== cleanTitle.toLowerCase() && t.toLowerCase() !== cleanPrompt.toLowerCase())
+      )).sort(() => 0.5 - Math.random());
+
+      const distractors = distractorCandidates.slice(0, 3);
+      const fallbackOptions = ["Chennai", "Madurai", "Salem", "Coimbatore", "Trichy", "Tirunelveli", "Ooty", "Kodaikanal"];
+
+      while (distractors.length < 3) {
+        const extra = fallbackOptions.find(f => f.toLowerCase() !== cleanTitle.toLowerCase() && !distractors.includes(f));
+        if (extra) distractors.push(extra);
+        else distractors.push(`Option ${distractors.length + 1}`);
       }
 
-      const allFour = [title, ...relatedDistractors].sort(() => 0.5 - Math.random());
-      const correctIdx = allFour.indexOf(title);
+      // Ensure 4 unique options
+      const allFour = Array.from(new Set([cleanTitle, ...distractors])).sort(() => 0.5 - Math.random());
+      while (allFour.length < 4) {
+        allFour.push(`Option ${allFour.length + 1}`);
+      }
+
+      const correctIdx = allFour.indexOf(cleanTitle);
       const letterMap = ["A", "B", "C", "D"];
 
-      const questionText = cleanSnippet.length > 15 
-        ? `Regarding ${cleanPrompt}: Which entity is associated with "${cleanSnippet.substring(0, 80)}..."?`
-        : `In relation to ${cleanPrompt}, which of the following is correct?`;
+      const questionText = snippetText.length > 20
+        ? `Regarding ${cleanPrompt}: Which place/item is described by: "${snippetText.substring(0, 90)}..."?`
+        : `Which of the following is directly associated with ${cleanPrompt}?`;
 
       questions.push({
         _id: `custom_${Date.now()}_${i}`,
