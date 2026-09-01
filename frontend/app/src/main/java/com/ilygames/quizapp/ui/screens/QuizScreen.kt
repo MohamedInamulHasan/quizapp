@@ -55,9 +55,19 @@ fun QuizScreen(
     var isContentVisible by remember(currentQuestionIndex) { mutableStateOf(false) }
 
     LaunchedEffect(currentQuestionIndex) {
+        SoundManager.stopFastUrgentTick()
         isContentVisible = false
         delay(50)
         isContentVisible = true
+    }
+
+    // 5s Clock sound (clock.mp3) played during last 5 seconds, cut off immediately when answer is selected
+    LaunchedEffect(timerSeconds) {
+        if (timerSeconds in 1..5 && selectedOption == null && quizState is QuizState.Active) {
+            SoundManager.playFastUrgentTick()
+        } else if (timerSeconds == 0 || selectedOption != null) {
+            SoundManager.stopFastUrgentTick()
+        }
     }
 
     LaunchedEffect(quizState) {
@@ -429,6 +439,7 @@ fun QuizScreen(
                                             onClick = {
                                                 if (selectedOption == null) {
                                                     selectedOption = key
+                                                    SoundManager.stopFastUrgentTick()
                                                     if (key == question.correctAnswer) {
                                                         SoundManager.playCorrectSound()
                                                     } else {

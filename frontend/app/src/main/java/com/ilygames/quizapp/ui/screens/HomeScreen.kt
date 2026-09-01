@@ -76,6 +76,7 @@ var globalProfileImageUri = mutableStateOf<String?>(null)
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
+    quizViewModel: com.ilygames.quizapp.ui.viewmodel.QuizViewModel? = null,
     onStartQuiz: () -> Unit,
     onStartReadingQuiz: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
@@ -653,14 +654,20 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             // Animated LATEST SCORE counter ONLY when user clicks Home from Quiz Complete screen! HIGH SCORE is static!
-                            val justCompleted = remember { quizViewModel.consumeQuizJustCompleted() }
+                            val justCompleted = remember { quizViewModel?.consumeQuizJustCompleted() ?: false }
+
+                            var startAnim by remember { mutableStateOf(false) }
+                            LaunchedEffect(justCompleted) {
+                                if (justCompleted) {
+                                    startAnim = true
+                                }
+                            }
 
                             val targetTodayScore = user?.todayScore ?: 0
                             val targetHighScore = user?.highScore ?: 0
 
                             val animatedLatestScore by animateIntAsState(
-                                targetValue = targetTodayScore,
-                                initialValue = if (justCompleted) 0 else targetTodayScore,
+                                targetValue = if (startAnim) targetTodayScore else (if (justCompleted) 0 else targetTodayScore),
                                 animationSpec = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
                                 label = "LatestScoreAnim"
                             )

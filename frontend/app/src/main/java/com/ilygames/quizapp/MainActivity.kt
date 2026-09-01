@@ -110,6 +110,7 @@ fun AppNavigation() {
         composable("home") {
             HomeScreen(
                 authViewModel = authViewModel,
+                quizViewModel = quizViewModel,
                 onStartQuiz = {
                     val currentToken = token ?: authViewModel.getToken(context) ?: "default_admin_token"
                     quizViewModel.startQuiz(currentToken)
