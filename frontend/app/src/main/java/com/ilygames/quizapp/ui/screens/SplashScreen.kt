@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
+import com.ilygames.quizapp.utils.SoundManager
 import kotlinx.coroutines.delay
 
 @Composable
