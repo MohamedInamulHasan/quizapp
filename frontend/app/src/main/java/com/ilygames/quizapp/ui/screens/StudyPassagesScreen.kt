@@ -54,13 +54,13 @@ val studyArticlesList = listOf(
     )
 )
 
-// Helper to format **markdown bold** text into AnnotatedString without displaying asterisks
+// Helper to format **markdown bold** text into AnnotatedString without displaying asterisks or blue highlight
 fun formatMarkdownText(text: String): AnnotatedString {
     val parts = text.split("**")
     return buildAnnotatedString {
         parts.forEachIndexed { index, part ->
             if (index % 2 == 1) {
-                withStyle(SpanStyle(fontWeight = FontWeight.Black, color = Color(0xFF255FF4))) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(part)
                 }
             } else {
