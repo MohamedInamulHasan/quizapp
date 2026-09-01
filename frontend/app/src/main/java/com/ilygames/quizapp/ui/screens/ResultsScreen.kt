@@ -294,6 +294,7 @@ fun ResultsScreen(
                             Button(
                                 onClick = {
                                     SoundManager.playClickSound()
+                                    quizViewModel.markQuizJustCompleted()
                                     quizViewModel.resetQuiz()
                                     onBackToHome()
                                 },

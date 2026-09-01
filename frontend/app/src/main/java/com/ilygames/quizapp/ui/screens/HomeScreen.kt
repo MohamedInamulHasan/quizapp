@@ -652,24 +652,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // Animated latest & high score counters (Smooth counting up on screen load / quiz completion)
-                            var scoreAnimTrigger by remember { mutableStateOf(false) }
-                            LaunchedEffect(Unit) {
-                                scoreAnimTrigger = true
-                            }
+                            // Animated LATEST SCORE counter ONLY when user clicks Home from Quiz Complete screen! HIGH SCORE is static!
+                            val justCompleted = remember { quizViewModel.consumeQuizJustCompleted() }
 
                             val targetTodayScore = user?.todayScore ?: 0
                             val targetHighScore = user?.highScore ?: 0
 
                             val animatedLatestScore by animateIntAsState(
-                                targetValue = if (scoreAnimTrigger) targetTodayScore else 0,
-                                animationSpec = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
-                                label = "LatestScoreAnim"
-                            )
-                            val animatedHighScore by animateIntAsState(
-                                targetValue = if (scoreAnimTrigger) targetHighScore else 0,
+                                targetValue = targetTodayScore,
+                                initialValue = if (justCompleted) 0 else targetTodayScore,
                                 animationSpec = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
-                                label = "HighScoreAnim"
+                                label = "LatestScoreAnim"
                             )
 
                             // LATEST SCORE : 0 pts (White text)
@@ -692,7 +685,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 )
                             }
 
-                            // HIGH SCORE : 380 pts (Bottom Line - Bigger font, aligned with Hearts)
+                            // HIGH SCORE : 380 pts (Bottom Line - Static, no animation)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -705,7 +698,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     letterSpacing = 0.5.sp
                                 )
                                 Text(
-                                    text = "$animatedHighScore pts",
+                                    text = "$targetHighScore pts",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Black,
                                     color = Color(0xFF255FF4)

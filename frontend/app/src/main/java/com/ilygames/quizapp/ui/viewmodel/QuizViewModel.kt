@@ -37,6 +37,17 @@ class QuizViewModel : ViewModel() {
     private val _quizState = MutableStateFlow<QuizState>(QuizState.Idle)
     val quizState: StateFlow<QuizState> = _quizState.asStateFlow()
 
+    // Flag tracked when user clicks Home button from completed quiz screen
+    private var _justCompletedQuiz = false
+    fun markQuizJustCompleted() {
+        _justCompletedQuiz = true
+    }
+    fun consumeQuizJustCompleted(): Boolean {
+        val result = _justCompletedQuiz
+        _justCompletedQuiz = false
+        return result
+    }
+
     // Timer State (counts down configured seconds for each question)
     private val _timerState = MutableStateFlow(com.ilygames.quizapp.ui.screens.globalQuizTimerSeconds.value)
     val timerState: StateFlow<Int> = _timerState.asStateFlow()
