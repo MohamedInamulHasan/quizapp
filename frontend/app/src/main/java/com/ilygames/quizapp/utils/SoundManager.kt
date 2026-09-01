@@ -12,6 +12,7 @@ object SoundManager {
     private var wrongSoundId: Int = 0
     private var fastTickSoundId: Int = 0
     private var clickSoundId: Int = 0
+    private var swooshSoundId: Int = 0
 
     fun init(context: Context) {
         if (soundPool != null) return
@@ -30,6 +31,7 @@ object SoundManager {
             wrongSoundId = soundPool?.load(context, R.raw.wrong_sound, 1) ?: 0
             fastTickSoundId = soundPool?.load(context, R.raw.clock_tick_fast, 1) ?: 0
             clickSoundId = soundPool?.load(context, R.raw.tap, 1) ?: 0
+            swooshSoundId = soundPool?.load(context, R.raw.swoosh, 1) ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -73,8 +75,17 @@ object SoundManager {
         }
     }
 
+    // 💨 Custom Swoosh sound effect when advancing from 2nd question onwards
+    fun playWhooshSound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || swooshSoundId == 0) return
+        try {
+            soundPool?.play(swooshSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun playClockTick() {}
-    fun playWhooshSound() {}
     fun playOptionPopSound() {}
     fun playSuccessChime() {}
 }

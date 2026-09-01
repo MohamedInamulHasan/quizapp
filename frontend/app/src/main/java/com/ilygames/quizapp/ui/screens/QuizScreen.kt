@@ -168,6 +168,12 @@ fun QuizScreen(
                 val progress = (state.currentQuestionIndex + 1).toFloat() / state.questions.size
                 val animatedProgress by animateFloatAsState(targetValue = progress, animationSpec = tween(500), label = "Progress")
 
+                LaunchedEffect(state.currentQuestionIndex) {
+                    if (state.currentQuestionIndex > 0) {
+                        SoundManager.playWhooshSound()
+                    }
+                }
+
                 // Single Smooth Vertical Scrollable Container (No cut-off options, no double scroll)
                 Column(
                     modifier = Modifier
