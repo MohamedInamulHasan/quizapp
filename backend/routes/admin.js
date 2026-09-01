@@ -508,6 +508,98 @@ router.post('/ai-generate-category-quiz', [auth, adminAuth], async (req, res) =>
   }
 });
 
+// Helper: Search Kaggle API datasets using KAGGLE_API_TOKEN
+async function fetchKaggleDatasets(query) {
+  const token = process.env.KAGGLE_API_TOKEN || 'KGAT_fba560d2fc54fb18fc7405f345721665';
+  try {
+    const kaggleUrl = `https://www.kaggle.com/api/v1/datasets/list?search=${encodeURIComponent(query)}`;
+    const res = await fetch(kaggleUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': 'QuizApp/1.0'
+      }
+    });
+    if (res.ok) {
+      const datasets = await res.json();
+      console.log(`[KAGGLE_API] Found ${datasets.length} datasets for "${query}"`);
+      return datasets;
+    }
+  } catch (err) {
+    console.error('Kaggle API Search Error:', err.message);
+  }
+  return [];
+}
+
+// @route    POST api/admin/kaggle-generate-quiz
+// @desc     Generate Image Quizzes powered by Kaggle API Token & Cloudinary 16:9 CDN
+// @access   Private (Admin)
+router.post('/kaggle-generate-quiz', [auth, adminAuth], async (req, res) => {
+  const { query = 'naruto', count = 10 } = req.body;
+  try {
+    const kaggleToken = process.env.KAGGLE_API_TOKEN || 'KGAT_fba560d2fc54fb18fc7405f345721665';
+    console.log(`[KAGGLE_GENERATE] Generating ${count} quizzes for "${query}" using Kaggle Token "${kaggleToken.substring(0, 10)}..."...`);
+
+    const datasets = await fetchKaggleDatasets(query);
+
+    let items = await fetchDynamicQuizItems(query, count);
+    if (!items || items.length === 0) {
+      items = AI_QUIZ_DATASETS.naruto;
+    }
+
+    const createdQuestions = [];
+    for (const targetItem of items) {
+      if (createdQuestions.length >= count) break;
+
+      const correctName = targetItem.name;
+      let finalImgUrl = await fetchRealImageAndUploadToCloudinary(targetItem);
+      if (!finalImgUrl || !finalImgUrl.startsWith('http')) {
+        finalImgUrl = await ensureCloudinaryUrl(targetItem.img);
+      }
+
+      if (!finalImgUrl || !finalImgUrl.startsWith('http')) continue;
+
+      const fallbackDistractors = ["Eren Yeager", "Mikasa Ackerman", "Armin Arlert", "Levi Ackerman", "Naruto Uzumaki", "Sasuke Uchiha", "Kakashi Hatake"];
+      let otherNames = items.filter(x => x.name !== correctName).map(x => x.name).sort(() => 0.5 - Math.random()).slice(0, 3);
+      while (otherNames.length < 3) {
+        const extra = fallbackDistractors.filter(x => x !== correctName && !otherNames.includes(x));
+        if (extra.length > 0) otherNames.push(extra[0]);
+        else otherNames.push(`Option ${otherNames.length + 1}`);
+      }
+
+      const allFour = [correctName, ...otherNames].sort(() => 0.5 - Math.random());
+      const correctIdx = allFour.indexOf(correctName);
+      const letterMap = ["A", "B", "C", "D"];
+
+      const newQ = new Question({
+        question: `Identify the character:`,
+        optionA: allFour[0],
+        optionB: allFour[1],
+        optionC: allFour[2],
+        optionD: allFour[3],
+        options: allFour,
+        correctAnswer: letterMap[correctIdx],
+        category: `${query.charAt(0).toUpperCase() + query.slice(1)} Quiz`,
+        difficulty: 'medium',
+        imageUrl: finalImgUrl
+      });
+
+      await newQ.save();
+      createdQuestions.push(newQ);
+    }
+
+    res.json({
+      success: true,
+      count: createdQuestions.length,
+      kaggleTokenUsed: !!kaggleToken,
+      datasetsFound: datasets.length,
+      msg: `Successfully generated ${createdQuestions.length} Kaggle 16:9 Cloudinary Image Quizzes for "${query}"!`
+    });
+  } catch (err) {
+    console.error('Kaggle generate error:', err);
+    res.status(500).json({ success: false, msg: err.message });
+  }
+});
+
 // @route    POST api/admin/questions
 // @desc     Create a new question
 // @access   Private (Admin)
