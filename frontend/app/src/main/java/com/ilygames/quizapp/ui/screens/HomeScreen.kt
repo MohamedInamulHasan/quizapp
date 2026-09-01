@@ -647,13 +647,21 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             // Animated latest & high score counters (Smooth counting up on screen load / quiz completion)
+                            var scoreAnimTrigger by remember { mutableStateOf(false) }
+                            LaunchedEffect(Unit) {
+                                scoreAnimTrigger = true
+                            }
+
+                            val targetTodayScore = user?.todayScore ?: 0
+                            val targetHighScore = user?.highScore ?: 0
+
                             val animatedLatestScore by animateIntAsState(
-                                targetValue = user?.todayScore ?: 0,
+                                targetValue = if (scoreAnimTrigger) targetTodayScore else 0,
                                 animationSpec = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
                                 label = "LatestScoreAnim"
                             )
                             val animatedHighScore by animateIntAsState(
-                                targetValue = user?.highScore ?: 0,
+                                targetValue = if (scoreAnimTrigger) targetHighScore else 0,
                                 animationSpec = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
                                 label = "HighScoreAnim"
                             )

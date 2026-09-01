@@ -13,6 +13,7 @@ object SoundManager {
     private var fastTickSoundId: Int = 0
     private var clickSoundId: Int = 0
     private var swooshSoundId: Int = 0
+    private var levelUpSoundId: Int = 0
 
     fun init(context: Context) {
         if (soundPool != null) return
@@ -32,6 +33,7 @@ object SoundManager {
             fastTickSoundId = soundPool?.load(context, R.raw.clock_tick_fast, 1) ?: 0
             clickSoundId = soundPool?.load(context, R.raw.tap, 1) ?: 0
             swooshSoundId = soundPool?.load(context, R.raw.swoosh, 1) ?: 0
+            levelUpSoundId = soundPool?.load(context, R.raw.level_up, 1) ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -85,7 +87,16 @@ object SoundManager {
         }
     }
 
+    // 🎉 Custom Level Up sound effect when quiz completes
+    fun playSuccessChime() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || levelUpSoundId == 0) return
+        try {
+            soundPool?.play(levelUpSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun playClockTick() {}
     fun playOptionPopSound() {}
-    fun playSuccessChime() {}
 }

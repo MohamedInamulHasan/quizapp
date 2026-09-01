@@ -54,7 +54,18 @@ fun ResultsScreen(
 
     LaunchedEffect(Unit) {
         isVisible = true
+        SoundManager.playSuccessChime()
     }
+
+    // 3D Bubble Pop-Up Scale Bouncy Animation
+    val popScale by animateFloatAsState(
+        targetValue = if (isVisible) 1.0f else 0.2f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "BubblePopScale"
+    )
 
     // Trophy Pulse Animation
     val infiniteTransition = rememberInfiniteTransition(label = "trophyPulse")
@@ -96,6 +107,7 @@ fun ResultsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .graphicsLayer(scaleX = popScale, scaleY = popScale)
                         .shadow(12.dp, RoundedCornerShape(26.dp))
                         .background(resCardBg, RoundedCornerShape(26.dp))
                         .border(

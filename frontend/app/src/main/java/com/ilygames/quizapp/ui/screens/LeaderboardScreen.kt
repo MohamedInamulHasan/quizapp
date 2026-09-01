@@ -231,6 +231,7 @@ fun LeaderboardPodium(entries: List<LeaderboardEntry>, currentUserId: String, cu
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(270.dp)
             .shadow(10.dp, RoundedCornerShape(26.dp))
             .background(ldrCardBg, RoundedCornerShape(26.dp))
             .border(
