@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -86,6 +88,10 @@ fun HomeScreen(
     var secretAdminTapCount by remember { mutableIntStateOf(0) }
     var lastSecretTapTime by remember { mutableLongStateOf(0L) }
     var isSecretAdminUnlocked by remember { mutableStateOf(false) }
+    var showAdminPasswordModal by remember { mutableStateOf(false) }
+    var adminPasswordInput by remember { mutableStateOf("") }
+    var isAdminPassVisible by remember { mutableStateOf(false) }
+    var adminPasswordError by remember { mutableStateOf("") }
     var showSignOutConfirmationModal by remember { mutableStateOf(false) }
     var showRewardShowcaseModal by remember { mutableStateOf(false) }
     var showEditNameModal by remember { mutableStateOf(false) }
@@ -278,12 +284,12 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
                                 if (secretAdminTapCount >= 10) {
                                     secretAdminTapCount = 0
-                                    isSecretAdminUnlocked = true
+                                    adminPasswordInput = ""
+                                    adminPasswordError = ""
+                                    showAdminPasswordModal = true
                                     SoundManager.playCorrectSound()
-                                    Toast.makeText(context, "👑 Admin Mode Unlocked! Opening Admin Studio...", Toast.LENGTH_LONG).show()
-                                    onNavigateToAdmin()
                                 } else if (secretAdminTapCount >= 6) {
-                                    Toast.makeText(context, "${10 - secretAdminTapCount} more taps to unlock Admin Studio...", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "${10 - secretAdminTapCount} more taps to access Admin Security...", Toast.LENGTH_SHORT).show()
                                 } else if (secretAdminTapCount == 1) {
                                     showGPayProfileModal = true
                                 }
@@ -344,9 +350,9 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         }
                         Column {
                             Text(
-                                text = "WELCOME BACK",
+                                text = "WELCOME",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF255FF4),
+                                color = Color.White,
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp
                             )
@@ -1425,6 +1431,154 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                     }
                 },
                 dismissButton = null
+            )
+        }
+
+        // 3D ADMIN SECURITY PASSWORD VERIFICATION MODAL
+        if (showAdminPasswordModal) {
+            val isDarkPassModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val passModalBg = if (isDarkPassModal) Color(0xFF1C273A) else Color.White
+
+            AlertDialog(
+                onDismissRequest = {
+                    showAdminPasswordModal = false
+                    adminPasswordInput = ""
+                    adminPasswordError = ""
+                },
+                containerColor = passModalBg,
+                titleContentColor = if (isDarkPassModal) Color.White else Color(0xFF17181C),
+                shape = RoundedCornerShape(26.dp),
+                modifier = Modifier.border(
+                    1.5.dp,
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = if (isDarkPassModal) 0.35f else 0.9f),
+                            Color.Black.copy(alpha = if (isDarkPassModal) 0.5f else 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(26.dp)
+                ),
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(Color(0xFF255FF4).copy(alpha = 0.15f), CircleShape)
+                                .border(1.5.dp, Color(0xFF255FF4), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Lock, contentDescription = "Security", tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
+                        }
+                        Text(
+                            text = "Admin Verification",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp,
+                            color = if (isDarkPassModal) Color.White else Color(0xFF17181C)
+                        )
+                    }
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = "Enter Admin Security Passcode to access Admin Studio:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (isDarkPassModal) Color.White.copy(alpha = 0.85f) else Color(0xFF334155)
+                        )
+
+                        OutlinedTextField(
+                            value = adminPasswordInput,
+                            onValueChange = {
+                                adminPasswordInput = it
+                                adminPasswordError = ""
+                            },
+                            placeholder = { Text("Enter Passcode...", color = TextMuted) },
+                            singleLine = true,
+                            visualTransformation = if (isAdminPassVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { isAdminPassVisible = !isAdminPassVisible }) {
+                                    Icon(
+                                        imageVector = if (isAdminPassVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = "Toggle Visibility",
+                                        tint = Color(0xFF255FF4)
+                                    )
+                                }
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF255FF4),
+                                unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedTextColor = if (isDarkPassModal) Color.White else Color(0xFF17181C),
+                                unfocusedTextColor = if (isDarkPassModal) Color.White else Color(0xFF17181C)
+                            ),
+                            shape = RoundedCornerShape(14.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        if (adminPasswordError.isNotBlank()) {
+                            Text(
+                                text = adminPasswordError,
+                                color = IncorrectRed,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            if (adminPasswordInput.trim() == "Moh@2004") {
+                                isSecretAdminUnlocked = true
+                                showAdminPasswordModal = false
+                                adminPasswordInput = ""
+                                adminPasswordError = ""
+                                SoundManager.playSuccessChime()
+                                Toast.makeText(context, "👑 Admin Passcode Verified! Opening Admin Studio...", Toast.LENGTH_LONG).show()
+                                onNavigateToAdmin()
+                            } else {
+                                SoundManager.playWrongSound()
+                                adminPasswordError = "❌ Incorrect Admin Passcode"
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(14.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier
+                            .shadow(6.dp, RoundedCornerShape(14.dp))
+                            .background(
+                                Brush.horizontalGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))),
+                                RoundedCornerShape(14.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                    ) {
+                        Text("Unlock Studio", color = Color.White, fontWeight = FontWeight.Black)
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            SoundManager.playClickSound()
+                            showAdminPasswordModal = false
+                            adminPasswordInput = ""
+                            adminPasswordError = ""
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(14.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                        modifier = Modifier
+                            .shadow(4.dp, RoundedCornerShape(14.dp))
+                            .background(
+                                SurfaceGray,
+                                RoundedCornerShape(14.dp)
+                            )
+                    ) {
+                        Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                    }
+                }
             )
         }
     }
