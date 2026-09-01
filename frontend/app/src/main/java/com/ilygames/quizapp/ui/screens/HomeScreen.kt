@@ -83,6 +83,9 @@ fun HomeScreen(
     val user by authViewModel.user.collectAsState()
     var showSettingsMenu by remember { mutableStateOf(false) }
     var lastSettingsClickTime by remember { mutableLongStateOf(0L) }
+    var secretAdminTapCount by remember { mutableIntStateOf(0) }
+    var lastSecretTapTime by remember { mutableLongStateOf(0L) }
+    var isSecretAdminUnlocked by remember { mutableStateOf(false) }
     var showSignOutConfirmationModal by remember { mutableStateOf(false) }
     var showRewardShowcaseModal by remember { mutableStateOf(false) }
     var showEditNameModal by remember { mutableStateOf(false) }
@@ -265,7 +268,25 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             .clip(RoundedCornerShape(16.dp))
                             .clickable {
                                 SoundManager.playClickSound()
-                                showGPayProfileModal = true
+                                val now = System.currentTimeMillis()
+                                if (now - lastSecretTapTime > 2000L) {
+                                    secretAdminTapCount = 1
+                                } else {
+                                    secretAdminTapCount++
+                                }
+                                lastSecretTapTime = now
+
+                                if (secretAdminTapCount >= 10) {
+                                    secretAdminTapCount = 0
+                                    isSecretAdminUnlocked = true
+                                    SoundManager.playCorrectSound()
+                                    Toast.makeText(context, "👑 Admin Mode Unlocked! Opening Admin Studio...", Toast.LENGTH_LONG).show()
+                                    onNavigateToAdmin()
+                                } else if (secretAdminTapCount >= 6) {
+                                    Toast.makeText(context, "${10 - secretAdminTapCount} more taps to unlock Admin Studio...", Toast.LENGTH_SHORT).show()
+                                } else if (secretAdminTapCount == 1) {
+                                    showGPayProfileModal = true
+                                }
                             }
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
@@ -470,8 +491,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
                                             Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
 
-                                            // Admin Studio Option (Visible exclusively for mohamedinamulhasan0@gmail.com / mohmaedinamulhasan0@gmail.com)
-                                            if (user?.isAdmin == true || user?.email?.equals("mohamedinamulhasan0@gmail.com", ignoreCase = true) == true || user?.email?.equals("mohmaedinamulhasan0@gmail.com", ignoreCase = true) == true) {
+                                            // Admin Studio Option (Unlocked via 10-tap secret gesture or admin email)
+                                            if (isSecretAdminUnlocked || user?.isAdmin == true || user?.email?.equals("mohamedinamulhasan0@gmail.com", ignoreCase = true) == true || user?.email?.equals("mohmaedinamulhasan0@gmail.com", ignoreCase = true) == true) {
                                                 Row(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
