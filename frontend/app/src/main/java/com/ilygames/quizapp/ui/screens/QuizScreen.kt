@@ -61,9 +61,9 @@ fun QuizScreen(
         isContentVisible = true
     }
 
-    // 5s Clock sound (clock.mp3) played ONCE as original audio at 5s, cut off immediately when answer selected or timer expires
-    LaunchedEffect(timerSeconds == 5) {
-        if (timerSeconds == 5 && selectedOption == null && quizState is QuizState.Active) {
+    // 4s Clock sound (clock.mp3) played ONCE as original audio at 4s, cut off immediately when answer selected or timer expires
+    LaunchedEffect(timerSeconds == 4) {
+        if (timerSeconds == 4 && selectedOption == null && quizState is QuizState.Active) {
             SoundManager.playFastUrgentTick()
         }
     }
