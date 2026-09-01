@@ -899,29 +899,51 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
                     }
 
-                    // Row 3: Extra Chance
-                    UnifiedEmeraldCard(
-                        title = "Extra Chance",
-                        description = "Watch video ad to restore 1 broken heart",
-                        icon = Icons.Default.OndemandVideo,
+                    // Row 3: Extra Chance & Free Coins (Identical 2-column grid shape)
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            SoundManager.playClickSound()
-                            if (dailyAttemptsLeft < 3) {
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        UnifiedEmeraldCard(
+                            title = "Extra Chance",
+                            description = "Watch ad to restore 1 broken heart",
+                            icon = Icons.Default.Favorite,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                if (dailyAttemptsLeft < 3) {
+                                    com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
+                                        context = context,
+                                        onRewardEarned = {
+                                            dailyAttemptsLeft++
+                                            heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
+                                            authViewModel.addAdReward(context)
+                                            Toast.makeText(context, "❤️ Heart Restored!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                } else {
+                                    Toast.makeText(context, "❤️ You already have max hearts!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+
+                        UnifiedEmeraldCard(
+                            title = "Free Coins",
+                            description = "Watch video ad to earn +50 coins",
+                            icon = Icons.Default.MonetizationOn,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
                                 com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
                                     context = context,
                                     onRewardEarned = {
-                                        dailyAttemptsLeft++
-                                        heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
                                         authViewModel.addAdReward(context)
-                                        Toast.makeText(context, "❤️ Heart Restored!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "🪙 +50 Bonus Coins Earned!", Toast.LENGTH_SHORT).show()
                                     }
                                 )
-                            } else {
-                                Toast.makeText(context, "❤️ You already have max hearts!", Toast.LENGTH_SHORT).show()
                             }
-                        }
-                    )
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(28.dp))
                 }
