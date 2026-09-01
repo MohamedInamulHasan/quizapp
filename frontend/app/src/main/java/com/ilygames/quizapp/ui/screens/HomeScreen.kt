@@ -100,6 +100,13 @@ fun HomeScreen(
     var editNameError by remember { mutableStateOf("") }
     var isUpdatingName by remember { mutableStateOf(false) }
 
+    var showAiQuizStudioModal by remember { mutableStateOf(false) }
+    var aiPromptInput by remember { mutableStateOf("") }
+    var selectedQuestionCount by remember { mutableIntStateOf(10) }
+    var isGeneratingAiQuiz by remember { mutableStateOf(false) }
+    var generatedCustomQuestions by remember { mutableStateOf<List<com.ilygames.quizapp.data.model.Question>?>(null) }
+    var generatedQuizPrompt by remember { mutableStateOf("") }
+
     var customUserNameState = remember { mutableStateOf(user?.name ?: "Player") }
     var tempNameInput by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -892,15 +899,28 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                             dailyAttemptsLeft++
                                             heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
                                             authViewModel.addAdReward(context)
-                                            Toast.makeText(context, "🎉 Video Complete! +1 Heart Regained ❤️", Toast.LENGTH_SHORT).show()
-                                        }
+                                            Toast.makeText(context, "❤️ Heart Restored!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onAdDismissed = {}
                                     )
                                 } else {
-                                    Toast.makeText(context, "❤️ Hearts are already full! (3/3)", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "❤️ You already have max hearts!", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
                     }
+
+                    // Row 3: Featured ✨ AI Quiz Studio Card
+                    UnifiedEmeraldCard(
+                        title = "✨ AI Quiz Studio",
+                        description = "Type any prompt (Naruto, Tamil Nadu, Ronaldo) & generate custom practice quizzes!",
+                        icon = Icons.Default.AutoAwesome,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            SoundManager.playClickSound()
+                            showAiQuizStudioModal = true
+                        }
+                    )
                 }
             }
         }
@@ -1589,6 +1609,299 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                     }
                 }
             )
+        }
+
+        // ── AI QUIZ STUDIO MODAL DIALOG ──────────────────────────────────────
+        if (showAiQuizStudioModal) {
+            val isDarkModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+            val modalBg = if (isDarkModal) Color(0xFF1C273A) else Color.White
+            val modalTextColor = if (isDarkModal) Color.White else Color(0xFF17181C)
+
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = {
+                    showAiQuizStudioModal = false
+                    aiPromptInput = ""
+                    generatedCustomQuestions = null
+                }
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(26.dp),
+                    color = modalBg,
+                    border = BorderStroke(
+                        1.5.dp,
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = if (isDarkModal) 0.35f else 0.9f),
+                                Color.Black.copy(alpha = if (isDarkModal) 0.5f else 0.08f)
+                            )
+                        )
+                    ),
+                    shadowElevation = 16.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Top Bar: Header + Close Button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .shadow(4.dp, CircleShape)
+                                        .background(
+                                            Brush.radialGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))),
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                }
+                                Text(
+                                    text = "✨ AI Quiz Studio",
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 18.sp,
+                                    color = modalTextColor
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    SoundManager.playClickSound()
+                                    showAiQuizStudioModal = false
+                                    aiPromptInput = ""
+                                    generatedCustomQuestions = null
+                                },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", tint = modalTextColor)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Search Input Prompt Field
+                        OutlinedTextField(
+                            value = aiPromptInput,
+                            onValueChange = { aiPromptInput = it },
+                            placeholder = { Text("Search prompt e.g. Naruto, Tamil Nadu, Ronaldo...", fontSize = 13.sp, color = Color.Gray) },
+                            singleLine = true,
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFF255FF4)) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = modalTextColor,
+                                unfocusedTextColor = modalTextColor,
+                                focusedBorderColor = Color(0xFF255FF4),
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.4f),
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Select Question Count (10, 20, 30, 40, 50)
+                        Text(
+                            text = "SELECT NUMBER OF QUESTIONS:",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFF255FF4),
+                            letterSpacing = 1.sp,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            listOf(10, 20, 30, 40, 50).forEach { countOpt ->
+                                val isSelected = selectedQuestionCount == countOpt
+                                val pillBg = if (isSelected) Color(0xFF255FF4) else (if (isDarkModal) Color(0xFF101828) else Color(0xFFF1F5F9))
+                                val pillText = if (isSelected) Color.White else (if (isDarkModal) Color.White.copy(alpha = 0.8f) else Color(0xFF475569))
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 2.dp)
+                                        .height(38.dp)
+                                        .shadow(if (isSelected) 4.dp else 0.dp, RoundedCornerShape(12.dp))
+                                        .background(pillBg, RoundedCornerShape(12.dp))
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) Color.White else Color.Transparent,
+                                            RoundedCornerShape(12.dp)
+                                        )
+                                        .clickable {
+                                            SoundManager.playClickSound()
+                                            selectedQuestionCount = countOpt
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "$countOpt",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 13.sp,
+                                        color = pillText
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        // Generate Quiz Action Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                if (aiPromptInput.trim().isBlank()) {
+                                    Toast.makeText(context, "Please enter a topic or prompt first!", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+                                val activeToken = authViewModel.getToken(context) ?: "default_admin_token"
+                                isGeneratingAiQuiz = true
+                                generatedCustomQuestions = null
+                                coroutineScope.launch {
+                                    try {
+                                        val response = ApiClient.apiService.generateCustomAiQuiz(
+                                            activeToken,
+                                            com.ilygames.quizapp.data.api.CustomAiQuizRequest(
+                                                prompt = aiPromptInput.trim(),
+                                                count = selectedQuestionCount
+                                            )
+                                        )
+                                        isGeneratingAiQuiz = false
+                                        if (response.isSuccessful && response.body() != null && response.body()!!.success) {
+                                            val body = response.body()!!
+                                            if (!body.questions.isNullOrEmpty()) {
+                                                generatedQuizPrompt = body.prompt ?: aiPromptInput.trim()
+                                                generatedCustomQuestions = body.questions
+                                                SoundManager.playCorrectSound()
+                                                Toast.makeText(context, "🎯 ${body.questions.size} Questions Generated!", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "No questions generated. Try another topic!", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Failed to generate AI quiz. Please try again!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        isGeneratingAiQuiz = false
+                                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            enabled = !isGeneratingAiQuiz,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .shadow(8.dp, RoundedCornerShape(16.dp))
+                                .background(
+                                    Brush.horizontalGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                        ) {
+                            if (isGeneratingAiQuiz) {
+                                CircularProgressIndicator(color = Color.White, strokeWidth = 3.dp, modifier = Modifier.size(24.dp))
+                            } else {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                    Text("⚡ GENERATE QUIZ WITH AI", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                                }
+                            }
+                        }
+
+                        // Generated Quiz Card Box (Appears when quiz is generated!)
+                        if (generatedCustomQuestions != null) {
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(8.dp, RoundedCornerShape(20.dp))
+                                    .background(
+                                        Brush.linearGradient(
+                                            colors = listOf(
+                                                Color(0xFF255FF4).copy(alpha = 0.15f),
+                                                Color(0xFF386DF5).copy(alpha = 0.25f)
+                                            )
+                                        ),
+                                        RoundedCornerShape(20.dp)
+                                    )
+                                    .border(1.5.dp, Color(0xFF255FF4), RoundedCornerShape(20.dp))
+                                    .padding(16.dp)
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "🎯 Quiz Ready: ${generatedQuizPrompt.uppercase()}",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 16.sp,
+                                        color = modalTextColor,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "🎮 ${generatedCustomQuestions!!.size} Questions • Practice Mode (No Score)",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF255FF4)
+                                    )
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    Button(
+                                        onClick = {
+                                            SoundManager.playClickSound()
+                                            quizViewModel?.startCustomAiQuiz(generatedCustomQuestions!!)
+                                            showAiQuizStudioModal = false
+                                            aiPromptInput = ""
+                                            generatedCustomQuestions = null
+                                            onStartQuiz()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                        shape = RoundedCornerShape(14.dp),
+                                        contentPadding = PaddingValues(vertical = 10.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(44.dp)
+                                            .shadow(6.dp, RoundedCornerShape(14.dp))
+                                            .background(
+                                                Brush.horizontalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                                                RoundedCornerShape(14.dp)
+                                            )
+                                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                            Text("▶️ PLAY NOW", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

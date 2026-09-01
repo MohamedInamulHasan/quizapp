@@ -178,4 +178,115 @@ router.get('/winner', auth, async (req, res) => {
   }
 });
 
+// Helper: Dynamic Wikipedia quiz item generator for ANY prompt typed by user
+async function fetchDynamicQuizItemsForUser(query, targetCount) {
+  try {
+    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&srlimit=40`;
+    const wikiRes = await fetch(wikiUrl, { headers: { 'User-Agent': 'QuizApp/2.0' } });
+    if (!wikiRes.ok) return [];
+    const wikiData = await wikiRes.json();
+    const searchResults = (wikiData.query && wikiData.query.search) ? wikiData.query.search : [];
+
+    if (searchResults.length === 0) return [];
+
+    const distractorPool = ["Tokyo", "London", "Paris", "New York", "Einstein", "Newton", "Shakespeare", "Pythagoras", "Galileo", "Apollo 11", "Everest", "Amazon River", "Pacific Ocean", "Jupiter", "Mars", "Sahara Desert"];
+
+    const questions = [];
+    for (let i = 0; i < searchResults.length && questions.length < targetCount; i++) {
+      const item = searchResults[i];
+      const title = item.title;
+      const cleanSnippet = item.snippet.replace(/<[^>]*>?/gm, '').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+
+      // Pick 3 random distractors from pool
+      const distractors = distractorPool.filter(x => x.toLowerCase() !== title.toLowerCase()).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const allFour = [title, ...distractors].sort(() => 0.5 - Math.random());
+      const correctIdx = allFour.indexOf(title);
+      const letterMap = ["A", "B", "C", "D"];
+
+      const promptQuestionText = cleanSnippet.length > 20 
+        ? `Quiz about ${query}: Which item is described by "${cleanSnippet.substring(0, 90)}..."?` 
+        : `Which of the following is associated with ${query}?`;
+
+      questions.push({
+        _id: `custom_${Date.now()}_${i}`,
+        question: promptQuestionText,
+        optionA: allFour[0],
+        optionB: allFour[1],
+        optionC: allFour[2],
+        optionD: allFour[3],
+        options: allFour,
+        correctAnswer: letterMap[correctIdx],
+        category: query,
+        difficulty: 'medium',
+        imageUrl: null
+      });
+    }
+
+    return questions;
+  } catch (err) {
+    console.error('Dynamic quiz fetch error:', err.message);
+    return [];
+  }
+}
+
+// @route    POST api/quiz/ai-generate-custom
+// @desc     Generate AI Custom Practice Quiz for ANY prompt typed by user (10, 20, 30, 40, 50 questions)
+// @access   Private
+router.post('/ai-generate-custom', auth, async (req, res) => {
+  const { prompt = '', count = 10 } = req.body;
+  const requestedCount = Math.min(Math.max(parseInt(count) || 10, 10), 50);
+  const targetPrompt = (prompt || 'General Knowledge').trim();
+
+  try {
+    // 1. First search existing DB for questions matching prompt
+    let questions = await Question.find({
+      $or: [
+        { category: new RegExp(targetPrompt, 'i') },
+        { question: new RegExp(targetPrompt, 'i') },
+        { optionA: new RegExp(targetPrompt, 'i') },
+        { optionB: new RegExp(targetPrompt, 'i') },
+        { optionC: new RegExp(targetPrompt, 'i') },
+        { optionD: new RegExp(targetPrompt, 'i') }
+      ]
+    }).limit(requestedCount).lean();
+
+    // Format DB questions to include options array
+    questions = questions.map(q => ({
+      ...q,
+      id: q._id ? q._id.toString() : `q_${Math.random()}`,
+      options: q.options || [q.optionA, q.optionB, q.optionC, q.optionD]
+    }));
+
+    // 2. If not enough questions in DB, dynamically generate from Wikipedia topic search
+    if (questions.length < requestedCount) {
+      const needed = requestedCount - questions.length;
+      const dynamicItems = await fetchDynamicQuizItemsForUser(targetPrompt, needed);
+      questions = [...questions, ...dynamicItems];
+    }
+
+    // 3. Fallback: if still under count, fill with random sample DB questions
+    if (questions.length < requestedCount) {
+      const fallbackCount = requestedCount - questions.length;
+      const extraRandom = await Question.aggregate([{ $sample: { size: fallbackCount } }]);
+      const formattedExtra = extraRandom.map((q, idx) => ({
+        ...q,
+        id: q._id ? q._id.toString() : `fb_${idx}`,
+        question: `[${targetPrompt}] ${q.question}`,
+        options: q.options || [q.optionA, q.optionB, q.optionC, q.optionD]
+      }));
+      questions = [...questions, ...formattedExtra];
+    }
+
+    res.json({
+      success: true,
+      prompt: targetPrompt,
+      count: questions.length,
+      questions: questions.slice(0, requestedCount)
+    });
+  } catch (err) {
+    console.error('Custom AI Quiz Generate error:', err.message);
+    res.status(500).json({ success: false, msg: 'Error generating AI quiz' });
+  }
+});
+
 module.exports = router;

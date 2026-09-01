@@ -212,13 +212,31 @@ class QuizViewModel : ViewModel() {
         }
     }
 
+    var isPracticeMode = false
+
+    fun startCustomAiQuiz(questions: List<Question>) {
+        isPracticeMode = true
+        _quizState.value = QuizState.Active(
+            questions = questions,
+            currentQuestionIndex = 0,
+            answersSubmitted = 0,
+            score = 0,
+            startTime = System.currentTimeMillis()
+        )
+        startTimer()
+    }
+
     private fun submitResultsToBackend(token: String, score: Int, timeTaken: Int) {
         // Instant transition to Complete screen without loading screen
         _quizState.value = QuizState.Complete(
             score = score,
             timeTaken = timeTaken,
-            coinsEarned = score
+            coinsEarned = if (isPracticeMode) 0 else score
         )
+        if (isPracticeMode) {
+            // Casual / Practice mode: No score submission to backend or leaderboard!
+            return
+        }
         viewModelScope.launch {
             val activeToken = if (token.isNotBlank()) token else currentToken
             try {
@@ -238,6 +256,7 @@ class QuizViewModel : ViewModel() {
     }
 
     fun resetQuiz() {
+        isPracticeMode = false
         _quizState.value = QuizState.Idle
     }
 

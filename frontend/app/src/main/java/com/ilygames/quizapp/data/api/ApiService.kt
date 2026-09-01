@@ -159,9 +159,17 @@ interface ApiService {
         @Header("x-auth-token") token: String,
         @Body request: AiGenerateQuizRequest
     ): Response<AiGenerateQuizResponse>
+
+    @POST("quiz/ai-generate-custom")
+    suspend fun generateCustomAiQuiz(
+        @Header("x-auth-token") token: String,
+        @Body request: CustomAiQuizRequest
+    ): Response<CustomAiQuizResponse>
 }
 
 data class RewardSyncRequest(val title: String, val description: String, val imageUrl: String?)
 data class RewardSyncResponse(val title: String, val description: String, val imageUrl: String?)
 data class AiGenerateQuizRequest(val category: String, val count: Int = 5, val customQuery: String = "")
 data class AiGenerateQuizResponse(val success: Boolean, val count: Int, val msg: String?)
+data class CustomAiQuizRequest(val prompt: String, val count: Int = 10)
+data class CustomAiQuizResponse(val success: Boolean, val prompt: String?, val count: Int, val questions: List<Question>?)
