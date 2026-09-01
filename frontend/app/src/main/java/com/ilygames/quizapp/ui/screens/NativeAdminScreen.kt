@@ -736,12 +736,10 @@ fun NativeAdminScreen(
                                                 questionsStateList = emptyList()
                                                 Toast.makeText(context, "🗑️ All Questions Wiped from MongoDB!", Toast.LENGTH_SHORT).show()
                                             } else {
-                                                questionsStateList = emptyList()
-                                                Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "❌ Wipe failed (${res.code()})", Toast.LENGTH_SHORT).show()
                                             }
                                         } catch (e: Exception) {
-                                            questionsStateList = emptyList()
-                                            Toast.makeText(context, "🗑️ All Questions Wiped!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "❌ Wipe error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 }
@@ -872,22 +870,24 @@ fun NativeAdminScreen(
                                                         SoundManager.playClickSound()
                                                         val targetId = q.id
                                                         val targetQuestionText = q.question
-                                                        questionsStateList = questionsStateList.filter { item ->
-                                                            if (!targetId.isNullOrBlank()) item.id != targetId else item.question != targetQuestionText
-                                                        }
                                                         if (!targetId.isNullOrBlank()) {
                                                             token?.let { authToken ->
                                                                 coroutineScope.launch {
                                                                     try {
-                                                                        ApiClient.apiService.deleteQuestion(authToken, targetId)
-                                                                        Toast.makeText(context, "🗑️ Question Deleted from MongoDB!", Toast.LENGTH_SHORT).show()
-                                                                    } catch (_: Exception) {
-                                                                        Toast.makeText(context, "Question removed!", Toast.LENGTH_SHORT).show()
+                                                                        val res = ApiClient.apiService.deleteQuestion(authToken, targetId)
+                                                                        if (res.isSuccessful) {
+                                                                            questionsStateList = questionsStateList.filter { item -> item.id != targetId }
+                                                                            Toast.makeText(context, "🗑️ Question Deleted from MongoDB!", Toast.LENGTH_SHORT).show()
+                                                                        } else {
+                                                                            Toast.makeText(context, "❌ Delete failed (${res.code()})", Toast.LENGTH_SHORT).show()
+                                                                        }
+                                                                    } catch (e: Exception) {
+                                                                        Toast.makeText(context, "❌ Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                                                                     }
                                                                 }
                                                             }
                                                         } else {
-                                                            Toast.makeText(context, "Question removed!", Toast.LENGTH_SHORT).show()
+                                                            questionsStateList = questionsStateList.filter { item -> item.question != targetQuestionText }
                                                         }
                                                     },
                                                     modifier = Modifier.size(32.dp)

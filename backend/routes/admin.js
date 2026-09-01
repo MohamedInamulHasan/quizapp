@@ -749,6 +749,18 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
 });
 
 // @route    DELETE api/admin/questions/all/clear
+// @desc     Wipe all questions from MongoDB
+// @access   Private (Admin)
+router.delete('/questions/all/clear', [auth, adminAuth], async (req, res) => {
+  try {
+    const result = await Question.deleteMany({});
+    res.json({ success: true, msg: `All ${result.deletedCount} questions wiped successfully from MongoDB` });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // @route    POST api/admin/reset-scores
 // @desc     Reset all user scores (totalScore, todayScore, coins) to 0
 // @access   Private (Admin)
