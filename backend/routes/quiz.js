@@ -272,12 +272,18 @@ const TOPIC_PRESETS = {
   ]
 };
 
-// Dynamic knowledge bank fetcher for user prompts (100% PURE NATURAL TRIVIA + GEMINI AI!)
+// Dynamic AI fetcher: ALWAYS CALLS GEMINI AI ENGINE IN REAL-TIME FOR ALL USER PROMPTS!
 async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
   const cleanPrompt = cleanUserPrompt(rawQuery);
-  const normalizedUserKey = normalizeKey(cleanPrompt);
 
-  // 1. Check normalized preset match (e.g. "fruit", "naruto", "kollywood", "ronaldo", "tamilnadu")
+  // 1. ALWAYS call Google Gemini 1.5 Flash AI Engine in real-time first!
+  const geminiQuestions = await generateQuizWithGeminiAI(cleanPrompt, targetCount);
+  if (geminiQuestions.length > 0) {
+    return geminiQuestions;
+  }
+
+  // 2. If Gemini API key is missing or call fails, fallback to preset knowledge
+  const normalizedUserKey = normalizeKey(cleanPrompt);
   for (const presetKey in TOPIC_PRESETS) {
     if (normalizedUserKey.includes(presetKey) || presetKey.includes(normalizedUserKey)) {
       const items = TOPIC_PRESETS[presetKey];
@@ -301,12 +307,6 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
         };
       });
     }
-  }
-
-  // 2. Call Google Gemini 1.5 Flash AI Engine if API Key is configured
-  const geminiQuestions = await generateQuizWithGeminiAI(cleanPrompt, targetCount);
-  if (geminiQuestions.length > 0) {
-    return geminiQuestions;
   }
 
   return [];
