@@ -505,7 +505,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                 Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
                                             }
 
-                                            // Sign Out Option
+                                            // New Gamer Profile Option
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -516,20 +516,20 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                                     ) {
                                                         SoundManager.playClickSound()
                                                         showSettingsMenu = false
-                                                        showSignOutConfirmationModal = true
+                                                        authViewModel.guestLogin(context)
                                                     }
                                                     .padding(vertical = 8.dp, horizontal = 4.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.ExitToApp,
-                                                    contentDescription = "Sign Out",
+                                                    imageVector = Icons.Default.Refresh,
+                                                    contentDescription = "New Profile",
                                                     tint = IncorrectRed,
                                                     modifier = Modifier.size(18.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
-                                                    text = "Sign Out",
+                                                    text = "New Gamer Profile",
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     fontWeight = FontWeight.Bold,
                                                     color = IncorrectRed,

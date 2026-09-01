@@ -54,14 +54,7 @@ fun SplashScreen(
         delay(400)
         progressTarget = 1.0f
 
-        val sharedPrefs = context.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
-        val hasToken = !sharedPrefs.getString("auth_token", null).isNullOrBlank() || authViewModel?.token?.value != null
-
-        if (!hasToken && onNavigateToLogin != null) {
-            onNavigateToLogin()
-        } else {
-            onNavigateToHome()
-        }
+        onNavigateToHome()
     }
 
     val isDark = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode

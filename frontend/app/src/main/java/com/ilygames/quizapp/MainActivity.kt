@@ -69,7 +69,7 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash",
+        startDestination = "home",
         enterTransition = { fadeIn(animationSpec = tween(80)) },
         exitTransition = { fadeOut(animationSpec = tween(80)) },
         popEnterTransition = { fadeIn(animationSpec = tween(80)) },
@@ -84,60 +84,36 @@ fun AppNavigation() {
                     }
                 },
                 onNavigateToLogin = {
-                    navController.navigate("login") {
+                    navController.navigate("home") {
                         popUpTo("splash") { inclusive = true }
-                        launchSingleTop = true
                     }
                 }
             )
         }
 
         composable("login") {
-            LoginScreen(
-                authViewModel = authViewModel,
-                onNavigateToRegister = {
-                    navController.navigate("register") {
-                        popUpTo("login") { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
-                onLoginSuccess = {
-                    authViewModel.refreshProfile(context)
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                        launchSingleTop = true
-                    }
+            LaunchedEffect(Unit) {
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
                 }
-            )
+            }
         }
 
         composable("register") {
-            RegisterScreen(
-                authViewModel = authViewModel,
-                onNavigateToLogin = {
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
-                onRegisterSuccess = {
-                    authViewModel.refreshProfile(context)
-                    navController.navigate("home") {
-                        popUpTo("register") { inclusive = true }
-                        launchSingleTop = true
-                    }
+            LaunchedEffect(Unit) {
+                navController.navigate("home") {
+                    popUpTo("register") { inclusive = true }
                 }
-            )
+            }
         }
 
         composable("home") {
             HomeScreen(
                 authViewModel = authViewModel,
                 onStartQuiz = {
-                    token?.let { currentToken ->
-                        quizViewModel.startQuiz(currentToken)
-                        navController.navigate("quiz")
-                    } ?: navController.navigate("login")
+                    val currentToken = token ?: authViewModel.getToken(context) ?: "default_admin_token"
+                    quizViewModel.startQuiz(currentToken)
+                    navController.navigate("quiz")
                 },
                 onStartReadingQuiz = {
                     navController.navigate("reading_quiz")
@@ -149,11 +125,7 @@ fun AppNavigation() {
                     navController.navigate("admin_panel")
                 },
                 onLogout = {
-                    authViewModel.logout(context)
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                        launchSingleTop = true
-                    }
+                    authViewModel.guestLogin(context)
                 }
             )
         }
