@@ -99,8 +99,9 @@ fun LeaderboardScreen(
 ) {
     val leaderboard by quizViewModel.leaderboard.collectAsState()
 
-    // Auto-refresh leaderboard: immediately + every 15s while screen is open
+    // Auto-refresh leaderboard: play swoosh sound after 1s delay (perfect fit with rising bars!), then refresh every 15s
     LaunchedEffect(Unit) {
+        delay(1000L)
         SoundManager.playWhooshSound()
         while (true) {
             quizViewModel.loadLeaderboard(token, true)
