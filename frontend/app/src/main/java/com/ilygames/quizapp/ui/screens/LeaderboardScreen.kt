@@ -186,19 +186,11 @@ fun LeaderboardScreen(
         // ── Content ───────────────────────────────────────────────────────────
         if (validLeaderboard.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("🏆", fontSize = 52.sp)
-                    Text(
-                        text = "No rankings recorded yet!",
-                        fontWeight = FontWeight.Black,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text("Play a quiz to claim the #1 rank!", color = TextMuted, fontSize = 14.sp)
-                }
+                CircularProgressIndicator(
+                    color = Color(0xFF255FF4),
+                    strokeWidth = 3.5.dp,
+                    modifier = Modifier.size(42.dp)
+                )
             }
         } else {
             LazyColumn(

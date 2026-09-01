@@ -12,6 +12,8 @@ router.get('/daily', auth, async (req, res) => {
       $or: [{ highScore: { $gt: 0 } }, { todayScore: { $gt: 0 } }, { totalScore: { $gt: 0 } }]
     })
       .select('name highScore todayScore totalScore coins profileImageUrl')
+      .sort({ highScore: -1, todayScore: -1 })
+      .limit(100)
       .lean();
 
     const rankedPlayers = players
@@ -23,8 +25,6 @@ router.get('/daily', auth, async (req, res) => {
         profileImageUrl: player.profileImageUrl || null
       }))
       .filter(p => p.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 100)
       .map((p, index) => ({ ...p, rank: index + 1 }));
 
     res.json(rankedPlayers);
@@ -40,6 +40,8 @@ router.get('/weekly', auth, async (req, res) => {
       $or: [{ highScore: { $gt: 0 } }, { totalScore: { $gt: 0 } }, { todayScore: { $gt: 0 } }]
     })
       .select('name highScore todayScore totalScore coins profileImageUrl')
+      .sort({ highScore: -1, totalScore: -1 })
+      .limit(100)
       .lean();
 
     const rankedPlayers = players
@@ -51,8 +53,6 @@ router.get('/weekly', auth, async (req, res) => {
         profileImageUrl: player.profileImageUrl || null
       }))
       .filter(p => p.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 100)
       .map((p, index) => ({ ...p, rank: index + 1 }));
 
     res.json(rankedPlayers);

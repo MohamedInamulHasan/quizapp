@@ -116,6 +116,10 @@ fun HomeScreen(
                     globalRewardImageUrl.value = reward.imageUrl
                 }
             }
+            val token = authViewModel.getToken(context) ?: "default_admin_token"
+            if (token.isNotBlank()) {
+                quizViewModel?.loadLeaderboard(token, true)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
