@@ -275,25 +275,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             .clip(RoundedCornerShape(16.dp))
                             .clickable {
                                 SoundManager.playClickSound()
-                                val now = System.currentTimeMillis()
-                                if (now - lastSecretTapTime > 2000L) {
-                                    secretAdminTapCount = 1
-                                } else {
-                                    secretAdminTapCount++
-                                }
-                                lastSecretTapTime = now
-
-                                if (secretAdminTapCount >= 10) {
-                                    secretAdminTapCount = 0
-                                    adminPasswordInput = ""
-                                    adminPasswordError = ""
-                                    showAdminPasswordModal = true
-                                    SoundManager.playCorrectSound()
-                                } else if (secretAdminTapCount >= 6) {
-                                    Toast.makeText(context, "${10 - secretAdminTapCount} more taps to access Admin Security...", Toast.LENGTH_SHORT).show()
-                                } else if (secretAdminTapCount == 1) {
-                                    showGPayProfileModal = true
-                                }
+                                showGPayProfileModal = true
                             }
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
@@ -380,9 +362,28 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 onClick = {
                                     SoundManager.playClickSound()
                                     val now = System.currentTimeMillis()
-                                    if (now - lastSettingsClickTime > 250L) {
-                                        lastSettingsClickTime = now
-                                        showSettingsMenu = !showSettingsMenu
+                                    if (now - lastSecretTapTime > 3000L) {
+                                        secretAdminTapCount = 1
+                                    } else {
+                                        secretAdminTapCount++
+                                    }
+                                    lastSecretTapTime = now
+
+                                    if (secretAdminTapCount >= 10) {
+                                        secretAdminTapCount = 0
+                                        showSettingsMenu = false
+                                        adminPasswordInput = ""
+                                        adminPasswordError = ""
+                                        showAdminPasswordModal = true
+                                        SoundManager.playCorrectSound()
+                                    } else {
+                                        if (secretAdminTapCount >= 6) {
+                                            Toast.makeText(context, "${10 - secretAdminTapCount} more taps to access Admin Security...", Toast.LENGTH_SHORT).show()
+                                        }
+                                        if (now - lastSettingsClickTime > 250L) {
+                                            lastSettingsClickTime = now
+                                            showSettingsMenu = !showSettingsMenu
+                                        }
                                     }
                                 },
                                 modifier = Modifier
