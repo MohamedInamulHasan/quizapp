@@ -110,6 +110,7 @@ fun HomeScreen(
     var customUserNameState = remember { mutableStateOf(user?.name ?: "Player") }
     var tempNameInput by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     // Sync active daily reward from backend for all users on startup
     LaunchedEffect(Unit) {
@@ -900,8 +901,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                             heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
                                             authViewModel.addAdReward(context)
                                             Toast.makeText(context, "❤️ Heart Restored!", Toast.LENGTH_SHORT).show()
-                                        },
-                                        onAdDismissed = {}
+                                        }
                                     )
                                 } else {
                                     Toast.makeText(context, "❤️ You already have max hearts!", Toast.LENGTH_SHORT).show()
@@ -1775,7 +1775,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 generatedCustomQuestions = null
                                 coroutineScope.launch {
                                     try {
-                                        val response = ApiClient.apiService.generateCustomAiQuiz(
+                                        val response = com.ilygames.quizapp.data.api.ApiClient.apiService.generateCustomAiQuiz(
                                             activeToken,
                                             com.ilygames.quizapp.data.api.CustomAiQuizRequest(
                                                 prompt = aiPromptInput.trim(),
