@@ -705,38 +705,14 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ msg: 'Please provide an array of questions' });
     }
 
-    // Auto-convert external URLs AND auto-fetch real images for missing/broken image links
+    // Process bulk questions: convert external image URLs to Cloudinary if provided; leave as null if no image provided
     for (let i = 0; i < questionsArray.length; i++) {
       const q = questionsArray[i];
 
-      // 1. If external URL is provided, convert to Cloudinary
       if (q.imageUrl && typeof q.imageUrl === 'string' && q.imageUrl.startsWith('http') && !q.imageUrl.includes('cloudinary.com')) {
         q.imageUrl = await ensureCloudinaryUrl(q.imageUrl);
-      }
-
-      // 2. If imageUrl is missing or broken, auto-fetch real image from Wikipedia/Openverse for the answer target!
-      if (!q.imageUrl || !q.imageUrl.startsWith('http') || !q.imageUrl.includes('cloudinary.com')) {
-        let answerTarget = "";
-        if (q.correctAnswer === "A" || q.correctAnswer === "1") answerTarget = q.optionA;
-        else if (q.correctAnswer === "B" || q.correctAnswer === "2") answerTarget = q.optionB;
-        else if (q.correctAnswer === "C" || q.correctAnswer === "3") answerTarget = q.optionC;
-        else if (q.correctAnswer === "D" || q.correctAnswer === "4") answerTarget = q.optionD;
-        else answerTarget = q.optionA || q.question;
-
-        if (answerTarget && answerTarget.trim().length > 0) {
-          console.log(`[BULK_AUTO_IMAGE] Auto-fetching 16:9 Cloudinary image for target: "${answerTarget}"...`);
-          let autoImg = await fetchRealImageAndUploadToCloudinary({ name: answerTarget.trim() });
-          if (!autoImg) {
-            const dynamicItems = await fetchDynamicQuizItems(answerTarget.trim(), 1);
-            if (dynamicItems && dynamicItems.length > 0) {
-              autoImg = await ensureCloudinaryUrl(dynamicItems[0].img);
-            }
-          }
-          if (autoImg && autoImg.includes('cloudinary.com')) {
-            q.imageUrl = autoImg;
-            console.log(`[BULK_AUTO_IMAGE] ✅ Attached Cloudinary URL for "${answerTarget}": ${autoImg}`);
-          }
-        }
+      } else if (!q.imageUrl || typeof q.imageUrl !== 'string' || !q.imageUrl.startsWith('http')) {
+        q.imageUrl = null;
       }
     }
 
