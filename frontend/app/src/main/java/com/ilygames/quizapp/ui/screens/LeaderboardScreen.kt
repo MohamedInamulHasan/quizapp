@@ -1,6 +1,7 @@
 package com.ilygames.quizapp.ui.screens
 
 import android.net.Uri
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -299,6 +301,17 @@ fun PodiumColumn(
     avatarSize: Dp,
     modifier: Modifier = Modifier
 ) {
+    var animationTriggered by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(rank * 120L)
+        animationTriggered = true
+    }
+    val animatedPillarHeight by animateDpAsState(
+        targetValue = if (animationTriggered) pillarHeight else 0.dp,
+        animationSpec = tween(durationMillis = 850, easing = FastOutSlowInEasing),
+        label = "PodiumRise"
+    )
+
     val isMe = if (currentUserId.isNotBlank()) player.id == currentUserId else currentUserName.isNotBlank() && player.name.equals(currentUserName, ignoreCase = true)
     val firstName = player.name.split(" ").firstOrNull() ?: player.name
     val displayName = if (isMe) "$firstName (You)" else firstName
@@ -368,12 +381,12 @@ fun PodiumColumn(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Sleek UI/UX Podium Pillar Container
+        // Sleek UI/UX Podium Pillar Container (Smooth Rising Animation)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp)
-                .height(pillarHeight)
+                .height(animatedPillarHeight)
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .background(pillarBrush)
                 .border(
@@ -400,9 +413,25 @@ fun PodiumColumn(
     }
 }
 
-// ─── Leaderboard Row ─────────────────────────────────────────────────────────
+// ─── Leaderboard Row (Staggered Waterfall Slide & Arrange Animation) ─────────────────
 @Composable
 fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserName: String) {
+    var isCardVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(player.rank) {
+        delay((player.rank * 70L).coerceAtMost(700L))
+        isCardVisible = true
+    }
+    val cardOffsetY by animateDpAsState(
+        targetValue = if (isCardVisible) 0.dp else 40.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioLowBouncy),
+        label = "CardOffset"
+    )
+    val cardAlpha by animateFloatAsState(
+        targetValue = if (isCardVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "CardAlpha"
+    )
+
     val isMe = if (currentUserId.isNotBlank()) player.id == currentUserId else currentUserName.isNotBlank() && player.name.equals(currentUserName, ignoreCase = true)
     val displayName = if (isMe) "${player.name} (You)" else player.name
     val medalEmoji = when (player.rank) { 1 -> "🥇"; 2 -> "🥈"; 3 -> "🥉"; else -> null }
@@ -417,6 +446,8 @@ fun LeaderboardRow(player: LeaderboardEntry, currentUserId: String, currentUserN
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .offset(y = cardOffsetY)
+            .graphicsLayer(alpha = cardAlpha)
             .shadow(6.dp, RoundedCornerShape(18.dp))
             .background(rowBg, RoundedCornerShape(18.dp))
             .border(

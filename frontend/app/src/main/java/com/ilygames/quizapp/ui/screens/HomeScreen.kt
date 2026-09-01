@@ -646,6 +646,18 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
+                            // Animated latest & high score counters (Smooth counting up on screen load / quiz completion)
+                            val animatedLatestScore by animateIntAsState(
+                                targetValue = user?.todayScore ?: 0,
+                                animationSpec = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+                                label = "LatestScoreAnim"
+                            )
+                            val animatedHighScore by animateIntAsState(
+                                targetValue = user?.highScore ?: 0,
+                                animationSpec = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
+                                label = "HighScoreAnim"
+                            )
+
                             // LATEST SCORE : 0 pts (White text)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -659,7 +671,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     letterSpacing = 0.5.sp
                                 )
                                 Text(
-                                    text = "${user?.todayScore ?: 0} pts",
+                                    text = "$animatedLatestScore pts",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
                                     color = if (isDarkHeader) Color.White else Color(0xFF17181C)
@@ -679,7 +691,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     letterSpacing = 0.5.sp
                                 )
                                 Text(
-                                    text = "${user?.highScore ?: 0} pts",
+                                    text = "$animatedHighScore pts",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Black,
                                     color = Color(0xFF255FF4)
