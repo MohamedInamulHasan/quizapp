@@ -181,24 +181,49 @@ fun AiQuizStudioScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Prompt Input Search Bar
+                    // Prompt Input Search Bar (White Text & Multi-Line Wrapping up to 4 lines)
                     OutlinedTextField(
                         value = aiPromptInput,
                         onValueChange = { aiPromptInput = it },
-                        placeholder = { Text("e.g. Naruto, Tamil Nadu, Ronaldo, Quantum physics...", fontSize = 13.sp, color = Color.Gray) },
-                        singleLine = true,
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFF255FF4)) },
+                        placeholder = { Text("e.g. Sports, History, Cinema, Science, Technology...", fontSize = 13.sp, color = Color.White.copy(alpha = 0.6f)) },
+                        singleLine = false,
+                        maxLines = 4,
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFF386DF5)) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = textColor,
-                            unfocusedTextColor = textColor,
-                            focusedBorderColor = Color(0xFF255FF4),
-                            unfocusedBorderColor = Color.Gray.copy(alpha = 0.4f),
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFF386DF5),
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.35f),
+                            focusedContainerColor = Color(0xFF1E293B),
+                            unfocusedContainerColor = Color(0xFF1E293B)
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Topic Suggestion Chips (Sports, History, Cinema, Science, Technology, Geography)
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(listOf("Sports ⚽", "History 🏛️", "Cinema 🎬", "Science 🔬", "Technology 💻", "Geography 🌍")) { tag ->
+                            val cleanTag = tag.split(" ")[0]
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFF255FF4).copy(alpha = 0.25f), RoundedCornerShape(20.dp))
+                                    .border(1.dp, Color(0xFF386DF5).copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+                                    .clickable {
+                                        SoundManager.playClickSound()
+                                        aiPromptInput = cleanTag
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(text = tag, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
@@ -343,21 +368,16 @@ fun AiQuizStudioScreen(
                         .padding(20.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        // Clean White Topic Name with Multi-line Wrapping
                         Text(
                             text = generatedPromptTitle.ifBlank { "Custom Quiz" },
-                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
-                            color = textColor,
-                            textAlign = TextAlign.Center
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "🎮 ${generatedQuestions!!.size} Questions • Practice Mode",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF255FF4)
-                        )
-                        Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         // 3D Royal Blue Play Button
                         Button(
