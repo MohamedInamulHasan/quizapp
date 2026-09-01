@@ -30,7 +30,7 @@ object SoundManager {
 
             correctSoundId = soundPool?.load(context, R.raw.correct_sound, 1) ?: 0
             wrongSoundId = soundPool?.load(context, R.raw.wrong_sound, 1) ?: 0
-            fastTickSoundId = soundPool?.load(context, R.raw.clock_tick_fast, 1) ?: 0
+            fastTickSoundId = soundPool?.load(context, R.raw.fast_ticking, 1) ?: 0
             clickSoundId = soundPool?.load(context, R.raw.tap, 1) ?: 0
             swooshSoundId = soundPool?.load(context, R.raw.swoosh, 1) ?: 0
             levelUpSoundId = soundPool?.load(context, R.raw.level_up, 1) ?: 0
