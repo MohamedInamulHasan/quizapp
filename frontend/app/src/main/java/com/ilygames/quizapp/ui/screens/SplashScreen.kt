@@ -49,6 +49,7 @@ fun SplashScreen(
     )
 
     LaunchedEffect(Unit) {
+        SoundManager.playIntroSound()
         progressTarget = 0.85f
         authViewModel?.tryAutoLogin(context)
         delay(400)

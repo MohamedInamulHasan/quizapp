@@ -14,6 +14,7 @@ object SoundManager {
     private var clickSoundId: Int = 0
     private var swooshSoundId: Int = 0
     private var levelUpSoundId: Int = 0
+    private var introSoundId: Int = 0
 
     fun init(context: Context) {
         if (soundPool != null) return
@@ -34,6 +35,7 @@ object SoundManager {
             clickSoundId = soundPool?.load(context, R.raw.tap, 1) ?: 0
             swooshSoundId = soundPool?.load(context, R.raw.swoosh, 1) ?: 0
             levelUpSoundId = soundPool?.load(context, R.raw.level_up, 1) ?: 0
+            introSoundId = soundPool?.load(context, R.raw.intro, 1) ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -92,6 +94,16 @@ object SoundManager {
         if (!ThemeState.isSoundEnabled || soundPool == null || levelUpSoundId == 0) return
         try {
             soundPool?.play(levelUpSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // 🎬 Custom Intro sound effect when app launches
+    fun playIntroSound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || introSoundId == 0) return
+        try {
+            soundPool?.play(introSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
         } catch (e: Exception) {
             e.printStackTrace()
         }
