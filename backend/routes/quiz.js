@@ -272,7 +272,7 @@ const TOPIC_PRESETS = {
   ]
 };
 
-// Dynamic knowledge bank fetcher for user prompts (100% PURE NATURAL TRIVIA - NO WIKIPEDIA!)
+// Dynamic knowledge bank fetcher for user prompts (100% PURE NATURAL TRIVIA + GEMINI AI!)
 async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
   const cleanPrompt = cleanUserPrompt(rawQuery);
   const normalizedUserKey = normalizeKey(cleanPrompt);
@@ -303,8 +303,63 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
     }
   }
 
-  // 2. Fallback to General Knowledge / DB questions if not preset (NO WIKIPEDIA!)
+  // 2. Call Google Gemini 1.5 Flash AI Engine if API Key is configured
+  const geminiQuestions = await generateQuizWithGeminiAI(cleanPrompt, targetCount);
+  if (geminiQuestions.length > 0) {
+    return geminiQuestions;
+  }
+
   return [];
+}
+
+// Google Gemini 1.5 Flash AI Engine Integration
+async function generateQuizWithGeminiAI(prompt, count) {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_KEY || '';
+  if (!apiKey) return [];
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const promptText = `Generate exactly ${count} multiple choice trivia questions about "${prompt}". 
+Output ONLY a valid JSON array of objects with keys:
+- "question": string (clear, natural, 1-sentence trivia question)
+- "options": array of 4 distinct strings (short, realistic choices)
+- "correctAnswer": string ("A", "B", "C", or "D")
+
+Do NOT include markdown formatting or backticks. Output raw JSON array only.`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: promptText }] }]
+      })
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+    const parsed = JSON.parse(cleanJson);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.map((item, idx) => ({
+      _id: `gemini_${Date.now()}_${idx}`,
+      question: item.question,
+      optionA: item.options[0] || 'Option A',
+      optionB: item.options[1] || 'Option B',
+      optionC: item.options[2] || 'Option C',
+      optionD: item.options[3] || 'Option D',
+      options: item.options || ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctAnswer: item.correctAnswer || 'A',
+      category: prompt,
+      difficulty: 'medium',
+      imageUrl: null
+    }));
+  } catch (err) {
+    console.error('Gemini AI Quiz Generation error:', err.message);
+    return [];
+  }
 }
 
 // @route    POST api/quiz/ai-generate-custom
@@ -316,7 +371,7 @@ router.post('/ai-generate-custom', auth, async (req, res) => {
   const cleanPrompt = cleanUserPrompt(prompt);
 
   try {
-    // 1. Fetch matching questions from preset knowledge
+    // 1. Fetch matching questions from preset knowledge or Gemini AI Engine
     let questions = await fetchDynamicQuizItemsForUser(prompt, requestedCount);
 
     // 2. If under count, search existing MongoDB questions matching cleanPrompt
