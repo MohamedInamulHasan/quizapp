@@ -272,12 +272,12 @@ const TOPIC_PRESETS = {
   ]
 };
 
-// Dynamic search fallback for ANY typed prompt
+// Dynamic knowledge bank fetcher for user prompts (100% PURE NATURAL TRIVIA - NO WIKIPEDIA!)
 async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
   const cleanPrompt = cleanUserPrompt(rawQuery);
   const normalizedUserKey = normalizeKey(cleanPrompt);
 
-  // 1. Check normalized preset match (e.g. "tamilnadu" in "tamilnadufruits")
+  // 1. Check normalized preset match (e.g. "fruit", "naruto", "kollywood", "ronaldo", "tamilnadu")
   for (const presetKey in TOPIC_PRESETS) {
     if (normalizedUserKey.includes(presetKey) || presetKey.includes(normalizedUserKey)) {
       const items = TOPIC_PRESETS[presetKey];
@@ -303,94 +303,8 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
     }
   }
 
-  // 2. Fetch from Wikipedia search if not preset
-  try {
-    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanPrompt)}&utf8=&format=json&srlimit=40`;
-    const wikiRes = await fetch(wikiUrl, { headers: { 'User-Agent': 'QuizApp/4.0' } });
-    if (!wikiRes.ok) return [];
-    const wikiData = await wikiRes.json();
-    const searchResults = (wikiData.query && wikiData.query.search) ? wikiData.query.search : [];
-
-    if (searchResults.length === 0) return [];
-
-    // Filter out meta Wikipedia pages (pandemics, demographics, lists)
-    const validResults = searchResults.filter(x => {
-      const t = x.title.toLowerCase();
-      return !t.includes('pandemic') && !t.includes('demographics') && !t.includes('geography of') && !t.includes('history of') && !t.includes('list of');
-    });
-
-    const poolToUse = validResults.length > 0 ? validResults : searchResults;
-    const cleanTitles = poolToUse.map(x => cleanOptionTitle(x.title)).filter(t => t.length > 1 && t.length < 30);
-    const questions = [];
-
-    for (let i = 0; i < poolToUse.length && questions.length < targetCount; i++) {
-      const item = poolToUse[i];
-      const rawTitle = item.title;
-      const cleanTitle = cleanOptionTitle(rawTitle);
-
-      // Clean snippet: remove HTML tags, IPA phonetic brackets (IPA: [kiɾuʂɳaɡiɾi]), quotes
-      let snippetText = item.snippet
-        .replace(/<[^>]*>?/gm, '')
-        .replace(/\(IPA:[^)]*\)/gi, '')
-        .replace(/\(\[.*?\]\)/g, '')
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'")
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      // Redact title inside snippet so it NEVER spoils the answer!
-      const titleRegex = new RegExp(rawTitle.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
-      snippetText = snippetText.replace(titleRegex, '___');
-
-      const cleanRegex = new RegExp(cleanTitle.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'gi');
-      snippetText = snippetText.replace(cleanRegex, '___');
-
-      // Build 3 unique distractors
-      const distractorCandidates = Array.from(new Set(
-        cleanTitles.filter(t => t.toLowerCase() !== cleanTitle.toLowerCase() && t.toLowerCase() !== cleanPrompt.toLowerCase())
-      )).sort(() => 0.5 - Math.random());
-
-      const distractors = distractorCandidates.slice(0, 3);
-      const fallbackOptions = ["Chennai", "Madurai", "Salem", "Coimbatore", "Trichy", "Tirunelveli", "Ooty", "Kodaikanal"];
-
-      while (distractors.length < 3) {
-        const extra = fallbackOptions.find(f => f.toLowerCase() !== cleanTitle.toLowerCase() && !distractors.includes(f));
-        if (extra) distractors.push(extra);
-        else distractors.push(`Option ${distractors.length + 1}`);
-      }
-
-      // Ensure 4 unique options
-      const allFour = Array.from(new Set([cleanTitle, ...distractors])).sort(() => 0.5 - Math.random());
-      while (allFour.length < 4) {
-        allFour.push(`Option ${allFour.length + 1}`);
-      }
-
-      const correctIdx = allFour.indexOf(cleanTitle);
-      const letterMap = ["A", "B", "C", "D"];
-
-      // Clean natural 1-sentence question without raw HTML/wiki quotes
-      const questionText = `Regarding ${cleanPrompt}: Which of the following is directly associated with ${cleanPrompt}?`;
-
-      questions.push({
-        _id: `custom_${Date.now()}_${i}`,
-        question: questionText,
-        optionA: allFour[0],
-        optionB: allFour[1],
-        optionC: allFour[2],
-        optionD: allFour[3],
-        options: allFour,
-        correctAnswer: letterMap[correctIdx !== -1 ? correctIdx : 0],
-        category: cleanPrompt,
-        difficulty: 'medium',
-        imageUrl: null
-      });
-    }
-
-    return questions;
-  } catch (err) {
-    console.error('Dynamic quiz fetch error:', err.message);
-    return [];
-  }
+  // 2. Fallback to General Knowledge / DB questions if not preset (NO WIKIPEDIA!)
+  return [];
 }
 
 // @route    POST api/quiz/ai-generate-custom
@@ -402,7 +316,7 @@ router.post('/ai-generate-custom', auth, async (req, res) => {
   const cleanPrompt = cleanUserPrompt(prompt);
 
   try {
-    // 1. Fetch matching questions from preset knowledge or Wikipedia search
+    // 1. Fetch matching questions from preset knowledge
     let questions = await fetchDynamicQuizItemsForUser(prompt, requestedCount);
 
     // 2. If under count, search existing MongoDB questions matching cleanPrompt
@@ -424,7 +338,19 @@ router.post('/ai-generate-custom', auth, async (req, res) => {
       questions = [...questions, ...formattedDb];
     }
 
-    // 3. Fallback: cycle questions to guarantee requested count (10, 20, 30, 40, 50)
+    // 3. Fallback: if still under count, pull random sample questions from MongoDB pool
+    if (questions.length < requestedCount) {
+      const fallbackNeeded = requestedCount - questions.length;
+      const randomDb = await Question.aggregate([{ $sample: { size: fallbackNeeded } }]);
+      const formattedRandom = randomDb.map((q, idx) => ({
+        ...q,
+        _id: `rand_${Date.now()}_${idx}`,
+        options: q.options || [q.optionA, q.optionB, q.optionC, q.optionD]
+      }));
+      questions = [...questions, ...formattedRandom];
+    }
+
+    // 4. Guarantee requested count by repeating questions if pool is small
     if (questions.length > 0 && questions.length < requestedCount) {
       const originalLen = questions.length;
       while (questions.length < requestedCount) {
