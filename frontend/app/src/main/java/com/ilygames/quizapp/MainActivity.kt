@@ -122,6 +122,9 @@ fun AppNavigation() {
                 onNavigateToLeaderboard = {
                     navController.navigate("leaderboard")
                 },
+                onNavigateToAiStudio = {
+                    navController.navigate("ai_studio")
+                },
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
@@ -131,19 +134,44 @@ fun AppNavigation() {
             )
         }
 
+        composable("ai_studio") {
+            com.ilygames.quizapp.ui.screens.AiQuizStudioScreen(
+                token = token ?: "guest_token",
+                quizViewModel = quizViewModel,
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() },
+                onStartQuiz = {
+                    navController.navigate("quiz")
+                }
+            )
+        }
+
         composable("quiz") {
             QuizScreen(
                 token = token ?: "",
                 quizViewModel = quizViewModel,
                 onQuizFinished = {
-                    navController.navigate("result") {
-                        popUpTo("quiz") { inclusive = true }
+                    if (quizViewModel.isPracticeMode) {
+                        navController.navigate("ai_studio") {
+                            popUpTo("quiz") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("result") {
+                            popUpTo("quiz") { inclusive = true }
+                        }
                     }
                 },
                 onExitQuiz = {
+                    val wasPractice = quizViewModel.isPracticeMode
                     quizViewModel.resetQuiz()
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
+                    if (wasPractice) {
+                        navController.navigate("ai_studio") {
+                            popUpTo("quiz") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                        }
                     }
                 }
             )
@@ -168,8 +196,16 @@ fun AppNavigation() {
                     }
                 },
                 onBackToHome = {
-                    navController.navigate("home") {
-                        popUpTo("result") { inclusive = true }
+                    val wasPractice = quizViewModel.isPracticeMode
+                    quizViewModel.resetQuiz()
+                    if (wasPractice) {
+                        navController.navigate("ai_studio") {
+                            popUpTo("result") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("home") {
+                            popUpTo("result") { inclusive = true }
+                        }
                     }
                 }
             )

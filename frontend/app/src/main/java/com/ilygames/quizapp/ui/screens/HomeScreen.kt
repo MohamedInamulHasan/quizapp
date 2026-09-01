@@ -80,6 +80,7 @@ fun HomeScreen(
     onStartQuiz: () -> Unit,
     onStartReadingQuiz: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
+    onNavigateToAiStudio: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
@@ -918,9 +919,11 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             SoundManager.playClickSound()
-                            showAiQuizStudioModal = true
+                            onNavigateToAiStudio()
                         }
                     )
+
+                    Spacer(modifier = Modifier.height(28.dp))
                 }
             }
         }
