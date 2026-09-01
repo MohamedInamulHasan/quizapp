@@ -871,7 +871,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
                     }
 
-                    // Row 2: Today's Reward & Extra Chance
+                    // Row 2: Today's Reward & AI Quiz Studio
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -888,38 +888,38 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
 
                         UnifiedEmeraldCard(
-                            title = "Extra Chance",
-                            description = "Watch video ad to restore 1 broken heart",
-                            icon = Icons.Default.OndemandVideo,
+                            title = "AI Quiz Studio",
+                            description = "Create quizzes on any topic with AI",
+                            icon = Icons.Default.AutoAwesome,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClickSound()
-                                if (dailyAttemptsLeft < 3) {
-                                    com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
-                                        context = context,
-                                        onRewardEarned = {
-                                            dailyAttemptsLeft++
-                                            heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
-                                            authViewModel.addAdReward(context)
-                                            Toast.makeText(context, "❤️ Heart Restored!", Toast.LENGTH_SHORT).show()
-                                        }
-                                    )
-                                } else {
-                                    Toast.makeText(context, "❤️ You already have max hearts!", Toast.LENGTH_SHORT).show()
-                                }
+                                onNavigateToAiStudio()
                             }
                         )
                     }
 
-                    // Row 3: Featured ✨ AI Quiz Studio Card
+                    // Row 3: Extra Chance
                     UnifiedEmeraldCard(
-                        title = "✨ AI Quiz Studio",
-                        description = "Type any prompt (Naruto, Tamil Nadu, Ronaldo) & generate custom practice quizzes!",
-                        icon = Icons.Default.AutoAwesome,
+                        title = "Extra Chance",
+                        description = "Watch video ad to restore 1 broken heart",
+                        icon = Icons.Default.OndemandVideo,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             SoundManager.playClickSound()
-                            onNavigateToAiStudio()
+                            if (dailyAttemptsLeft < 3) {
+                                com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
+                                    context = context,
+                                    onRewardEarned = {
+                                        dailyAttemptsLeft++
+                                        heartsPrefs.edit().putInt("saved_hearts_count_$userKey", dailyAttemptsLeft).apply()
+                                        authViewModel.addAdReward(context)
+                                        Toast.makeText(context, "❤️ Heart Restored!", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            } else {
+                                Toast.makeText(context, "❤️ You already have max hearts!", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
 

@@ -321,48 +321,49 @@ fun AiQuizStudioScreen(
                 }
             }
 
-            // ── Generated Quiz Card Box ───────────────────────────────────────
+            // ── Generated 3D Soft-Clay Quiz Card ─────────────────────────────
             if (generatedQuestions != null) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(10.dp, RoundedCornerShape(24.dp))
-                        .background(
+                        .shadow(12.dp, RoundedCornerShape(26.dp))
+                        .background(cardBg, RoundedCornerShape(26.dp))
+                        .border(
+                            1.5.dp,
                             Brush.linearGradient(
                                 colors = listOf(
-                                    Color(0xFF255FF4).copy(alpha = 0.15f),
-                                    Color(0xFF386DF5).copy(alpha = 0.28f)
+                                    Color.White.copy(alpha = if (isDark) 0.35f else 0.95f),
+                                    Color.Black.copy(alpha = if (isDark) 0.5f else 0.08f)
                                 )
                             ),
-                            RoundedCornerShape(24.dp)
+                            RoundedCornerShape(26.dp)
                         )
-                        .border(2.dp, Color(0xFF255FF4), RoundedCornerShape(24.dp))
                         .padding(20.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "🎯 QUIZ READY: ${generatedPromptTitle.uppercase()}",
+                            text = generatedPromptTitle.ifBlank { "Custom Quiz" },
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Black,
-                            fontSize = 17.sp,
                             color = textColor,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "🎮 ${generatedQuestions!!.size} Questions • Practice Mode (No Score)",
+                            text = "🎮 ${generatedQuestions!!.size} Questions • Practice Mode",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF255FF4)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
+                        // 3D Royal Blue Play Button
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 val qList = generatedQuestions!!
-                                // Reset generated card and search text box so it's clean on return
                                 aiPromptInput = ""
                                 generatedQuestions = null
                                 quizViewModel.startCustomAiQuiz(qList)
@@ -373,10 +374,10 @@ fun AiQuizStudioScreen(
                             contentPadding = PaddingValues(vertical = 12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(48.dp)
+                                .height(50.dp)
                                 .shadow(8.dp, RoundedCornerShape(16.dp))
                                 .background(
-                                    Brush.horizontalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                                    Brush.horizontalGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))),
                                     RoundedCornerShape(16.dp)
                                 )
                                 .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
@@ -386,7 +387,7 @@ fun AiQuizStudioScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
-                                Text("▶️ PLAY NOW", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                Text("▶ PLAY QUIZ", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
                             }
                         }
                     }
