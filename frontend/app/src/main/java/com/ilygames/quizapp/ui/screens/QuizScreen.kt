@@ -61,11 +61,15 @@ fun QuizScreen(
         isContentVisible = true
     }
 
-    // 5s Clock sound (clock.mp3) played during last 5 seconds, cut off immediately when answer is selected
-    LaunchedEffect(timerSeconds) {
-        if (timerSeconds in 1..5 && selectedOption == null && quizState is QuizState.Active) {
+    // 5s Clock sound (clock.mp3) played ONCE as original audio at 5s, cut off immediately when answer selected or timer expires
+    LaunchedEffect(timerSeconds == 5) {
+        if (timerSeconds == 5 && selectedOption == null && quizState is QuizState.Active) {
             SoundManager.playFastUrgentTick()
-        } else if (timerSeconds == 0 || selectedOption != null) {
+        }
+    }
+
+    LaunchedEffect(selectedOption, timerSeconds == 0) {
+        if (selectedOption != null || timerSeconds == 0) {
             SoundManager.stopFastUrgentTick()
         }
     }

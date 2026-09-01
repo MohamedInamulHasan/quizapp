@@ -245,15 +245,20 @@ fun LeaderboardPodium(entries: List<LeaderboardEntry>, currentUserId: String, cu
                     )
                 ),
                 RoundedCornerShape(26.dp)
-            )
+            ),
+        contentAlignment = Alignment.BottomCenter
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp, start = 10.dp, end = 10.dp, bottom = 0.dp)
+                .fillMaxHeight()
+                .padding(top = 16.dp, start = 10.dp, end = 10.dp, bottom = 0.dp),
+            contentAlignment = Alignment.BottomCenter
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
