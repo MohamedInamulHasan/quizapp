@@ -613,6 +613,13 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ msg: 'Please provide an array of questions' });
     }
 
+    // Auto-convert all external image URLs to 16:9 Cloudinary CDN links before saving to MongoDB
+    for (let i = 0; i < questionsArray.length; i++) {
+      if (questionsArray[i].imageUrl && typeof questionsArray[i].imageUrl === 'string' && questionsArray[i].imageUrl.startsWith('http') && !questionsArray[i].imageUrl.includes('cloudinary.com')) {
+        questionsArray[i].imageUrl = await ensureCloudinaryUrl(questionsArray[i].imageUrl);
+      }
+    }
+
     const inserted = await Question.insertMany(questionsArray);
     res.json(inserted);
   } catch (err) {

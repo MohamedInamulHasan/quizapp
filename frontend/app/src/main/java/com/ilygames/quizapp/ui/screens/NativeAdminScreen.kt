@@ -280,10 +280,24 @@ fun parseBulkQuestionsText(rawText: String, defaultCategory: String = "Passage S
 
         val cleanBlock = block.trim()
 
+        // Extract image URL if present (Image: ..., Img: ..., Pic: ..., Url: ..., Photo: ...)
+        val imgMatch = Regex("(?i)(?:Image|Img|Pic|Photo|Url|Link)[:\\*\\s]*(https?://[^\\s\\n]+)").find(cleanBlock)
+            ?: Regex("(https?://[^\\s\\n]+\\.(?:jpg|jpeg|png|webp|gif|svg)(?:\\?[^\\s\\n]*)?)", RegexOption.IGNORE_CASE).find(cleanBlock)
+        val extractedImgUrl = imgMatch?.groupValues?.get(1)?.trim()
+
         val questionMatch = Regex("(?s)^(.*?)(?=[\\*]*\\bA[:\\)])").find(cleanBlock)
-        val qText = questionMatch?.groupValues?.get(1)?.trim()
+        var qText = questionMatch?.groupValues?.get(1)?.trim()
             ?.replace(Regex("^[*\\s:]+"), "")
             ?.replace(Regex("[*\\s:]+$"), "")?.trim() ?: ""
+
+        // Clean out any Image: ... line from question text
+        if (extractedImgUrl != null) {
+            qText = qText.replace(Regex("(?i)(?:Image|Img|Pic|Photo|Url|Link)[:\\*\\s]*" + Regex.escape(extractedImgUrl)), "")
+                .replace(extractedImgUrl, "")
+                .trim()
+                .replace(Regex("^[*\\s:]+"), "")
+                .replace(Regex("[*\\s:]+$"), "").trim()
+        }
 
         val optAMatch = Regex("(?s)[\\*]*\\bA[:\\)]\\s*(.*?)(?=[\\*]*\\bB[:\\)])").find(cleanBlock)
         val optA = optAMatch?.groupValues?.get(1)?.trim()?.replace(Regex("[*]+"), "")?.trim() ?: ""
@@ -312,7 +326,7 @@ fun parseBulkQuestionsText(rawText: String, defaultCategory: String = "Passage S
                     correctAnswer = correctAns,
                     category = defaultCategory,
                     difficulty = "medium",
-                    imageUrl = null
+                    imageUrl = if (!extractedImgUrl.isNullOrBlank()) extractedImgUrl else null
                 )
             )
         }
