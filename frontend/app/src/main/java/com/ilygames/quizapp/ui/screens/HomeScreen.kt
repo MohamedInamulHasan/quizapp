@@ -1495,7 +1495,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 adminPasswordInput = it
                                 adminPasswordError = ""
                             },
-                            placeholder = { Text("Enter Passcode...", color = TextMuted) },
+                            placeholder = { Text("Enter Passcode...", color = Color.White.copy(alpha = 0.6f)) },
                             singleLine = true,
                             visualTransformation = if (isAdminPassVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
@@ -1503,18 +1503,21 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                     Icon(
                                         imageVector = if (isAdminPassVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                         contentDescription = "Toggle Visibility",
-                                        tint = Color(0xFF255FF4)
+                                        tint = Color.White
                                     )
                                 }
                             },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFF255FF4),
-                                unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedTextColor = if (isDarkPassModal) Color.White else Color(0xFF17181C),
-                                unfocusedTextColor = if (isDarkPassModal) Color.White else Color(0xFF17181C)
+                                unfocusedBorderColor = Color.White.copy(alpha = 0.35f),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = Color.White
                             ),
                             shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF121B2B), RoundedCornerShape(14.dp))
                         )
 
                         if (adminPasswordError.isNotBlank()) {
