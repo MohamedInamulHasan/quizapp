@@ -705,16 +705,16 @@ router.post('/questions/bulk', [auth, adminAuth], async (req, res) => {
       return res.status(400).json({ msg: 'Please provide an array of questions' });
     }
 
-    // Process bulk questions: convert external image URLs to Cloudinary if provided; leave as null if no image provided
-    for (let i = 0; i < questionsArray.length; i++) {
-      const q = questionsArray[i];
-
-      if (q.imageUrl && typeof q.imageUrl === 'string' && q.imageUrl.startsWith('http') && !q.imageUrl.includes('cloudinary.com')) {
-        q.imageUrl = await ensureCloudinaryUrl(q.imageUrl);
-      } else if (!q.imageUrl || typeof q.imageUrl !== 'string' || !q.imageUrl.startsWith('http')) {
-        q.imageUrl = null;
-      }
-    }
+    // Parallel process questions in parallel for lightning-fast bulk upload speed!
+    await Promise.all(
+      questionsArray.map(async (q) => {
+        if (q.imageUrl && typeof q.imageUrl === 'string' && q.imageUrl.startsWith('http') && !q.imageUrl.includes('cloudinary.com')) {
+          q.imageUrl = await ensureCloudinaryUrl(q.imageUrl);
+        } else if (!q.imageUrl || typeof q.imageUrl !== 'string' || !q.imageUrl.startsWith('http')) {
+          q.imageUrl = null;
+        }
+      })
+    );
 
     const inserted = await Question.insertMany(questionsArray);
     res.json(inserted);
