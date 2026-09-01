@@ -312,20 +312,20 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
   return [];
 }
 
-// Google Gemini 1.5 Flash AI Engine Integration
+// Google Gemini 3.6 Flash AI Engine Integration
 async function generateQuizWithGeminiAI(prompt, count) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_KEY || '';
   if (!apiKey) return [];
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     const promptText = `Generate exactly ${count} multiple choice trivia questions about "${prompt}". 
 Output ONLY a valid JSON array of objects with keys:
 - "question": string (clear, natural, 1-sentence trivia question)
 - "options": array of 4 distinct strings (short, realistic choices)
 - "correctAnswer": string ("A", "B", "C", or "D")
 
-Do NOT include markdown formatting or backticks. Output raw JSON array only.`;
+Do NOT include markdown code blocks or backticks. Output raw JSON array only.`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -335,27 +335,46 @@ Do NOT include markdown formatting or backticks. Output raw JSON array only.`;
       })
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error('Gemini API call failed status:', res.status, errBody);
+      return [];
+    }
     const data = await res.json();
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
-    const parsed = JSON.parse(cleanJson);
+    let parsed = JSON.parse(cleanJson);
+    if (!Array.isArray(parsed) && parsed.trivia && Array.isArray(parsed.trivia)) {
+      parsed = parsed.trivia;
+    }
+    if (!Array.isArray(parsed) && parsed.questions && Array.isArray(parsed.questions)) {
+      parsed = parsed.questions;
+    }
     if (!Array.isArray(parsed)) return [];
 
-    return parsed.map((item, idx) => ({
-      _id: `gemini_${Date.now()}_${idx}`,
-      question: item.question,
-      optionA: item.options[0] || 'Option A',
-      optionB: item.options[1] || 'Option B',
-      optionC: item.options[2] || 'Option C',
-      optionD: item.options[3] || 'Option D',
-      options: item.options || ['Option A', 'Option B', 'Option C', 'Option D'],
-      correctAnswer: item.correctAnswer || 'A',
-      category: prompt,
-      difficulty: 'medium',
-      imageUrl: null
-    }));
+    return parsed.map((item, idx) => {
+      const opts = item.options || ['Option A', 'Option B', 'Option C', 'Option D'];
+      let correct = item.correctAnswer || 'A';
+      if (item.answer && !['A', 'B', 'C', 'D'].includes(item.answer)) {
+        const cIdx = opts.findIndex(o => o.toLowerCase() === String(item.answer).toLowerCase());
+        correct = cIdx !== -1 ? ['A', 'B', 'C', 'D'][cIdx] : 'A';
+      }
+
+      return {
+        _id: `gemini_${Date.now()}_${idx}`,
+        question: item.question,
+        optionA: opts[0] || 'Option A',
+        optionB: opts[1] || 'Option B',
+        optionC: opts[2] || 'Option C',
+        optionD: opts[3] || 'Option D',
+        options: opts,
+        correctAnswer: correct,
+        category: prompt,
+        difficulty: 'medium',
+        imageUrl: null
+      };
+    });
   } catch (err) {
     console.error('Gemini AI Quiz Generation error:', err.message);
     return [];
