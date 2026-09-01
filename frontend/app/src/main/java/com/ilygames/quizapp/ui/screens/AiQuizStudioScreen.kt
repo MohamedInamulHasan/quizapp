@@ -379,7 +379,7 @@ fun AiQuizStudioScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // 3D Royal Blue Play Button
+                        // 3D Compact White Play Button
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -390,24 +390,25 @@ fun AiQuizStudioScreen(
                                 onStartQuiz()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            shape = RoundedCornerShape(16.dp),
-                            contentPadding = PaddingValues(vertical = 12.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .shadow(8.dp, RoundedCornerShape(16.dp))
-                                .background(
-                                    Brush.horizontalGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))),
-                                    RoundedCornerShape(16.dp)
+                                .width(180.dp)
+                                .height(46.dp)
+                                .shadow(8.dp, RoundedCornerShape(24.dp))
+                                .background(Color.White, RoundedCornerShape(24.dp))
+                                .border(
+                                    1.5.dp,
+                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFCBD5E1))),
+                                    RoundedCornerShape(24.dp)
                                 )
-                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
-                                Text("▶ PLAY QUIZ", color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                                Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
+                                Text("PLAY QUIZ", color = Color(0xFF255FF4), fontWeight = FontWeight.Black, fontSize = 14.sp)
                             }
                         }
                     }
