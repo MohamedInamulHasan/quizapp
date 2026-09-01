@@ -706,7 +706,7 @@ fun NativeAdminScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(40.dp)
@@ -721,33 +721,7 @@ fun NativeAdminScreen(
                         ) {
                             Icon(Icons.Default.UploadFile, contentDescription = "Bulk", tint = Color.White, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Bulk", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
-                        }
-
-                        // Kaggle AI Auto-Generator Button (3D GLOSSY ROYAL BLUE)
-                        Button(
-                            onClick = {
-                                SoundManager.playClickSound()
-                                showAiGeneratorModal = true
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
-                            modifier = Modifier
-                                .weight(1.2f)
-                                .height(40.dp)
-                                .shadow(6.dp, RoundedCornerShape(14.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
-                                    ),
-                                    RoundedCornerShape(14.dp)
-                                )
-                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = "AI", tint = Color.White, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Kaggle AI", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                            Text("Bulk", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
                         }
 
                         // Delete All Button (3D GLOSSY RED)
