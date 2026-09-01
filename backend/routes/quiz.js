@@ -34,6 +34,34 @@ function cleanOptionTitle(rawTitle) {
 
 // Preset topic trivia knowledge bank for instant, 100% perfect natural questions
 const TOPIC_PRESETS = {
+  naruto: [
+    { q: "In Naruto, who is known as the 'Copy Ninja' and leader of Team 7?", correct: "Kakashi Hatake", options: ["Kakashi Hatake", "Naruto Uzumaki", "Sasuke Uchiha", "Itachi Uchiha"] },
+    { q: "Which character harbors the Nine-Tailed Fox (Kurama) inside them?", correct: "Naruto Uzumaki", options: ["Naruto Uzumaki", "Gaara", "Rock Lee", "Shikamaru Nara"] },
+    { q: "Who is Sasuke's older brother who eliminated the Uchiha clan?", correct: "Itachi Uchiha", options: ["Itachi Uchiha", "Madara Uchiha", "Obito Uchiha", "Shisui Uchiha"] },
+    { q: "What is the primary village where Naruto lives?", correct: "Konohagakure", options: ["Konohagakure", "Sunagakure", "Kirigakure", "Kumogakure"] },
+    { q: "Who was the Fifth Hokage of Konohagakure?", correct: "Tsunade Senju", options: ["Tsunade Senju", "Jiraiya", "Orochimaru", "Minato Namikaze"] },
+    { q: "What signature jutsu was created by the Fourth Hokage and mastered by Naruto?", correct: "Rasengan", options: ["Rasengan", "Chidori", "Amaterasu", "Shadow Clone"] },
+    { q: "Which Akatsuki member wielded the Samehada sword?", correct: "Kisame Hoshigaki", options: ["Kisame Hoshigaki", "Itachi Uchiha", "Deidara", "Sasori"] },
+    { q: "Who taught Naruto how to use Sage Mode at Mount Myoboku?", correct: "Fukasaku", options: ["Fukasaku", "Jiraiya", "Gamabunta", "Kakashi"] },
+    { q: "Which Uchiha awakened the Rinnegan first?", correct: "Madara Uchiha", options: ["Madara Uchiha", "Sasuke Uchiha", "Obito Uchiha", "Itachi Uchiha"] },
+    { q: "What is the name of Rock Lee and Might Guy's taijutsu style?", correct: "Eight Gates", options: ["Eight Gates", "Gentle Fist", "Drunken Fist", "Shadow Style"] }
+  ],
+  attackontitan: [
+    { q: "Who is the main protagonist of Attack on Titan who possesses the Attack Titan?", correct: "Eren Yeager", options: ["Eren Yeager", "Mikasa Ackerman", "Armin Arlert", "Levi Ackerman"] },
+    { q: "Which member of the Survey Corps is known as 'Humanity's Strongest Soldier'?", correct: "Levi Ackerman", options: ["Levi Ackerman", "Erwin Smith", "Jean Kirstein", "Reiner Braun"] },
+    { q: "What is the outermost wall protecting human territory in Attack on Titan?", correct: "Wall Maria", options: ["Wall Maria", "Wall Rose", "Wall Sina", "Wall Paradis"] },
+    { q: "Which character inherits the Colossal Titan from Bertholdt Hoover?", correct: "Armin Arlert", options: ["Armin Arlert", "Eren Yeager", "Reiner Braun", "Connie Springer"] },
+    { q: "Who was the Commander of the Survey Corps famous for 'My soldiers, rage!'?", correct: "Erwin Smith", options: ["Erwin Smith", "Levi Ackerman", "Hange Zoë", "Dot Pyxis"] },
+    { q: "Which character is revealed to be the Armored Titan?", correct: "Reiner Braun", options: ["Reiner Braun", "Bertholdt Hoover", "Annie Leonhart", "Zeke Yeager"] },
+    { q: "What is the true identity of the Female Titan?", correct: "Annie Leonhart", options: ["Annie Leonhart", "Historia Reiss", "Ymir", "Pieck Finger"] },
+    { q: "Who is the half-brother of Eren Yeager who possesses the Beast Titan?", correct: "Zeke Yeager", options: ["Zeke Yeager", "Grisha Yeager", "Willy Tybur", "Porco Galliard"] },
+    { q: "What is the military branch responsible for fighting Titans outside the walls?", correct: "Survey Corps", options: ["Survey Corps", "Garrison Regiment", "Military Police", "Marleyan Unit"] },
+    { q: "Who was the original founding Titan user in Paradis history?", correct: "Ymir Fritz", options: ["Ymir Fritz", "Fritz XIV", "Karl Fritz", "Frieda Reiss"] }
+  ],
+  aot: [
+    { q: "Who is the main protagonist of Attack on Titan who possesses the Attack Titan?", correct: "Eren Yeager", options: ["Eren Yeager", "Mikasa Ackerman", "Armin Arlert", "Levi Ackerman"] },
+    { q: "Which member of the Survey Corps is known as 'Humanity's Strongest Soldier'?", correct: "Levi Ackerman", options: ["Levi Ackerman", "Erwin Smith", "Jean Kirstein", "Reiner Braun"] }
+  ],
   jujutsukaisen: [
     { q: "Who is the Special Grade Jujutsu sorcerer known for his blindfold and Six Eyes?", correct: "Gojo Satoru", options: ["Gojo Satoru", "Yuji Itadori", "Megumi Fushiguro", "Suguru Geto"] },
     { q: "Which ancient King of Curses shares a body with Yuji Itadori?", correct: "Ryomen Sukuna", options: ["Ryomen Sukuna", "Mahito", "Jogo", "Kenjaku"] },
@@ -42,15 +70,11 @@ const TOPIC_PRESETS = {
     { q: "What is Ryomen Sukuna's Domain Expansion?", correct: "Malevolent Shrine", options: ["Malevolent Shrine", "Unlimited Void", "Coffin of the Iron Mountain", "Idle Death Gamble"] },
     { q: "Which Jujutsu sorcerer famously uses a 7:3 Ratio Technique with a blunt blade?", correct: "Kento Nanami", options: ["Kento Nanami", "Naobito Zenin", "Hiromi Higuruma", "Kinji Hakari"] },
     { q: "Which cursed spirit born from human hatred uses Idle Transfiguration?", correct: "Mahito", options: ["Mahito", "Hanami", "Dagon", "Choso"] },
-    { q: "Who is the protagonist of Jujutsu Kaisen 0 paired with Rika Orimoto?", correct: "Yuta Okkotsu", options: ["Yuta Okkotsu", "Toge Inumaki", "Maki Zenin", "Panda"] },
-    { q: "What speech restriction does Toge Inumaki follow to prevent cursed speech damage?", correct: "Rice ball ingredients", options: ["Rice ball ingredients", "Animal noises", "Sign language only", "Numbers only"] },
-    { q: "Which character uses Boogie Woogie to swap places with anything containing cursed energy?", correct: "Aoi Todo", options: ["Aoi Todo", "Noritoshi Kamo", "Mechakamaru", "Mai Zenin"] }
+    { q: "Who is the protagonist of Jujutsu Kaisen 0 paired with Rika Orimoto?", correct: "Yuta Okkotsu", options: ["Yuta Okkotsu", "Toge Inumaki", "Maki Zenin", "Panda"] }
   ],
   jjk: [
     { q: "Who is the Special Grade Jujutsu sorcerer known for his blindfold and Six Eyes?", correct: "Gojo Satoru", options: ["Gojo Satoru", "Yuji Itadori", "Megumi Fushiguro", "Suguru Geto"] },
-    { q: "Which ancient King of Curses shares a body with Yuji Itadori?", correct: "Ryomen Sukuna", options: ["Ryomen Sukuna", "Mahito", "Jogo", "Kenjaku"] },
-    { q: "What is Gojo Satoru's Domain Expansion?", correct: "Unlimited Void", options: ["Unlimited Void", "Malevolent Shrine", "Chimera Shadow Garden", "Self-Embodiment of Perfection"] },
-    { q: "What is Ryomen Sukuna's Domain Expansion?", correct: "Malevolent Shrine", options: ["Malevolent Shrine", "Unlimited Void", "Coffin of the Iron Mountain", "Idle Death Gamble"] }
+    { q: "Which ancient King of Curses shares a body with Yuji Itadori?", correct: "Ryomen Sukuna", options: ["Ryomen Sukuna", "Mahito", "Jogo", "Kenjaku"] }
   ],
   marvel: [
     { q: "What indestructible metal is Captain America's shield made of?", correct: "Vibranium", options: ["Vibranium", "Adamantium", "Uru", "Titanium"] },
@@ -59,19 +83,42 @@ const TOPIC_PRESETS = {
     { q: "What is the home kingdom of Thor?", correct: "Asgard", options: ["Asgard", "Jotunheim", "Wakanda", "Xandar"] },
     { q: "Who snapped his fingers in Avengers: Infinity War to erase half of all life?", correct: "Thanos", options: ["Thanos", "Loki", "Ultron", "Hela"] }
   ],
-  dragonball: [
-    { q: "What transformation does Goku achieve first during his fight against Frieza on Namek?", correct: "Super Saiyan", options: ["Super Saiyan", "Super Saiyan 3", "Ultra Instinct", "Kaioken"] },
-    { q: "What is the signature energy attack taught to Goku by Master Roshi?", correct: "Kamehameha", options: ["Kamehameha", "Spirit Bomb", "Final Flash", "Special Beam Cannon"] },
-    { q: "Who is the Prince of all Saiyans and Goku's rival?", correct: "Vegeta", options: ["Vegeta", "Nappa", "Raditz", "Broly"] }
+  sports: [
+    { q: "How many players are on the field for one team in a soccer (football) match?", correct: "11", options: ["11", "9", "10", "12"] },
+    { q: "In basketball, how many points is a shot taken from behind the arc worth?", correct: "3 points", options: ["3 points", "2 points", "1 point", "4 points"] },
+    { q: "Which country hosts the famous Wimbledon tennis championship annually?", correct: "United Kingdom", options: ["United Kingdom", "France", "United States", "Australia"] },
+    { q: "How many overs are bowled per side in a T20 international cricket match?", correct: "20 overs", options: ["20 overs", "50 overs", "10 overs", "40 overs"] }
   ],
-  cricket: [
-    { q: "How many players are on the field for one team during a standard cricket match?", correct: "11", options: ["11", "9", "10", "12"] },
-    { q: "Which Indian batsman scored 100 international centuries across his career?", correct: "Sachin Tendulkar", options: ["Sachin Tendulkar", "Virat Kohli", "MS Dhoni", "Rohit Sharma"] },
-    { q: "What term describes a bowler taking 3 wickets in 3 consecutive deliveries?", correct: "Hat-trick", options: ["Hat-trick", "Maiden", "Duck", "Century"] }
+  history: [
+    { q: "In which year did World War II officially end?", correct: "1945", options: ["1945", "1939", "1918", "1950"] },
+    { q: "Who was the first President of the United States?", correct: "George Washington", options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "Benjamin Franklin"] },
+    { q: "Which ancient civilization built the Great Pyramids of Giza?", correct: "Ancient Egypt", options: ["Ancient Egypt", "Mesopotamia", "Ancient Rome", "Indus Valley"] }
   ],
-  python: [
-    { q: "Which keyword is used to declare a function in Python?", correct: "def", options: ["def", "function", "fn", "declare"] },
-    { q: "What data type is created using square brackets e.g. [1, 2, 3] in Python?", correct: "List", options: ["List", "Tuple", "Dictionary", "Set"] }
+  cinema: [
+    { q: "Which movie directed by Mani Ratnam won high praise for its epic score by A.R. Rahman?", correct: "Roja", options: ["Roja", "Bombay", "Dil Se", "Guru"] },
+    { q: "Which 1997 James Cameron film won 11 Academy Awards including Best Picture?", correct: "Titanic", options: ["Titanic", "Avatar", "Jurassic Park", "Gladiator"] },
+    { q: "Who directed the sci-fi heist movie 'Inception' starring Leonardo DiCaprio?", correct: "Christopher Nolan", options: ["Christopher Nolan", "Steven Spielberg", "Quentin Tarantino", "Martin Scorsese"] }
+  ],
+  science: [
+    { q: "What chemical symbol represents Water?", correct: "H2O", options: ["H2O", "CO2", "NaCl", "O2"] },
+    { q: "What is the speed of light in a vacuum approximately?", correct: "300,000 km/s", options: ["300,000 km/s", "150,000 km/s", "1,000,000 km/s", "30,000 km/s"] },
+    { q: "Which organ in the human body is responsible for pumping blood throughout the circulatory system?", correct: "Heart", options: ["Heart", "Lungs", "Liver", "Brain"] }
+  ],
+  fruits: [
+    { q: "Which fruit is bright yellow when ripe and known as the 'King of Fruits'?", correct: "Mango", options: ["Mango", "Apple", "Orange", "Guava"] },
+    { q: "Which fruit is long, yellow when ripe, and peeled before eating?", correct: "Banana", options: ["Banana", "Apple", "Pineapple", "Papaya"] }
+  ],
+  kollywood: [
+    { q: "Which Tamil superstar starred in the hit sci-fi action film 'GOAT' (Greatest Of All Time)?", correct: "Thalapathy Vijay", options: ["Thalapathy Vijay", "Ajith Kumar", "Rajinikanth", "Suriya"] },
+    { q: "Who directed the epic historical Tamil films 'Ponniyin Selvan 1 & 2'?", correct: "Mani Ratnam", options: ["Mani Ratnam", "Lokesh Kanagaraj", "Shankar", "Atlee"] }
+  ],
+  ronaldo: [
+    { q: "Which national football team does Cristiano Ronaldo captain?", correct: "Portugal", options: ["Portugal", "Argentina", "Brazil", "Spain"] },
+    { q: "Which club did Cristiano Ronaldo join in Saudi Arabia in 2023?", correct: "Al Nassr", options: ["Al Nassr", "Al Hilal", "Real Madrid", "Manchester United"] }
+  ],
+  tamilnadu: [
+    { q: "Which district in Tamil Nadu is world-famous as the 'Mango Capital' of South India?", correct: "Krishnagiri", options: ["Krishnagiri", "Salem", "Madurai", "Coimbatore"] },
+    { q: "What is the capital city of the Indian state of Tamil Nadu?", correct: "Chennai", options: ["Chennai", "Madurai", "Coimbatore", "Trichy"] }
   ]
 };
 
@@ -115,13 +162,10 @@ async function fetchDynamicQuizItemsForUser(rawQuery, targetCount) {
   return [];
 }
 
-// Google Gemini 3.6 Flash AI Engine Integration with Automatic 3-Attempt Retry Loop
+// Google Gemini 3.6 Flash AI Engine Integration with robust option & answer parsing
 async function generateQuizWithGeminiAI(prompt, count) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_KEY || '';
-  if (!apiKey) {
-    console.error('No Gemini API key found in process.env!');
-    return [];
-  }
+  if (!apiKey) return [];
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
   const promptText = `Generate exactly ${count} multiple choice trivia questions about "${prompt}". 
@@ -132,7 +176,6 @@ Output ONLY a valid JSON array of objects with keys:
 
 Do NOT include markdown code blocks or backticks. Output raw JSON array only.`;
 
-  // Retry up to 3 times if Google API returns 503 (High Demand) or 429 (Rate Limit)
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const res = await fetch(url, {
@@ -144,46 +187,49 @@ Do NOT include markdown code blocks or backticks. Output raw JSON array only.`;
       });
 
       if (res.status === 503 || res.status === 429) {
-        console.warn(`Gemini API high demand status ${res.status}, retrying attempt ${attempt}/3...`);
-        await new Promise(r => setTimeout(r, 800 * attempt));
+        await new Promise(r => setTimeout(r, 600 * attempt));
         continue;
       }
 
-      if (!res.ok) {
-        const errBody = await res.text();
-        console.error('Gemini API failed status:', res.status, errBody);
-        return [];
-      }
+      if (!res.ok) return [];
 
       const data = await res.json();
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
       let parsed = JSON.parse(cleanJson);
-      if (!Array.isArray(parsed) && parsed.trivia && Array.isArray(parsed.trivia)) {
-        parsed = parsed.trivia;
-      }
-      if (!Array.isArray(parsed) && parsed.questions && Array.isArray(parsed.questions)) {
-        parsed = parsed.questions;
-      }
+      if (!Array.isArray(parsed) && parsed.trivia && Array.isArray(parsed.trivia)) parsed = parsed.trivia;
+      if (!Array.isArray(parsed) && parsed.questions && Array.isArray(parsed.questions)) parsed = parsed.questions;
       if (!Array.isArray(parsed)) return [];
 
       return parsed.map((item, idx) => {
-        const opts = item.options || ['Option A', 'Option B', 'Option C', 'Option D'];
-        let correct = item.correctAnswer || 'A';
-        if (item.answer && !['A', 'B', 'C', 'D'].includes(item.answer)) {
-          const cIdx = opts.findIndex(o => o.toLowerCase() === String(item.answer).toLowerCase());
-          correct = cIdx !== -1 ? ['A', 'B', 'C', 'D'][cIdx] : 'A';
+        const opts = item.options || item.choices || [item.optionA, item.optionB, item.optionC, item.optionD].filter(Boolean);
+        const finalOpts = (opts && opts.length === 4) ? opts : ['Option A', 'Option B', 'Option C', 'Option D'];
+
+        let correct = 'A';
+        const rawAns = item.correctAnswer || item.answer || item.correct_answer || item.correct;
+        if (rawAns) {
+          const strAns = String(rawAns).trim();
+          if (['A', 'B', 'C', 'D'].includes(strAns.toUpperCase())) {
+            correct = strAns.toUpperCase();
+          } else {
+            const foundIdx = finalOpts.findIndex(o => String(o).toLowerCase().trim() === strAns.toLowerCase());
+            if (foundIdx !== -1) {
+              correct = ['A', 'B', 'C', 'D'][foundIdx];
+            }
+          }
         }
+
+        const qText = item.question || item.q || item.promptText || `Question about ${prompt}`;
 
         return {
           _id: `gemini_${Date.now()}_${idx}`,
-          question: item.question,
-          optionA: opts[0] || 'Option A',
-          optionB: opts[1] || 'Option B',
-          optionC: opts[2] || 'Option C',
-          optionD: opts[3] || 'Option D',
-          options: opts,
+          question: qText,
+          optionA: finalOpts[0],
+          optionB: finalOpts[1],
+          optionC: finalOpts[2],
+          optionD: finalOpts[3],
+          options: finalOpts,
           correctAnswer: correct,
           category: prompt,
           difficulty: 'medium',
@@ -191,10 +237,7 @@ Do NOT include markdown code blocks or backticks. Output raw JSON array only.`;
         };
       });
     } catch (err) {
-      console.error(`Gemini AI Quiz Generation attempt ${attempt} error:`, err.message);
-      if (attempt < 3) {
-        await new Promise(r => setTimeout(r, 800 * attempt));
-      }
+      if (attempt < 3) await new Promise(r => setTimeout(r, 600 * attempt));
     }
   }
 
