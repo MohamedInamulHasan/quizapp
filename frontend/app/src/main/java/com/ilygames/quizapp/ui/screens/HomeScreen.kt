@@ -1568,15 +1568,16 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         shape = RoundedCornerShape(14.dp),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         modifier = Modifier
-                            .shadow(4.dp, RoundedCornerShape(14.dp))
+                            .shadow(6.dp, RoundedCornerShape(14.dp))
                             .background(
-                                SurfaceGray,
+                                Brush.horizontalGradient(listOf(Color(0xFFEF4444), Color(0xFFDC2626), Color(0xFFB91C1C))),
                                 RoundedCornerShape(14.dp)
                             )
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                     ) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                        Text("Cancel", color = Color.White, fontWeight = FontWeight.Black)
                     }
                 }
             )
