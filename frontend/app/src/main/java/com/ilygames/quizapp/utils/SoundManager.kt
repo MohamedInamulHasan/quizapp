@@ -148,6 +148,5 @@ object SoundManager {
     }
 
     fun playClockTick() {}
-    fun playFastUrgentTick() {}
     fun playOptionPopSound() {}
 }
