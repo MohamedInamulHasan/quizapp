@@ -1429,33 +1429,55 @@ fun NativeAdminScreen(
                         }
                     }
 
-                    // Delete User Confirmation Modal
+                    // Delete User Confirmation Modal (3D SOFT-CLAY CARD & 3D GLOSSY BUTTONS)
                     if (userToDelete != null) {
                         val targetUser = userToDelete!!
+                        val isDarkDelUser = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
+                        val delUserCardBg = if (isDarkDelUser) Color(0xFF1C273A) else Color.White
+
                         AlertDialog(
                             onDismissRequest = { userToDelete = null },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            containerColor = delUserCardBg,
+                            titleContentColor = if (isDarkDelUser) Color.White else Color(0xFF17181C),
                             shape = RoundedCornerShape(26.dp),
+                            modifier = Modifier.border(
+                                1.5.dp,
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = if (isDarkDelUser) 0.35f else 0.9f),
+                                        Color.Black.copy(alpha = if (isDarkDelUser) 0.5f else 0.08f)
+                                    )
+                                ),
+                                RoundedCornerShape(26.dp)
+                            ),
                             title = {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
-                                    Icon(Icons.Default.Warning, contentDescription = "Warning", tint = IncorrectRed)
-                                    Text("Delete User Account?", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .background(IncorrectRed.copy(alpha = 0.15f), CircleShape)
+                                            .border(1.dp, IncorrectRed, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Default.Warning, contentDescription = "Warning", tint = IncorrectRed, modifier = Modifier.size(20.dp))
+                                    }
+                                    Text("Delete User Account?", fontWeight = FontWeight.Black, color = if (isDarkDelUser) Color.White else Color(0xFF17181C), fontSize = 18.sp)
                                 }
                             },
                             text = {
                                 Text(
                                     text = "Are you sure you want to permanently delete user \"${targetUser.name}\" (${targetUser.email ?: ""})? This action cannot be undone.",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = if (isDarkDelUser) Color.White.copy(alpha = 0.9f) else Color(0xFF334155)
                                 )
                             },
                             confirmButton = {
                                 Button(
                                     onClick = {
+                                        SoundManager.playClickSound()
                                         coroutineScope.launch {
                                             try {
                                                 val res = ApiClient.apiService.deleteUser(token ?: "", targetUser.id ?: "")
@@ -1472,15 +1494,38 @@ fun NativeAdminScreen(
                                             }
                                         }
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = IncorrectRed),
-                                    shape = RoundedCornerShape(16.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    shape = RoundedCornerShape(14.dp),
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                    modifier = Modifier
+                                        .shadow(6.dp, RoundedCornerShape(14.dp))
+                                        .background(
+                                            Brush.horizontalGradient(listOf(Color(0xFFEF4444), Color(0xFFDC2626), Color(0xFFB91C1C))),
+                                            RoundedCornerShape(14.dp)
+                                        )
+                                        .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
                                 ) {
-                                    Text("Confirm", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("Delete User", color = Color.White, fontWeight = FontWeight.Black)
                                 }
                             },
                             dismissButton = {
-                                TextButton(onClick = { userToDelete = null }) {
-                                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                                Button(
+                                    onClick = {
+                                        SoundManager.playClickSound()
+                                        userToDelete = null
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    shape = RoundedCornerShape(14.dp),
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                    modifier = Modifier
+                                        .shadow(6.dp, RoundedCornerShape(14.dp))
+                                        .background(
+                                            Brush.horizontalGradient(listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))),
+                                            RoundedCornerShape(14.dp)
+                                        )
+                                        .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                                ) {
+                                    Text("Cancel", color = Color.White, fontWeight = FontWeight.Black)
                                 }
                             }
                         )
@@ -1516,13 +1561,18 @@ fun NativeAdminScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Bulk Question Text Upload",
-                            style = MaterialTheme.typography.titleLarge,
+                            text = "Bulk Question Upload",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Black,
-                            color = if (isDarkBulkModal) Color.White else Color(0xFF17181C)
+                            color = if (isDarkBulkModal) Color.White else Color(0xFF17181C),
+                            modifier = Modifier.weight(1f)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
-                            onClick = { showBulkUploadModal = false },
+                            onClick = {
+                                SoundManager.playClickSound()
+                                showBulkUploadModal = false
+                            },
                             modifier = Modifier
                                 .size(36.dp)
                                 .shadow(4.dp, CircleShape)
@@ -1532,7 +1582,7 @@ fun NativeAdminScreen(
                                     Brush.linearGradient(
                                         colors = listOf(
                                             Color.White.copy(alpha = if (isDarkBulkModal) 0.35f else 0.9f),
-                                            Color.Black.copy(alpha = if (isDarkBulkModal) 0.5f else 0.1f)
+                                            Color.Black.copy(alpha = if (isDarkBulkModal) 0.1f else 0.1f)
                                         )
                                     ),
                                     CircleShape
