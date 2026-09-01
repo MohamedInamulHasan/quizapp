@@ -100,6 +100,7 @@ fun LeaderboardScreen(
 
     // Auto-refresh leaderboard: immediately + every 15s while screen is open
     LaunchedEffect(Unit) {
+        SoundManager.playDataSound()
         while (true) {
             quizViewModel.loadLeaderboard(token, true)
             delay(15_000L)

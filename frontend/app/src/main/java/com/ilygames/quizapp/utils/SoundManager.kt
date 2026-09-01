@@ -15,6 +15,7 @@ object SoundManager {
     private var swooshSoundId: Int = 0
     private var levelUpSoundId: Int = 0
     private var introSoundId: Int = 0
+    private var dataSoundId: Int = 0
 
     fun init(context: Context) {
         if (soundPool != null) return
@@ -36,6 +37,7 @@ object SoundManager {
             swooshSoundId = soundPool?.load(context, R.raw.swoosh, 1) ?: 0
             levelUpSoundId = soundPool?.load(context, R.raw.level_up, 1) ?: 0
             introSoundId = soundPool?.load(context, R.raw.intro, 1) ?: 0
+            dataSoundId = soundPool?.load(context, R.raw.data, 1) ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -109,6 +111,26 @@ object SoundManager {
         }
     }
 
+    // 📊 Custom Data sound effect for Leaderboard (first 0.5s)
+    fun playDataSound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || dataSoundId == 0) return
+        try {
+            val streamId = soundPool?.play(dataSoundId, 1.0f, 1.0f, 1, 0, 1.0f) ?: 0
+            if (streamId > 0) {
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    try {
+                        soundPool?.stop(streamId)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }, 500L)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun playClockTick() {}
+    fun playFastUrgentTick() {}
     fun playOptionPopSound() {}
 }
