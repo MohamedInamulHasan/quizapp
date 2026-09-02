@@ -337,6 +337,7 @@ fun MemoryGameScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // ── Top Header Bar ───────────────────────────────────────────
+            // ── Top Header Bar with 3D Royal Blue Buttons ─────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -345,26 +346,23 @@ fun MemoryGameScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Back Button
+                // 3D Royal Blue Back Button
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .shadow(6.dp, CircleShape)
+                        .size(46.dp)
+                        .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(
-                                if (isDark) listOf(Color(0xFF2C3E55), Color(0xFF1A2636))
-                                else listOf(Color.White, Color(0xFFE2E8F0))
-                            ),
+                            Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                             CircleShape
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                        .border(1.5.dp, Color.White.copy(alpha = 0.6f), CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(22.dp))
                 }
 
                 // Title
@@ -375,19 +373,16 @@ fun MemoryGameScreen(
                     color = textColor
                 )
 
-                // Animated Retry / Re-deal Button
+                // 3D Royal Blue Retry Button
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .shadow(6.dp, CircleShape)
+                        .size(46.dp)
+                        .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(
-                                if (isDark) listOf(Color(0xFF2C3E55), Color(0xFF1A2636))
-                                else listOf(Color.White, Color(0xFFE2E8F0))
-                            ),
+                            Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                             CircleShape
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                        .border(1.5.dp, Color.White.copy(alpha = 0.6f), CircleShape)
                         .clickable {
                             triggerAnimatedRestart()
                         },
@@ -396,8 +391,8 @@ fun MemoryGameScreen(
                     Icon(
                         Icons.Default.Refresh,
                         contentDescription = "Restart",
-                        tint = Color(0xFF255FF4),
-                        modifier = Modifier.size(20.dp)
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
@@ -415,11 +410,6 @@ fun MemoryGameScreen(
                                 if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
-                        )
-                        .border(
-                            2.dp,
-                            if (isPlayer1Turn) Color.White else Color.Transparent,
                             RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
                         .padding(vertical = 10.dp, horizontal = 22.dp)
@@ -468,11 +458,6 @@ fun MemoryGameScreen(
                                 if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
-                        )
-                        .border(
-                            2.dp,
-                            if (!isPlayer1Turn) Color.White else Color.Transparent,
                             RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
                         .padding(vertical = 10.dp, horizontal = 22.dp)

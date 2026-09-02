@@ -57,7 +57,7 @@ fun TicTacToeScreen(
     // Current Round Board State (9 cells)
     var board by remember { mutableStateOf(Array(9) { "" }) }
 
-    // Alternating Starting Chance per Round: Round 1 -> Player 1 (X) starts, Round 2 -> Player 2 (O) starts...
+    // Alternating Starting Chance per Round
     var isXTurn by remember { mutableStateOf(true) }
     var winningPattern by remember { mutableStateOf<List<Int>?>(null) }
     var isRoundComplete by remember { mutableStateOf(false) }
@@ -99,7 +99,7 @@ fun TicTacToeScreen(
         winningPattern = null
         isRoundComplete = false
 
-        // Alternating First Turn: Odd rounds -> X (Player 1) starts, Even rounds -> O (Player 2) starts
+        // Alternating First Turn
         isXTurn = (currentRound % 2 != 0)
     }
 
@@ -142,7 +142,7 @@ fun TicTacToeScreen(
                 draws++
             }
         } else {
-            isXTurn = !isXTurn // Pass turn
+            isXTurn = !isXTurn
         }
     }
 
@@ -181,7 +181,7 @@ fun TicTacToeScreen(
                 .statusBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── Top Header Bar ───────────────────────────────────────────
+            // ── TOP HEADER BAR WITH 3D BUTTONS ────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -190,26 +190,23 @@ fun TicTacToeScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Back Button
+                // 3D Royal Blue Back Button
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .shadow(6.dp, CircleShape)
+                        .size(46.dp)
+                        .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(
-                                if (isDark) listOf(Color(0xFF2C3E55), Color(0xFF1A2636))
-                                else listOf(Color.White, Color(0xFFE2E8F0))
-                            ),
+                            Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                             CircleShape
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                        .border(1.5.dp, Color.White.copy(alpha = 0.6f), CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(22.dp))
                 }
 
                 // Round Counter Pill Badge
@@ -220,6 +217,7 @@ fun TicTacToeScreen(
                             Brush.horizontalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                             RoundedCornerShape(16.dp)
                         )
+                        .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                         .padding(vertical = 6.dp, horizontal = 18.dp)
                 ) {
                     Text(
@@ -230,30 +228,27 @@ fun TicTacToeScreen(
                     )
                 }
 
-                // Reset Match Button
+                // 3D Royal Blue Retry Button
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .shadow(6.dp, CircleShape)
+                        .size(46.dp)
+                        .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(
-                                if (isDark) listOf(Color(0xFF2C3E55), Color(0xFF1A2636))
-                                else listOf(Color.White, Color(0xFFE2E8F0))
-                            ),
+                            Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                             CircleShape
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
+                        .border(1.5.dp, Color.White.copy(alpha = 0.6f), CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
                             resetFullMatch()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = Color.White, modifier = Modifier.size(22.dp))
                 }
             }
 
-            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE OF SCREEN ─────────────
+            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (NO BORDER ON LEFT ATTACHED SIDE) ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
@@ -268,11 +263,6 @@ fun TicTacToeScreen(
                             ),
                             RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
-                        .border(
-                            2.dp,
-                            if (isXTurn) Color.White else Color.Transparent,
-                            RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
-                        )
                         .padding(vertical = 10.dp, horizontal = 22.dp)
                 ) {
                     Text(
@@ -284,7 +274,7 @@ fun TicTacToeScreen(
                 }
             }
 
-            // ── CENTER 3x3 TIC TAC TOE GRID (PERFECTLY CENTERED VERTICALLY) ──────
+            // ── CENTER 3x3 TIC TAC TOE GRID WITH PURE WHITE FULL-LENGTH STRIKE LINE ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -292,7 +282,6 @@ fun TicTacToeScreen(
                     .padding(horizontal = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Background White Cross Lines (Without outer box!)
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val width = size.width
                     val height = size.height
@@ -300,57 +289,80 @@ fun TicTacToeScreen(
                     val rowHeight = height / 3f
                     val strokeWidth = 8.dp.toPx()
 
-                    // Vertical White Lines
+                    // Vertical White Cross Lines
                     drawLine(
                         color = Color.White,
-                        start = Offset(colWidth, 10.dp.toPx()),
-                        end = Offset(colWidth, height - 10.dp.toPx()),
+                        start = Offset(colWidth, 0f),
+                        end = Offset(colWidth, height),
                         strokeWidth = strokeWidth,
                         cap = StrokeCap.Round
                     )
                     drawLine(
                         color = Color.White,
-                        start = Offset(colWidth * 2, 10.dp.toPx()),
-                        end = Offset(colWidth * 2, height - 10.dp.toPx()),
-                        strokeWidth = strokeWidth,
-                        cap = StrokeCap.Round
-                    )
-
-                    // Horizontal White Lines
-                    drawLine(
-                        color = Color.White,
-                        start = Offset(10.dp.toPx(), rowHeight),
-                        end = Offset(width - 10.dp.toPx(), rowHeight),
-                        strokeWidth = strokeWidth,
-                        cap = StrokeCap.Round
-                    )
-                    drawLine(
-                        color = Color.White,
-                        start = Offset(10.dp.toPx(), rowHeight * 2),
-                        end = Offset(width - 10.dp.toPx(), rowHeight * 2),
+                        start = Offset(colWidth * 2, 0f),
+                        end = Offset(colWidth * 2, height),
                         strokeWidth = strokeWidth,
                         cap = StrokeCap.Round
                     )
 
-                    // Animated Strikeout Line on 3-in-a-row match
+                    // Horizontal White Cross Lines
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(0f, rowHeight),
+                        end = Offset(width, rowHeight),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(0f, rowHeight * 2),
+                        end = Offset(width, rowHeight * 2),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+
+                    // PURE WHITE FULL-LENGTH ANIMATED STRIKE OUT LINE (Completely striking out XXX / OOO)
                     if (winningPattern != null && strikeAnimProgress > 0f) {
                         val pattern = winningPattern!!
-                        val startIdx = pattern[0]
-                        val endIdx = pattern[2]
+                        val isRow = pattern == listOf(0, 1, 2) || pattern == listOf(3, 4, 5) || pattern == listOf(6, 7, 8)
+                        val isCol = pattern == listOf(0, 3, 6) || pattern == listOf(1, 4, 7) || pattern == listOf(2, 5, 8)
+                        val isDiag1 = pattern == listOf(0, 4, 8)
+                        val isDiag2 = pattern == listOf(2, 4, 6)
 
-                        val startX = (startIdx % 3 + 0.5f) * colWidth
-                        val startY = (startIdx / 3 + 0.5f) * rowHeight
-                        val endX = (endIdx % 3 + 0.5f) * colWidth
-                        val endY = (endIdx / 3 + 0.5f) * rowHeight
+                        val (fullStartX, fullStartY, fullEndX, fullEndY) = when {
+                            isRow -> {
+                                val rowIdx = pattern[0] / 3
+                                val y = (rowIdx + 0.5f) * rowHeight
+                                listOf(0f, y, width, y)
+                            }
+                            isCol -> {
+                                val colIdx = pattern[0] % 3
+                                val x = (colIdx + 0.5f) * colWidth
+                                listOf(x, 0f, x, height)
+                            }
+                            isDiag1 -> listOf(0f, 0f, width, height)
+                            isDiag2 -> listOf(width, 0f, 0f, height)
+                            else -> listOf(0f, 0f, width, height)
+                        }
 
-                        val currentEndX = startX + (endX - startX) * strikeAnimProgress
-                        val currentEndY = startY + (endY - startY) * strikeAnimProgress
+                        val curEndX = fullStartX + (fullEndX - fullStartX) * strikeAnimProgress
+                        val curEndY = fullStartY + (fullEndY - fullStartY) * strikeAnimProgress
 
+                        // Draw Glowing Outer Aura
                         drawLine(
-                            color = Color(0xFFF59E0B),
-                            start = Offset(startX, startY),
-                            end = Offset(currentEndX, currentEndY),
-                            strokeWidth = 14.dp.toPx(),
+                            color = Color.White.copy(alpha = 0.5f),
+                            start = Offset(fullStartX, fullStartY),
+                            end = Offset(curEndX, curEndY),
+                            strokeWidth = 20.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+
+                        // Draw Pure Solid White Strike Line
+                        drawLine(
+                            color = Color.White,
+                            start = Offset(fullStartX, fullStartY),
+                            end = Offset(curEndX, curEndY),
+                            strokeWidth = 12.dp.toPx(),
                             cap = StrokeCap.Round
                         )
                     }
@@ -395,7 +407,7 @@ fun TicTacToeScreen(
                                         if (mark == "X") {
                                             Text(
                                                 text = "X",
-                                                fontSize = 62.sp,
+                                                fontSize = 64.sp,
                                                 fontWeight = FontWeight.Black,
                                                 color = Color(0xFFEF4444),
                                                 modifier = Modifier.scale(markScale)
@@ -403,7 +415,7 @@ fun TicTacToeScreen(
                                         } else if (mark == "O") {
                                             Text(
                                                 text = "O",
-                                                fontSize = 62.sp,
+                                                fontSize = 64.sp,
                                                 fontWeight = FontWeight.Black,
                                                 color = Color(0xFF255FF4),
                                                 modifier = Modifier.scale(markScale)
@@ -417,7 +429,7 @@ fun TicTacToeScreen(
                 }
             }
 
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ────────────
+            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (NO BORDER ON RIGHT ATTACHED SIDE) ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -430,11 +442,6 @@ fun TicTacToeScreen(
                                 if (!isXTurn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
-                        )
-                        .border(
-                            2.dp,
-                            if (!isXTurn) Color.White else Color.Transparent,
                             RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
                         .padding(vertical = 10.dp, horizontal = 22.dp)

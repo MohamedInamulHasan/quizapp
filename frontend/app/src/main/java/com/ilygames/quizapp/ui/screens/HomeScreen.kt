@@ -913,7 +913,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     // ── 🎮 2 PLAYER GAMES SECTION (MATCHING EXPLORE & REWARDS HEADER STYLE) ──
                     Text(
@@ -924,7 +924,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         letterSpacing = 1.sp
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     // 2 Player Games Grid Row: Memory Match & X | O Showdown
                     Row(
