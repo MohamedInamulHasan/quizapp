@@ -82,6 +82,7 @@ fun HomeScreen(
     onNavigateToLeaderboard: () -> Unit,
     onNavigateToAiStudio: () -> Unit = {},
     onNavigateToMemoryGame: () -> Unit = {},
+    onNavigateToTicTacToe: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
@@ -857,22 +858,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             onClick = {
                                 SoundManager.playClickSound()
                                 onStartReadingQuiz()
-                            }
-                        )
-
-                        UnifiedEmeraldCard(
-                            title = "Leaderboard",
-                            description = "View top ranked players worldwide",
-                            icon = Icons.Default.Leaderboard,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClickSound()
-                                onNavigateToLeaderboard()
-                            }
-                        )
-                    }
-
-                    // Row 2: Today's Reward & AI Quiz Studio
+                    // Row 2: Today's Reward & Extra Chance (Next to each other!)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -888,23 +874,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         )
 
-                        UnifiedEmeraldCard(
-                            title = "AI Quiz Studio",
-                            description = "Create quizzes on any topic with AI",
-                            icon = Icons.Default.AutoAwesome,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClickSound()
-                                onNavigateToAiStudio()
-                            }
-                        )
-                    }
-
-                    // Row 3: Extra Chance & Free Coins (Identical 2-column grid shape)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
                         UnifiedEmeraldCard(
                             title = "Extra Chance",
                             description = "Watch ad to restore 1 broken heart",
@@ -927,7 +896,67 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 }
                             }
                         )
+                    }
 
+                    // Row 3: AI Quiz Studio & Leaderboard
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        UnifiedEmeraldCard(
+                            title = "AI Quiz Studio",
+                            description = "Create quizzes on any topic with AI",
+                            icon = Icons.Default.AutoAwesome,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToAiStudio()
+                            }
+                        )
+
+                        UnifiedEmeraldCard(
+                            title = "Leaderboard",
+                            description = "View top ranked players worldwide",
+                            icon = Icons.Default.Leaderboard,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToLeaderboard()
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // ── 🎮 2 PLAYER GAMES SECTION ─────────────────────────────
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "🎮 2 Player Games",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (isDark) Color.White else Color(0xFF0F172A)
+                            )
+                            Text(
+                                text = "Play pass & play with a friend locally",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 2 Player Games Grid Row: Memory Match & X | O Showdown
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
                         UnifiedEmeraldCard(
                             title = "Memory Match",
                             description = "Flip cards & match pairs to win",
@@ -936,6 +965,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             onClick = {
                                 SoundManager.playClickSound()
                                 onNavigateToMemoryGame()
+                            }
+                        )
+
+                        UnifiedEmeraldCard(
+                            title = "X | O Showdown",
+                            description = "Classic 2 Player Tic Tac Toe game",
+                            icon = Icons.Default.GridOn,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToTicTacToe()
                             }
                         )
                     }

@@ -128,6 +128,9 @@ fun AppNavigation() {
                 onNavigateToMemoryGame = {
                     navController.navigate("memory_game")
                 },
+                onNavigateToTicTacToe = {
+                    navController.navigate("tictactoe")
+                },
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
@@ -139,6 +142,13 @@ fun AppNavigation() {
 
         composable("memory_game") {
             com.ilygames.quizapp.ui.screens.MemoryGameScreen(
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("tictactoe") {
+            com.ilygames.quizapp.ui.screens.TicTacToeScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() }
             )
