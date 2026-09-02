@@ -845,7 +845,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         letterSpacing = 1.sp
                     )
 
-                    // Row 1: Passage Study, Leaderboard & Explore Quiz
+                    // Row 1: Passage Study
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -858,6 +858,10 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             onClick = {
                                 SoundManager.playClickSound()
                                 onStartReadingQuiz()
+                            }
+                        )
+                    }
+
                     // Row 2: Today's Reward & Extra Chance (Next to each other!)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
