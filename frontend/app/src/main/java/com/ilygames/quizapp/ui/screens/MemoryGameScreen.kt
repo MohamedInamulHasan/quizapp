@@ -24,52 +24,59 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.SubcomposeAsyncImage
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
 import kotlinx.coroutines.delay
-import kotlin.random.Random
 
-// Sealed structure for card image items (Supports both high-quality remote URLs and fallback vector icons)
+// Built-in vector graphic structure (100% pre-loaded locally with ZERO network loading lag)
 data class TileGraphic(
     val key: String,
-    val imageUrl: String? = null,
-    val iconVector: ImageVector? = null,
-    val bgGradient: List<Color> = listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))
+    val title: String,
+    val iconVector: ImageVector,
+    val bgGradient: List<Color>
 )
 
-// Master Pool of 50+ diverse images & vector graphic tiles so every round picks NEW unused items!
+// Master Pool of 30+ distinct pre-loaded 3D vector graphic tiles so every round picks NEW unused items!
 val MASTER_TILE_POOL = listOf(
-    TileGraphic("space_rocket", "https://images.unsplash.com/photo-1517976487492-5750f3195933?w=300&auto=format&fit=crop&q=80", Icons.Default.RocketLaunch, listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9))),
-    TileGraphic("gamepad", "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300&auto=format&fit=crop&q=80", Icons.Default.SportsEsports, listOf(Color(0xFFEC4899), Color(0xFFBE185D))),
-    TileGraphic("diamond", "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&auto=format&fit=crop&q=80", Icons.Default.Diamond, listOf(Color(0xFF06B6D4), Color(0xFF0E7490))),
-    TileGraphic("soccer", "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300&auto=format&fit=crop&q=80", Icons.Default.SportsSoccer, listOf(Color(0xFF10B981), Color(0xFF047857))),
-    TileGraphic("lightning", "https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?w=300&auto=format&fit=crop&q=80", Icons.Default.FlashOn, listOf(Color(0xFFF59E0B), Color(0xFFB45309))),
-    TileGraphic("trophy", "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=300&auto=format&fit=crop&q=80", Icons.Default.EmojiEvents, listOf(Color(0xFFEAB308), Color(0xFFA16207))),
-    TileGraphic("car", "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=300&auto=format&fit=crop&q=80", Icons.Default.DirectionsCar, listOf(Color(0xFFEF4444), Color(0xFFB91C1C))),
-    TileGraphic("pizza", "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&auto=format&fit=crop&q=80", Icons.Default.LocalPizza, listOf(Color(0xFFF97316), Color(0xFFC2410C))),
-    TileGraphic("star", "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=300&auto=format&fit=crop&q=80", Icons.Default.AutoAwesome, listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))),
-    TileGraphic("shield", "https://images.unsplash.com/photo-1563089145-599997674d42?w=300&auto=format&fit=crop&q=80", Icons.Default.Shield, listOf(Color(0xFF6366F1), Color(0xFF4338CA))),
-    TileGraphic("basketball", "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&auto=format&fit=crop&q=80", Icons.Default.SportsBasketball, listOf(Color(0xFFEA580C), Color(0xFF9A3412))),
-    TileGraphic("plane", "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=300&auto=format&fit=crop&q=80", Icons.Default.Flight, listOf(Color(0xFF0EA5E9), Color(0xFF0369A1))),
-    TileGraphic("music", "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80", Icons.Default.MusicNote, listOf(Color(0xFFA855F7), Color(0xFF7E22CE))),
-    TileGraphic("camera", "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&auto=format&fit=crop&q=80", Icons.Default.CameraAlt, listOf(Color(0xFF64748B), Color(0xFF334155))),
-    TileGraphic("sun", "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=300&auto=format&fit=crop&q=80", Icons.Default.WbSunny, listOf(Color(0xFFFBBF24), Color(0xFFD97706))),
-    TileGraphic("moon", "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=300&auto=format&fit=crop&q=80", Icons.Default.Bedtime, listOf(Color(0xFF1E1B4B), Color(0xFF312E81))),
-    TileGraphic("palette", "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300&auto=format&fit=crop&q=80", Icons.Default.Palette, listOf(Color(0xFFD946EF), Color(0xFFA21CAF))),
-    TileGraphic("lightbulb", "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=300&auto=format&fit=crop&q=80", Icons.Default.Lightbulb, listOf(Color(0xFFFACC15), Color(0xFFCA8A04))),
-    TileGraphic("headset", "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=300&auto=format&fit=crop&q=80", Icons.Default.Headset, listOf(Color(0xFF14B8A6), Color(0xFF0F766E))),
-    TileGraphic("brain", "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=300&auto=format&fit=crop&q=80", Icons.Default.Psychology, listOf(Color(0xFFF43F5E), Color(0xFFBE123C)))
+    TileGraphic("rocket", "Rocket", Icons.Default.RocketLaunch, listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9))),
+    TileGraphic("gamepad", "Gamepad", Icons.Default.SportsEsports, listOf(Color(0xFFEC4899), Color(0xFFBE185D))),
+    TileGraphic("diamond", "Diamond", Icons.Default.Diamond, listOf(Color(0xFF06B6D4), Color(0xFF0E7490))),
+    TileGraphic("soccer", "Soccer", Icons.Default.SportsSoccer, listOf(Color(0xFF10B981), Color(0xFF047857))),
+    TileGraphic("lightning", "Flash", Icons.Default.FlashOn, listOf(Color(0xFFF59E0B), Color(0xFFB45309))),
+    TileGraphic("trophy", "Trophy", Icons.Default.EmojiEvents, listOf(Color(0xFFEAB308), Color(0xFFA16207))),
+    TileGraphic("car", "Car", Icons.Default.DirectionsCar, listOf(Color(0xFFEF4444), Color(0xFFB91C1C))),
+    TileGraphic("pizza", "Pizza", Icons.Default.LocalPizza, listOf(Color(0xFFF97316), Color(0xFFC2410C))),
+    TileGraphic("star", "Star", Icons.Default.AutoAwesome, listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))),
+    TileGraphic("shield", "Shield", Icons.Default.Shield, listOf(Color(0xFF6366F1), Color(0xFF4338CA))),
+    TileGraphic("basketball", "Basketball", Icons.Default.SportsBasketball, listOf(Color(0xFFEA580C), Color(0xFF9A3412))),
+    TileGraphic("plane", "Plane", Icons.Default.Flight, listOf(Color(0xFF0EA5E9), Color(0xFF0369A1))),
+    TileGraphic("music", "Music", Icons.Default.MusicNote, listOf(Color(0xFFA855F7), Color(0xFF7E22CE))),
+    TileGraphic("camera", "Camera", Icons.Default.CameraAlt, listOf(Color(0xFF64748B), Color(0xFF334155))),
+    TileGraphic("sun", "Sun", Icons.Default.WbSunny, listOf(Color(0xFFFBBF24), Color(0xFFD97706))),
+    TileGraphic("moon", "Moon", Icons.Default.Bedtime, listOf(Color(0xFF1E1B4B), Color(0xFF312E81))),
+    TileGraphic("palette", "Palette", Icons.Default.Palette, listOf(Color(0xFFD946EF), Color(0xFFA21CAF))),
+    TileGraphic("lightbulb", "Light", Icons.Default.Lightbulb, listOf(Color(0xFFFACC15), Color(0xFFCA8A04))),
+    TileGraphic("headset", "Headset", Icons.Default.Headset, listOf(Color(0xFF14B8A6), Color(0xFF0F766E))),
+    TileGraphic("brain", "Brain", Icons.Default.Psychology, listOf(Color(0xFFF43F5E), Color(0xFFBE123C))),
+    TileGraphic("lock", "Key", Icons.Default.VpnKey, listOf(Color(0xFFF59E0B), Color(0xFFD97706))),
+    TileGraphic("favorite", "Heart", Icons.Default.Favorite, listOf(Color(0xFFE11D48), Color(0xFF9F1239))),
+    TileGraphic("casino", "Dice", Icons.Default.Casino, listOf(Color(0xFF84CC16), Color(0xFF4D7C0F))),
+    TileGraphic("extension", "Puzzle", Icons.Default.Extension, listOf(Color(0xFF0284C7), Color(0xFF0369A1))),
+    TileGraphic("shopping", "Bag", Icons.Default.ShoppingBag, listOf(Color(0xFF7C3AED), Color(0xFF5B21B6))),
+    TileGraphic("pet", "Paw", Icons.Default.Pets, listOf(Color(0xFFD97706), Color(0xFF92400E))),
+    TileGraphic("fastfood", "Burger", Icons.Default.Fastfood, listOf(Color(0xFFF59E0B), Color(0xFFB45309))),
+    TileGraphic("park", "Tree", Icons.Default.Park, listOf(Color(0xFF16A34A), Color(0xFF15803D))),
+    TileGraphic("anchor", "Anchor", Icons.Default.Anchor, listOf(Color(0xFF0284C7), Color(0xFF075985))),
+    TileGraphic("celebration", "Party", Icons.Default.Celebration, listOf(Color(0xFFF43F5E), Color(0xFF9F1239)))
 )
 
-// Global set to track used image indices across rounds so every play uses fresh images
+// Global set to track used indices across rounds so every round picks NEW unused items
 private val usedImageIndices = mutableSetOf<Int>()
 
 data class TwoPlayerCard(
@@ -91,7 +98,7 @@ fun MemoryGameScreen(
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
     val subTextColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
 
-    // Function to select 10 distinct, previously unused images for every new match
+    // Select 10 fresh, unused graphics for each new match
     fun select10FreshGraphics(): List<TileGraphic> {
         val totalAvailable = MASTER_TILE_POOL.size
         val availableIndices = (0 until totalAvailable).filter { !usedImageIndices.contains(it) }
@@ -99,7 +106,6 @@ fun MemoryGameScreen(
         val selectedIndices = if (availableIndices.size >= 10) {
             availableIndices.shuffled().take(10)
         } else {
-            // Reset used set if pool exhausted
             usedImageIndices.clear()
             (0 until totalAvailable).shuffled().take(10)
         }
@@ -116,44 +122,39 @@ fun MemoryGameScreen(
         }
     }
 
-    // State Variables
+    // State Variables for Normal 2-Player Pass & Play (Player 1 vs Player 2)
     var cards by remember { mutableStateOf(createFreshDeck()) }
     var selectedIndices by remember { mutableStateOf<List<Int>>(emptyList()) }
-    var isPlayerTurn by remember { mutableStateOf(true) } // true = You, false = AI Bot
-    var playerScore by remember { mutableIntStateOf(0) }
-    var aiScore by remember { mutableIntStateOf(0) }
+    var isPlayer1Turn by remember { mutableStateOf(true) } // true = Player 1, false = Player 2
+    var player1Score by remember { mutableIntStateOf(0) }
+    var player2Score by remember { mutableIntStateOf(0) }
     var isProcessingTurn by remember { mutableStateOf(false) }
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
-    // AI Bot Memory (remembers card indices it has seen when flipped)
-    val aiMemory = remember { mutableStateMapOf<Int, String>() }
-
     fun restartGame() {
         cards = createFreshDeck()
         selectedIndices = emptyList()
-        isPlayerTurn = true
-        playerScore = 0
-        aiScore = 0
+        isPlayer1Turn = true
+        player1Score = 0
+        player2Score = 0
         isProcessingTurn = false
         showWinnerDialog = false
         rewardEarned = false
-        aiMemory.clear()
     }
 
-    // ── Player Tap Handler ───────────────────────────────────────────────
-    fun onPlayerCardClick(index: Int) {
-        if (!isPlayerTurn || isProcessingTurn) return
+    // ── Player Tap Handler (Normal 2-Player Pass & Play) ─────────────────
+    fun onCardClick(index: Int) {
+        if (isProcessingTurn) return
         val card = cards[index]
         if (card.isFlipped || card.isMatched) return
 
         SoundManager.playClickSound()
 
-        // Flip card and remember in AI memory
+        // Flip card instantly with zero network delay
         cards = cards.toMutableList().also {
             it[index] = it[index].copy(isFlipped = true)
         }
-        aiMemory[index] = card.graphic.key
 
         val newSelected = selectedIndices + index
         selectedIndices = newSelected
@@ -164,131 +165,53 @@ fun MemoryGameScreen(
             val secondIdx = newSelected[1]
 
             if (cards[firstIdx].graphic.key == cards[secondIdx].graphic.key) {
-                // Match!
+                // Match Found!
                 SoundManager.playCorrectSound()
                 cards = cards.toMutableList().also {
                     it[firstIdx] = it[firstIdx].copy(isMatched = true)
                     it[secondIdx] = it[secondIdx].copy(isMatched = true)
                 }
-                playerScore++
+
+                if (isPlayer1Turn) {
+                    player1Score++
+                } else {
+                    player2Score++
+                }
+
                 selectedIndices = emptyList()
                 isProcessingTurn = false
 
-                // Check game over
-                if (playerScore + aiScore == 10) {
-                    if (playerScore > aiScore && !rewardEarned) {
+                // Check Game Over
+                if (player1Score + player2Score == 10) {
+                    if (!rewardEarned) {
                         rewardEarned = true
                         authViewModel.addAdReward(context)
-                        Toast.makeText(context, "🏆 You beat the AI Bot! +50 Coins Earned!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "🪙 +50 Coins Earned for Memory Match!", Toast.LENGTH_SHORT).show()
                     }
                     showWinnerDialog = true
                 }
-                // Player matched, gets another turn!
+                // Matcher gets another turn!
             } else {
-                // No match ➔ flip back & switch turn to AI Bot
+                // No Match ➔ flip back after 800ms and switch turn!
                 SoundManager.playWrongSound()
             }
         }
     }
 
-    // ── Delayed Flip Back & Turn Switch for Player ──────────────────────
-    LaunchedEffect(selectedIndices, isProcessingTurn, isPlayerTurn) {
-        if (isPlayerTurn && selectedIndices.size == 2 && isProcessingTurn) {
+    // Delayed flip back for non-matching pair & turn switch
+    LaunchedEffect(selectedIndices, isProcessingTurn) {
+        if (selectedIndices.size == 2 && isProcessingTurn) {
             val firstIdx = selectedIndices[0]
             val secondIdx = selectedIndices[1]
             if (cards[firstIdx].graphic.key != cards[secondIdx].graphic.key) {
-                delay(850)
+                delay(800)
                 cards = cards.toMutableList().also {
                     it[firstIdx] = it[firstIdx].copy(isFlipped = false)
                     it[secondIdx] = it[secondIdx].copy(isFlipped = false)
                 }
                 selectedIndices = emptyList()
                 isProcessingTurn = false
-                isPlayerTurn = false // Switch turn to AI Bot!
-            }
-        }
-    }
-
-    // ── AI Bot Automator ────────────────────────────────────────────────
-    LaunchedEffect(isPlayerTurn, isProcessingTurn, playerScore, aiScore) {
-        if (!isPlayerTurn && !isProcessingTurn && (playerScore + aiScore < 10)) {
-            isProcessingTurn = true
-            delay(900) // AI thinking time
-
-            val unrevealedIndices = cards.indices.filter { !cards[it].isMatched && !cards[it].isFlipped }
-            if (unrevealedIndices.size < 2) {
-                isProcessingTurn = false
-                return@LaunchedEffect
-            }
-
-            // AI Decision Strategy:
-            // 1. Check if AI remembers a matching pair in memory
-            var firstPickIdx = -1
-            var secondPickIdx = -1
-
-            val memoryGroup = aiMemory.filterKeys { k -> !cards[k].isMatched && !cards[k].isFlipped }
-                .entries.groupBy { it.value }
-
-            val knownPair = memoryGroup.values.firstOrNull { it.size >= 2 }
-            if (knownPair != null) {
-                firstPickIdx = knownPair[0].key
-                secondPickIdx = knownPair[1].key
-            } else {
-                // Pick 1 random unrevealed card
-                firstPickIdx = unrevealedIndices.random()
-                val firstKey = cards[firstPickIdx].graphic.key
-
-                // Check if its twin is in memory
-                val twinInMemory = aiMemory.entries.firstOrNull { it.value == firstKey && it.key != firstPickIdx && !cards[it.key].isMatched && !cards[it.key].isFlipped }
-                if (twinInMemory != null && Random.nextFloat() < 0.85f) { // 85% smart memory accuracy
-                    secondPickIdx = twinInMemory.key
-                } else {
-                    val remainingUnrevealed = unrevealedIndices.filter { it != firstPickIdx }
-                    secondPickIdx = remainingUnrevealed.random()
-                }
-            }
-
-            // Flip AI's 1st Pick
-            cards = cards.toMutableList().also {
-                it[firstPickIdx] = it[firstPickIdx].copy(isFlipped = true)
-            }
-            aiMemory[firstPickIdx] = cards[firstPickIdx].graphic.key
-            SoundManager.playClickSound()
-
-            delay(750) // Short delay before AI flips 2nd card
-
-            // Flip AI's 2nd Pick
-            cards = cards.toMutableList().also {
-                it[secondPickIdx] = it[secondPickIdx].copy(isFlipped = true)
-            }
-            aiMemory[secondPickIdx] = cards[secondPickIdx].graphic.key
-            SoundManager.playClickSound()
-
-            delay(850)
-
-            // Check AI Match
-            if (cards[firstPickIdx].graphic.key == cards[secondPickIdx].graphic.key) {
-                SoundManager.playCorrectSound()
-                cards = cards.toMutableList().also {
-                    it[firstPickIdx] = it[firstPickIdx].copy(isMatched = true)
-                    it[secondPickIdx] = it[secondPickIdx].copy(isMatched = true)
-                }
-                aiScore++
-                isProcessingTurn = false
-
-                if (playerScore + aiScore == 10) {
-                    showWinnerDialog = true
-                }
-                // AI matched, stays on AI turn!
-            } else {
-                SoundManager.playWrongSound()
-                // Flip back AI cards
-                cards = cards.toMutableList().also {
-                    it[firstPickIdx] = it[firstPickIdx].copy(isFlipped = false)
-                    it[secondPickIdx] = it[secondPickIdx].copy(isFlipped = false)
-                }
-                isProcessingTurn = false
-                isPlayerTurn = true // Turn returns to YOU!
+                isPlayer1Turn = !isPlayer1Turn // Switch turn between Player 1 & Player 2!
             }
         }
     }
@@ -368,26 +291,26 @@ fun MemoryGameScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Scoreboard: YOU vs AI BOT (Clean Score Counters - No Turn/Pair Text) ──
+            // ── Scoreboard: PLAYER 1 vs PLAYER 2 ─────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // YOU Score Pill
+                // PLAYER 1 Score Pill (Red/Coral)
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .shadow(8.dp, RoundedCornerShape(18.dp))
                         .background(
                             Brush.verticalGradient(
-                                if (isPlayerTurn) listOf(Color(0xFF10B981), Color(0xFF059669))
+                                if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
                             RoundedCornerShape(18.dp)
                         )
                         .border(
                             2.dp,
-                            if (isPlayerTurn) Color.White else Color.Transparent,
+                            if (isPlayer1Turn) Color.White else Color.Transparent,
                             RoundedCornerShape(18.dp)
                         )
                         .padding(vertical = 12.dp, horizontal = 16.dp)
@@ -397,26 +320,26 @@ fun MemoryGameScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("👤 YOU", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$playerScore", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("🔴 PLAYER 1", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("$player1Score", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
                     }
                 }
 
-                // AI BOT Score Pill
+                // PLAYER 2 Score Pill (Blue/Indigo)
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .shadow(8.dp, RoundedCornerShape(18.dp))
                         .background(
                             Brush.verticalGradient(
-                                if (!isPlayerTurn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
+                                if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
                             RoundedCornerShape(18.dp)
                         )
                         .border(
                             2.dp,
-                            if (!isPlayerTurn) Color.White else Color.Transparent,
+                            if (!isPlayer1Turn) Color.White else Color.Transparent,
                             RoundedCornerShape(18.dp)
                         )
                         .padding(vertical = 12.dp, horizontal = 16.dp)
@@ -426,8 +349,8 @@ fun MemoryGameScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("🤖 AI BOT", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$aiScore", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("🔵 PLAYER 2", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("$player2Score", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
                     }
                 }
             }
@@ -440,23 +363,23 @@ fun MemoryGameScreen(
                     .fillMaxWidth()
                     .shadow(4.dp, RoundedCornerShape(14.dp))
                     .background(
-                        if (isPlayerTurn) Color(0xFF10B981).copy(alpha = 0.15f)
-                        else Color(0xFFEF4444).copy(alpha = 0.15f),
+                        if (isPlayer1Turn) Color(0xFFEF4444).copy(alpha = 0.15f)
+                        else Color(0xFF255FF4).copy(alpha = 0.15f),
                         RoundedCornerShape(14.dp)
                     )
                     .border(
                         1.dp,
-                        if (isPlayerTurn) Color(0xFF10B981) else Color(0xFFEF4444),
+                        if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFF255FF4),
                         RoundedCornerShape(14.dp)
                     )
                     .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isPlayerTurn) "🟢 YOUR TURN - TAP TO MATCH" else "🤖 AI BOT IS THINKING...",
+                    text = if (isPlayer1Turn) "🔴 PLAYER 1'S TURN - TAP 2 TILES" else "🔵 PLAYER 2'S TURN - TAP 2 TILES",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
-                    color = if (isPlayerTurn) Color(0xFF10B981) else Color(0xFFEF4444)
+                    color = if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFF255FF4)
                 )
             }
 
@@ -475,7 +398,7 @@ fun MemoryGameScreen(
                     SquareMemoryCardTile(
                         card = card,
                         isDark = isDark,
-                        onClick = { onPlayerCardClick(idx) }
+                        onClick = { onCardClick(idx) }
                     )
                 }
             }
@@ -485,8 +408,9 @@ fun MemoryGameScreen(
 
         // ── Winner Dialog Modal ─────────────────────────────────────────
         if (showWinnerDialog) {
-            val playerWon = playerScore > aiScore
-            val isDraw = playerScore == aiScore
+            val p1Won = player1Score > player2Score
+            val p2Won = player2Score > player1Score
+            val isDraw = player1Score == player2Score
 
             AlertDialog(
                 onDismissRequest = { showWinnerDialog = false },
@@ -515,7 +439,7 @@ fun MemoryGameScreen(
                 },
                 title = {
                     Text(
-                        text = if (playerWon) "🏆 YOU WON!" else if (isDraw) "🤝 IT'S A DRAW!" else "🤖 AI BOT WON!",
+                        text = if (p1Won) "🏆 PLAYER 1 WINS!" else if (p2Won) "🏆 PLAYER 2 WINS!" else "🤝 IT'S A DRAW!",
                         fontWeight = FontWeight.Black,
                         fontSize = 22.sp,
                         textAlign = TextAlign.Center,
@@ -528,17 +452,13 @@ fun MemoryGameScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Score: YOU $playerScore - $aiScore AI BOT",
+                            text = "Final Score: 🔴 $player1Score - $player2Score 🔵",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        if (playerWon) {
-                            Text("🪙 +50 Bonus Coins Added to Wallet!", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color(0xFFEAB308))
-                        } else {
-                            Text("Better luck next time!", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                        }
+                        Text("🪙 +50 Bonus Coins Awarded!", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color(0xFFEAB308))
                     }
                 },
                 shape = RoundedCornerShape(26.dp),
@@ -550,7 +470,7 @@ fun MemoryGameScreen(
     }
 }
 
-// ── PERFECT SQUARE MEMORY CARD TILE (WITH DYNAMIC GRAPHIC IMAGES & VECTORS) ──
+// ── PERFECT SQUARE MEMORY CARD TILE (PRE-LOADED VECTORS FOR ZERO FLIP LAG) ──
 @Composable
 fun SquareMemoryCardTile(
     card: TwoPlayerCard,
@@ -559,20 +479,19 @@ fun SquareMemoryCardTile(
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (card.isFlipped || card.isMatched) 180f else 0f,
-        animationSpec = tween(durationMillis = 320),
+        animationSpec = tween(durationMillis = 300),
         label = "SquareFlipAnimation"
     )
 
     val isFrontVisible = rotation > 90f
 
-    // Card Colors & Gradients
+    // Soft-Clay 3D Gold Unflipped vs Emerald Matched vs Pre-loaded Gradient Flipped
     val unflippedBg = Brush.verticalGradient(listOf(Color(0xFFFBBF24), Color(0xFFD97706))) // Glossy 3D Gold
     val matchedBg = Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669)))   // Emerald Green
-    val flippedBg = if (isDark) Color(0xFF1E293B) else Color.White
 
     Box(
         modifier = Modifier
-            .aspectRatio(1f) // Perfect Square Shape!
+            .aspectRatio(1f) // Perfect Square Shape
             .shadow(if (card.isMatched) 2.dp else 6.dp, RoundedCornerShape(16.dp))
             .graphicsLayer {
                 rotationY = rotation
@@ -581,13 +500,13 @@ fun SquareMemoryCardTile(
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (card.isMatched) matchedBg
-                else if (isFrontVisible) Brush.verticalGradient(listOf(flippedBg, flippedBg))
+                else if (isFrontVisible) Brush.linearGradient(card.graphic.bgGradient)
                 else unflippedBg
             )
             .border(
                 1.5.dp,
                 if (card.isMatched) Color.White.copy(alpha = 0.9f)
-                else if (isFrontVisible) Color(0xFF255FF4).copy(alpha = 0.5f)
+                else if (isFrontVisible) Color.White.copy(alpha = 0.8f)
                 else Color.White.copy(alpha = 0.8f),
                 RoundedCornerShape(16.dp)
             )
@@ -602,51 +521,13 @@ fun SquareMemoryCardTile(
                     .graphicsLayer { rotationY = 180f }, // Flip right-side up
                 contentAlignment = Alignment.Center
             ) {
-                if (!card.graphic.imageUrl.isNullOrBlank()) {
-                    SubcomposeAsyncImage(
-                        model = card.graphic.imageUrl,
-                        contentDescription = card.graphic.key,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp)),
-                        loading = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Brush.linearGradient(card.graphic.bgGradient), RoundedCornerShape(12.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                card.graphic.iconVector?.let { vec ->
-                                    Icon(vec, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
-                                }
-                            }
-                        },
-                        error = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Brush.linearGradient(card.graphic.bgGradient), RoundedCornerShape(12.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                card.graphic.iconVector?.let { vec ->
-                                    Icon(vec, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
-                                }
-                            }
-                        }
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Brush.linearGradient(card.graphic.bgGradient), RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        card.graphic.iconVector?.let { vec ->
-                            Icon(vec, contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
-                        }
-                    }
-                }
+                // Instant pre-loaded vector icon rendering (ZERO network delay!)
+                Icon(
+                    imageVector = card.graphic.iconVector,
+                    contentDescription = card.graphic.title,
+                    tint = Color.White,
+                    modifier = Modifier.size(34.dp)
+                )
             }
         } else {
             // Unflipped tile pattern icon
