@@ -81,6 +81,7 @@ fun HomeScreen(
     onStartReadingQuiz: () -> Unit,
     onNavigateToLeaderboard: () -> Unit,
     onNavigateToAiStudio: () -> Unit = {},
+    onNavigateToMemoryGame: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
@@ -928,19 +929,13 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
 
                         UnifiedEmeraldCard(
-                            title = "Free Coins",
-                            description = "Watch video ad to earn +50 coins",
-                            icon = Icons.Default.MonetizationOn,
+                            title = "Memory Match",
+                            description = "Flip cards & match pairs to win",
+                            icon = Icons.Default.Extension,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClickSound()
-                                com.ilygames.quizapp.utils.AdMobManager.showRewardedAd(
-                                    context = context,
-                                    onRewardEarned = {
-                                        authViewModel.addAdReward(context)
-                                        Toast.makeText(context, "🪙 +50 Bonus Coins Earned!", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
+                                onNavigateToMemoryGame()
                             }
                         )
                     }

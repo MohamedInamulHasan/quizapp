@@ -125,12 +125,22 @@ fun AppNavigation() {
                 onNavigateToAiStudio = {
                     navController.navigate("ai_studio")
                 },
+                onNavigateToMemoryGame = {
+                    navController.navigate("memory_game")
+                },
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
                 onLogout = {
                     authViewModel.guestLogin(context)
                 }
+            )
+        }
+
+        composable("memory_game") {
+            com.ilygames.quizapp.ui.screens.MemoryGameScreen(
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 
