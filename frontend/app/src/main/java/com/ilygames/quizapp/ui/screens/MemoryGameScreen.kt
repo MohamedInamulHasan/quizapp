@@ -594,17 +594,19 @@ fun ExcitingVictoryCardModal(
                             .scale(trophyScale)
                             .shadow(10.dp, CircleShape)
                             .background(
-                                Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
+                                Brush.verticalGradient(
+                                    if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
+                                    else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF1E40AF))
+                                    else listOf(Color(0xFFF59E0B), Color(0xFFB45309))
+                                ),
                                 CircleShape
                             )
-                            .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                            .border(2.dp, Color.White, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = "Trophy",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(40.dp)
+                        Text(
+                            text = if (p1Won || p2Won) "🏆" else "🤝",
+                            fontSize = 42.sp
                         )
                     }
 
