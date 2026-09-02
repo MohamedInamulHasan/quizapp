@@ -401,75 +401,44 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // ── Scoreboard: PLAYER 1 vs PLAYER 2 ─────────────────────────
+            // ── TOP: PLAYER 1 PILL BADGE (TOP-LEFT) ──────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.Start
             ) {
-                // PLAYER 1 Score Pill (Red/Coral)
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .shadow(8.dp, RoundedCornerShape(18.dp))
+                        .shadow(8.dp, RoundedCornerShape(20.dp))
                         .background(
                             Brush.verticalGradient(
                                 if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(18.dp)
+                            RoundedCornerShape(20.dp)
                         )
                         .border(
                             2.dp,
                             if (isPlayer1Turn) Color.White else Color.Transparent,
-                            RoundedCornerShape(18.dp)
+                            RoundedCornerShape(20.dp)
                         )
-                        .padding(vertical = 12.dp, horizontal = 16.dp)
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("🔴 PLAYER 1", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$player1Score", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    }
-                }
-
-                // PLAYER 2 Score Pill (Blue/Indigo)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .shadow(8.dp, RoundedCornerShape(18.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
-                                else listOf(Color(0xFF475569), Color(0xFF334155))
-                            ),
-                            RoundedCornerShape(18.dp)
-                        )
-                        .border(
-                            2.dp,
-                            if (!isPlayer1Turn) Color.White else Color.Transparent,
-                            RoundedCornerShape(18.dp)
-                        )
-                        .padding(vertical = 12.dp, horizontal = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("🔵 PLAYER 2", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$player2Score", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("🔴 PLAYER 1", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("$player1Score", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        if (isPlayer1Turn) {
+                            Text("YOUR TURN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
+                        }
                     }
                 }
             }
 
-
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // ── 4x5 PERFECT SQUARE CARDS GRID WITH RE-DEAL ANIMATION ─────
             key(restartTriggerCount) {
@@ -488,6 +457,43 @@ fun MemoryGameScreen(
                             cardIndex = idx,
                             onClick = { onCardClick(idx) }
                         )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ── BOTTOM: PLAYER 2 PILL BADGE (BOTTOM-RIGHT) ────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Box(
+                    modifier = Modifier
+                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                else listOf(Color(0xFF475569), Color(0xFF334155))
+                            ),
+                            RoundedCornerShape(20.dp)
+                        )
+                        .border(
+                            2.dp,
+                            if (!isPlayer1Turn) Color.White else Color.Transparent,
+                            RoundedCornerShape(20.dp)
+                        )
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (!isPlayer1Turn) {
+                            Text("YOUR TURN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
+                        }
+                        Text("$player2Score", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("PLAYER 2 🔵", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
                     }
                 }
             }

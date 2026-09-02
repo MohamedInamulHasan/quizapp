@@ -902,22 +902,11 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
                     }
 
-                    // Row 3: AI Quiz Studio & Leaderboard
+                    // Row 3: Leaderboard (Paired in Row 3)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        UnifiedEmeraldCard(
-                            title = "AI Quiz Studio",
-                            description = "Create quizzes on any topic with AI",
-                            icon = Icons.Default.AutoAwesome,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClickSound()
-                                onNavigateToAiStudio()
-                            }
-                        )
-
                         UnifiedEmeraldCard(
                             title = "Leaderboard",
                             description = "View top ranked players worldwide",
@@ -932,27 +921,14 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // ── 🎮 2 PLAYER GAMES SECTION ─────────────────────────────
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = "🎮 2 Player Games",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Black,
-                                color = if (com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode) Color.White else Color(0xFF0F172A)
-                            )
-                            Text(
-                                text = "Play pass & play with a friend locally",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = if (com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
-                            )
-                        }
-                    }
+                    // ── 🎮 2 PLAYER GAMES SECTION (MATCHING EXPLORE & REWARDS HEADER STYLE) ──
+                    Text(
+                        text = "2 PLAYER GAMES",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF255FF4),
+                        letterSpacing = 1.sp
+                    )
 
                     Spacer(modifier = Modifier.height(14.dp))
 
@@ -989,110 +965,144 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
             }
         }
 
-        // TODAY'S REWARD POPUP CARD (3D SOFT-CLAY CONTAINER & 3D ROYAL BLUE)
+        // TODAY'S REWARD POPUP CARD (ULTRA-EXCITING 3D VICTORY CARD STYLING)
         if (showRewardShowcaseModal) {
             val isDarkRewModal = com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode
-            val rewModalBg = if (isDarkRewModal) Color(0xFF1C273A) else Color.White
+            val rewModalBg = if (isDarkRewModal) Color(0xFF1E293B) else Color.White
+            val textColorRew = if (isDarkRewModal) Color.White else Color(0xFF0F172A)
+            val subTextColorRew = if (isDarkRewModal) Color.White.copy(alpha = 0.75f) else Color(0xFF64748B)
 
-            AlertDialog(
+            androidx.compose.ui.window.Dialog(
                 onDismissRequest = { showRewardShowcaseModal = false },
-                containerColor = rewModalBg,
-                titleContentColor = if (isDarkRewModal) Color.White else Color(0xFF17181C),
-                shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.border(
-                    1.5.dp,
-                    Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = if (isDarkRewModal) 0.35f else 0.9f),
-                            Color.Black.copy(alpha = if (isDarkRewModal) 0.5f else 0.08f)
-                        )
-                    ),
-                    RoundedCornerShape(32.dp)
-                ),
-                title = {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "TODAY'S REWARD",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Black,
-                            color = if (isDarkRewModal) Color.White else Color(0xFF17181C),
-                            modifier = Modifier.align(Alignment.CenterStart)
-                        )
-                        IconButton(
-                            onClick = { showRewardShowcaseModal = false },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .align(Alignment.CenterEnd)
-                                .shadow(4.dp, CircleShape)
-                                .background(rewModalBg, CircleShape)
-                                .border(
-                                    1.dp,
-                                    Brush.linearGradient(
-                                        colors = listOf(
-                                            Color.White.copy(alpha = if (isDarkRewModal) 0.35f else 0.9f),
-                                            Color.Black.copy(alpha = if (isDarkRewModal) 0.5f else 0.1f)
-                                        )
-                                    ),
-                                    CircleShape
-                                )
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close", tint = if (isDarkRewModal) Color.White else Color(0xFF17181C), modifier = Modifier.size(18.dp))
-                        }
-                    }
-                },
-                text = {
-                    Column(
+                properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.75f))
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                            .shadow(24.dp, RoundedCornerShape(32.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = if (isDarkRewModal) listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                                    else listOf(Color.White, Color(0xFFF1F5F9))
+                                ),
+                                RoundedCornerShape(32.dp)
+                            )
+                            .border(
+                                2.5.dp,
+                                Brush.verticalGradient(
+                                    colors = listOf(Color(0xFFF59E0B), Color(0xFFEAB308), Color(0xFF255FF4))
+                                ),
+                                RoundedCornerShape(32.dp)
+                            )
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        // REWARD IMAGE (WITHOUT BACKGROUND CONTAINER / WITHOUT BORDER BOX)
-                        if (!globalRewardImageUrl.value.isNullOrBlank()) {
-                            coil.compose.AsyncImage(
-                                model = globalRewardImageUrl.value,
-                                contentDescription = "Reward Prize Image",
-                                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(max = 240.dp)
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.EmojiEvents,
-                                contentDescription = "Reward Prize",
-                                tint = if (isDarkRewModal) Color.White else Color(0xFF17181C),
-                                modifier = Modifier.size(110.dp)
-                            )
-                        }
-
-                        val hasActiveReward = !globalRewardTitle.value.isNullOrBlank()
-
-                        // BELOW TITLE & DESCRIPTION (DIRECTLY BELOW IMAGE)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = if (hasActiveReward) globalRewardTitle.value else "No Active Reward Today",
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.Center,
-                                color = if (isDarkRewModal) Color.White else Color(0xFF17181C)
-                            )
+                            // Top Floating Gift Badge
+                            Box(
+                                modifier = Modifier
+                                    .size(76.dp)
+                                    .shadow(12.dp, CircleShape)
+                                    .background(
+                                        Brush.radialGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706))),
+                                        CircleShape
+                                    )
+                                    .border(2.dp, Color.White, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("🎁", fontSize = 40.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
 
                             Text(
-                                text = if (hasActiveReward) globalRewardDescription.value else "Check back tomorrow for exciting rewards and daily prizes!",
-                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp, fontSize = 14.sp),
-                                textAlign = TextAlign.Center,
-                                color = if (isDarkRewModal) Color.White.copy(alpha = 0.8f) else Color(0xFF334155)
+                                text = "TODAY'S EXCLUSIVE REWARD",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Black,
+                                color = textColorRew,
+                                textAlign = TextAlign.Center
                             )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // REWARD IMAGE (WITHOUT BACKGROUND CONTAINER / WITHOUT BORDER BOX)
+                            if (!globalRewardImageUrl.value.isNullOrBlank()) {
+                                coil.compose.AsyncImage(
+                                    model = globalRewardImageUrl.value,
+                                    contentDescription = "Reward Prize Image",
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 200.dp)
+                                        .clip(RoundedCornerShape(20.dp))
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.EmojiEvents,
+                                    contentDescription = "Reward Prize",
+                                    tint = Color(0xFFF59E0B),
+                                    modifier = Modifier.size(90.dp)
+                                )
+                            }
+
+                            val hasActiveReward = !globalRewardTitle.value.isNullOrBlank()
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // TITLE & DESCRIPTION
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = if (hasActiveReward) globalRewardTitle.value else "No Active Reward Today",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black,
+                                    textAlign = TextAlign.Center,
+                                    color = textColorRew
+                                )
+
+                                Text(
+                                    text = if (hasActiveReward) globalRewardDescription.value else "Check back tomorrow for exciting physical rewards and daily prizes!",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    textAlign = TextAlign.Center,
+                                    color = subTextColorRew,
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            // 3D Action Button
+                            Button(
+                                onClick = {
+                                    SoundManager.playClickSound()
+                                    showRewardShowcaseModal = false
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .shadow(8.dp, RoundedCornerShape(16.dp)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text("AWESOME!", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
+                            }
                         }
                     }
-                },
-                confirmButton = {} // NO BUTTON PER USER DIRECTIVE
-            )
+                }
+            }
         }
 
         // GPay-Style Profile & Account Modal (3D SOFT-CLAY CARD & 3D ROYAL BLUE)

@@ -1,7 +1,9 @@
 package com.ilygames.quizapp.ui.screens
 
 import android.widget.Toast
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -30,6 +34,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
+import kotlinx.coroutines.delay
 
 @Composable
 fun TicTacToeScreen(
@@ -43,16 +48,22 @@ fun TicTacToeScreen(
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
     val subTextColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
 
-    // Game Board State (3x3 grid = 9 cells: "", "X", or "O")
+    // 10-Round Match State
+    var currentRound by remember { mutableIntStateOf(1) }
+    var p1Wins by remember { mutableIntStateOf(0) }
+    var p2Wins by remember { mutableIntStateOf(0) }
+    var draws by remember { mutableIntStateOf(0) }
+
+    // Current Round Board State (9 cells)
     var board by remember { mutableStateOf(Array(9) { "" }) }
-    var isXTurn by remember { mutableStateOf(true) } // true = Player X (Red), false = Player O (Blue)
-    var xScore by remember { mutableIntStateOf(0) }
-    var oScore by remember { mutableIntStateOf(0) }
-    var winningIndices by remember { mutableStateOf<List<Int>?>(null) }
-    var showWinnerDialog by remember { mutableStateOf(false) }
+
+    // Alternating Starting Chance per Round: Round 1 -> Player 1 (X) starts, Round 2 -> Player 2 (O) starts...
+    var isXTurn by remember { mutableStateOf(true) }
+    var winningPattern by remember { mutableStateOf<List<Int>?>(null) }
+    var isRoundComplete by remember { mutableStateOf(false) }
+    var showMatchVictoryDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
-    // Winning Combination Patterns
     val winPatterns = listOf(
         listOf(0, 1, 2), listOf(3, 4, 5), listOf(6, 7, 8), // Rows
         listOf(0, 3, 6), listOf(1, 4, 7), listOf(2, 5, 8), // Columns
@@ -72,16 +83,42 @@ fun TicTacToeScreen(
         return Pair(null, null)
     }
 
-    fun restartGame() {
+    fun startNextRound() {
+        if (currentRound >= 10) {
+            // Match Complete!
+            if (!rewardEarned) {
+                rewardEarned = true
+                authViewModel.addAdReward(context)
+                Toast.makeText(context, "🪙 +50 Coins Earned for 10-Round Showdown!", Toast.LENGTH_SHORT).show()
+            }
+            showMatchVictoryDialog = true
+            return
+        }
+
+        currentRound++
+        board = Array(9) { "" }
+        winningPattern = null
+        isRoundComplete = false
+
+        // Alternating First Turn: Odd rounds -> X (Player 1) starts, Even rounds -> O (Player 2) starts
+        isXTurn = (currentRound % 2 != 0)
+    }
+
+    fun resetFullMatch() {
+        currentRound = 1
+        p1Wins = 0
+        p2Wins = 0
+        draws = 0
         board = Array(9) { "" }
         isXTurn = true
-        winningIndices = null
-        showWinnerDialog = false
+        winningPattern = null
+        isRoundComplete = false
+        showMatchVictoryDialog = false
         rewardEarned = false
     }
 
     fun onCellClick(index: Int) {
-        if (board[index].isNotEmpty() || winningIndices != null || showWinnerDialog) return
+        if (board[index].isNotEmpty() || isRoundComplete || showMatchVictoryDialog) return
 
         SoundManager.playClickSound()
 
@@ -92,34 +129,47 @@ fun TicTacToeScreen(
 
         val (winner, pattern) = checkWinner(newBoard)
         if (winner != null) {
+            isRoundComplete = true
             if (winner == "X") {
                 SoundManager.playCorrectSound()
-                xScore++
-                winningIndices = pattern
-                if (!rewardEarned) {
-                    rewardEarned = true
-                    authViewModel.addAdReward(context)
-                    Toast.makeText(context, "🪙 +50 Coins Earned for X | O Victory!", Toast.LENGTH_SHORT).show()
-                }
-                showWinnerDialog = true
+                p1Wins++
+                winningPattern = pattern
             } else if (winner == "O") {
                 SoundManager.playCorrectSound()
-                oScore++
-                winningIndices = pattern
+                p2Wins++
+                winningPattern = pattern
+            } else if (winner == "DRAW") {
+                SoundManager.playWrongSound()
+                draws++
+            }
+        } else {
+            isXTurn = !isXTurn // Pass turn
+        }
+    }
+
+    // Auto-advance round after 1.8s when a round completes
+    LaunchedEffect(isRoundComplete) {
+        if (isRoundComplete && !showMatchVictoryDialog) {
+            delay(1800)
+            if (currentRound < 10) {
+                startNextRound()
+            } else {
                 if (!rewardEarned) {
                     rewardEarned = true
                     authViewModel.addAdReward(context)
-                    Toast.makeText(context, "🪙 +50 Coins Earned for X | O Victory!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "🪙 +50 Coins Earned for 10-Round Showdown!", Toast.LENGTH_SHORT).show()
                 }
-                showWinnerDialog = true
-            } else if (winner == "DRAW") {
-                SoundManager.playWrongSound()
-                showWinnerDialog = true
+                showMatchVictoryDialog = true
             }
-        } else {
-            isXTurn = !isXTurn // Pass turn to next player
         }
     }
+
+    // Animated Strikeout Progress (0f -> 1f)
+    val strikeAnimProgress by animateFloatAsState(
+        targetValue = if (winningPattern != null) 1f else 0f,
+        animationSpec = tween(500, easing = FastOutSlowInEasing),
+        label = "StrikeoutLine"
+    )
 
     Box(
         modifier = Modifier
@@ -133,7 +183,7 @@ fun TicTacToeScreen(
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // ── Top Header Bar ───────────────────────────────────────────
             Row(
@@ -163,15 +213,25 @@ fun TicTacToeScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(20.dp))
                 }
 
-                // Title
-                Text(
-                    text = "X | O Showdown",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Black,
-                    color = textColor
-                )
+                // Round Counter Pill Badge
+                Box(
+                    modifier = Modifier
+                        .shadow(6.dp, RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.horizontalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
+                            RoundedCornerShape(16.dp)
+                        )
+                        .padding(vertical = 6.dp, horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "ROUND $currentRound / 10",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
 
-                // Restart Button
+                // Reset Match Button
                 Box(
                     modifier = Modifier
                         .size(42.dp)
@@ -186,25 +246,23 @@ fun TicTacToeScreen(
                         .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
-                            restartGame()
+                            resetFullMatch()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Restart", tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // ── Scoreboard: PLAYER X (RED) vs PLAYER O (BLUE) ───────────
+            // ── TOP PLAYER 1 BADGE (TOP-LEFT) ────────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.Start
             ) {
-                // PLAYER X Score Pill (RED)
                 Box(
                     modifier = Modifier
-                        .weight(1f)
                         .shadow(8.dp, RoundedCornerShape(20.dp))
                         .background(
                             Brush.verticalGradient(
@@ -218,64 +276,96 @@ fun TicTacToeScreen(
                             if (isXTurn) Color.White else Color.Transparent,
                             RoundedCornerShape(20.dp)
                         )
-                        .padding(vertical = 14.dp, horizontal = 16.dp)
+                        .padding(vertical = 10.dp, horizontal = 18.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text("🔴 PLAYER X", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$xScore", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    }
-                }
-
-                // PLAYER O Score Pill (BLUE)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .shadow(8.dp, RoundedCornerShape(20.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                if (!isXTurn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
-                                else listOf(Color(0xFF475569), Color(0xFF334155))
-                            ),
-                            RoundedCornerShape(20.dp)
-                        )
-                        .border(
-                            2.dp,
-                            if (!isXTurn) Color.White else Color.Transparent,
-                            RoundedCornerShape(20.dp)
-                        )
-                        .padding(vertical = 14.dp, horizontal = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("🔵 PLAYER O", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$oScore", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("🔴 PLAYER 1 (X)", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text("$p1Wins Wins", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24))
+                        if (isXTurn && !isRoundComplete) {
+                            Text("TURN", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Yellow)
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // ── 3x3 TIC TAC TOE GRID (PURE CLEAN WHITE GRID LINES) ───────
+            // ── CENTER 3x3 TIC TAC TOE GRID WITH WHITE CROSS LINES ────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .shadow(16.dp, RoundedCornerShape(28.dp))
-                    .background(
-                        if (isDark) Color(0xFF1E293B) else Color(0xFF0F172A),
-                        RoundedCornerShape(28.dp)
-                    )
-                    .border(3.dp, Color.White, RoundedCornerShape(28.dp))
-                    .padding(16.dp),
+                    .padding(horizontal = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
+                // Background White Lines Canvas (Center cross lines without outer bounding box!)
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val width = size.width
+                    val height = size.height
+                    val colWidth = width / 3f
+                    val rowHeight = height / 3f
+                    val strokeWidth = 8.dp.toPx()
+
+                    // Vertical White Lines
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(colWidth, 10.dp.toPx()),
+                        end = Offset(colWidth, height - 10.dp.toPx()),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(colWidth * 2, 10.dp.toPx()),
+                        end = Offset(colWidth * 2, height - 10.dp.toPx()),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+
+                    // Horizontal White Lines
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(10.dp.toPx(), rowHeight),
+                        end = Offset(width - 10.dp.toPx(), rowHeight),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(10.dp.toPx(), rowHeight * 2),
+                        end = Offset(width - 10.dp.toPx(), rowHeight * 2),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+
+                    // Animated Strikeout Line on 3-in-a-row match
+                    if (winningPattern != null && strikeAnimProgress > 0f) {
+                        val pattern = winningPattern!!
+                        val startIdx = pattern[0]
+                        val endIdx = pattern[2]
+
+                        val startX = (startIdx % 3 + 0.5f) * colWidth
+                        val startY = (startIdx / 3 + 0.5f) * rowHeight
+                        val endX = (endIdx % 3 + 0.5f) * colWidth
+                        val endY = (endIdx / 3 + 0.5f) * rowHeight
+
+                        val currentEndX = startX + (endX - startX) * strikeAnimProgress
+                        val currentEndY = startY + (endY - startY) * strikeAnimProgress
+
+                        drawLine(
+                            color = Color(0xFFF59E0B),
+                            start = Offset(startX, startY),
+                            end = Offset(currentEndX, currentEndY),
+                            strokeWidth = 14.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                    }
+                }
+
+                // Interactive 3x3 Grid Buttons
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceEvenly
@@ -289,43 +379,48 @@ fun TicTacToeScreen(
                         ) {
                             for (col in 0..2) {
                                 val idx = row * 3 + col
-                                val isWinningCell = winningIndices?.contains(idx) == true
+                                val mark = board[idx]
 
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
-                                        .padding(4.dp)
-                                        .clip(RoundedCornerShape(18.dp))
-                                        .background(
-                                            if (isWinningCell) Brush.radialGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706)))
-                                            else Brush.verticalGradient(listOf(Color(0xFF334155), Color(0xFF1E293B)))
-                                        )
-                                        .border(
-                                            2.dp,
-                                            if (isWinningCell) Color.White else Color.White.copy(alpha = 0.7f),
-                                            RoundedCornerShape(18.dp)
-                                        )
                                         .clickable { onCellClick(idx) },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    val mark = board[idx]
-                                    if (mark == "X") {
-                                        // RED X (Player 1)
-                                        Text(
-                                            text = "X",
-                                            fontSize = 46.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = Color(0xFFEF4444)
+                                    if (mark.isNotEmpty()) {
+                                        // Pop-in Bouncy Scale Animation for X or O mark
+                                        var isMarked by remember { mutableStateOf(false) }
+                                        LaunchedEffect(mark) { isMarked = true }
+
+                                        val markScale by animateFloatAsState(
+                                            targetValue = if (isMarked) 1.0f else 0.0f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessMedium
+                                            ),
+                                            label = "MarkPopAnimation"
                                         )
-                                    } else if (mark == "O") {
-                                        // BLUE O (Player 2)
-                                        Text(
-                                            text = "O",
-                                            fontSize = 46.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = Color(0xFF255FF4)
-                                        )
+
+                                        if (mark == "X") {
+                                            // Big Bold Red X
+                                            Text(
+                                                text = "X",
+                                                fontSize = 62.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = Color(0xFFEF4444),
+                                                modifier = Modifier.scale(markScale)
+                                            )
+                                        } else if (mark == "O") {
+                                            // Big Bold Blue O
+                                            Text(
+                                                text = "O",
+                                                fontSize = 62.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = Color(0xFF255FF4),
+                                                modifier = Modifier.scale(markScale)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -334,14 +429,50 @@ fun TicTacToeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ── BOTTOM PLAYER 2 BADGE (BOTTOM-RIGHT) ──────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Box(
+                    modifier = Modifier
+                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                if (!isXTurn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                else listOf(Color(0xFF475569), Color(0xFF334155))
+                            ),
+                            RoundedCornerShape(20.dp)
+                        )
+                        .border(
+                            2.dp,
+                            if (!isXTurn) Color.White else Color.Transparent,
+                            RoundedCornerShape(20.dp)
+                        )
+                        .padding(vertical = 10.dp, horizontal = 18.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        if (!isXTurn && !isRoundComplete) {
+                            Text("TURN", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Yellow)
+                        }
+                        Text("$p2Wins Wins", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24))
+                        Text("PLAYER 2 (O) 🔵", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // ── EXCITING ANIMATED 3D VICTORY CARD MODAL ──────────────────────
-        if (showWinnerDialog) {
-            val (winner, _) = checkWinner(board)
-            val xWon = winner == "X"
-            val oWon = winner == "O"
+        // ── 10-ROUND MATCH GRAND CHAMPION VICTORY MODAL ──────────────────
+        if (showMatchVictoryDialog) {
+            val p1WonMatch = p1Wins > p2Wins
+            val p2WonMatch = p2Wins > p1Wins
 
             val infiniteTransition = rememberInfiniteTransition(label = "TrophyPulse")
             val trophyScale by infiniteTransition.animateFloat(
@@ -379,8 +510,8 @@ fun TicTacToeScreen(
                             .border(
                                 2.5.dp,
                                 Brush.verticalGradient(
-                                    colors = if (xWon) listOf(Color(0xFFEF4444), Color(0xFFF59E0B))
-                                    else if (oWon) listOf(Color(0xFF255FF4), Color(0xFF06B6D4))
+                                    colors = if (p1WonMatch) listOf(Color(0xFFEF4444), Color(0xFFF59E0B))
+                                    else if (p2WonMatch) listOf(Color(0xFF255FF4), Color(0xFF06B6D4))
                                     else listOf(Color(0xFFF59E0B), Color(0xFFEAB308))
                                 ),
                                 RoundedCornerShape(32.dp)
@@ -392,7 +523,7 @@ fun TicTacToeScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            // Floating Animated 3D Trophy / Winner Badge
+                            // Floating 3D Trophy Badge
                             Box(
                                 modifier = Modifier
                                     .size(86.dp)
@@ -400,8 +531,8 @@ fun TicTacToeScreen(
                                     .shadow(12.dp, CircleShape)
                                     .background(
                                         Brush.radialGradient(
-                                            colors = if (xWon) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                                            else if (oWon) listOf(Color(0xFF255FF4), Color(0xFF1E40AF))
+                                            colors = if (p1WonMatch) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
+                                            else if (p2WonMatch) listOf(Color(0xFF255FF4), Color(0xFF1E40AF))
                                             else listOf(Color(0xFFF59E0B), Color(0xFFB45309))
                                         ),
                                         CircleShape
@@ -410,24 +541,26 @@ fun TicTacToeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = if (xWon || oWon) "🏆" else "🤝",
+                                    text = if (p1WonMatch || p2WonMatch) "🏆" else "🤝",
                                     fontSize = 44.sp
                                 )
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Headline
+                            // Celebration Headline
                             Text(
-                                text = if (xWon) "🔴 PLAYER X WINS!" else if (oWon) "🔵 PLAYER O WINS!" else "🤝 IT'S A DRAW!",
-                                fontSize = 24.sp,
+                                text = if (p1WonMatch) "🔴 PLAYER 1 IS GRAND CHAMPION!"
+                                else if (p2WonMatch) "🔵 PLAYER 2 IS GRAND CHAMPION!"
+                                else "🤝 10-ROUND MATCH IS A DRAW!",
+                                fontSize = 22.sp,
                                 fontWeight = FontWeight.Black,
                                 color = textColor,
                                 textAlign = TextAlign.Center
                             )
 
                             Text(
-                                text = "🎉 Masterful Tic Tac Toe Play!",
+                                text = "🎉 Completed All 10 Battle Rounds!",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = subTextColor,
@@ -436,7 +569,7 @@ fun TicTacToeScreen(
 
                             Spacer(modifier = Modifier.height(20.dp))
 
-                            // Score Summary Box
+                            // Score Breakdown Card
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -450,23 +583,23 @@ fun TicTacToeScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("🔴 PLAYER X", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
-                                    Text("$xScore", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
-                                    Text("Wins", fontSize = 10.sp, color = Color.Gray)
+                                    Text("🔴 PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+                                    Text("$p1Wins", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
+                                    Text("Rounds Won", fontSize = 10.sp, color = Color.Gray)
                                 }
 
                                 Text("VS", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFF59E0B))
 
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("🔵 PLAYER O", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
-                                    Text("$oScore", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
-                                    Text("Wins", fontSize = 10.sp, color = Color.Gray)
+                                    Text("🔵 PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
+                                    Text("$p2Wins", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
+                                    Text("Rounds Won", fontSize = 10.sp, color = Color.Gray)
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(18.dp))
 
-                            // Coin Reward Badge
+                            // Bonus Coins Pill
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -499,7 +632,7 @@ fun TicTacToeScreen(
                                 Button(
                                     onClick = {
                                         SoundManager.playClickSound()
-                                        restartGame()
+                                        resetFullMatch()
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -514,7 +647,7 @@ fun TicTacToeScreen(
                                     ) {
                                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("PLAY AGAIN", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                        Text("NEW 10-ROUND MATCH", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
                                     }
                                 }
 
