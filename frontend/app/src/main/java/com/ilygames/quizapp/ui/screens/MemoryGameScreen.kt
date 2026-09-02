@@ -332,15 +332,16 @@ fun MemoryGameScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .statusBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(14.dp))
-
             // ── Top Header Bar ───────────────────────────────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -401,46 +402,38 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ── TOP: PLAYER 1 PILL BADGE (TOP-LEFT) ──────────────────────
+            // ── TOP: PLAYER 1 CARD ATTACHED TO LEFT EDGE OF SCREEN ────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
             ) {
                 Box(
                     modifier = Modifier
-                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                        .shadow(8.dp, RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
                         .background(
                             Brush.verticalGradient(
                                 if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
                         .border(
                             2.dp,
                             if (isPlayer1Turn) Color.White else Color.Transparent,
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
-                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                        .padding(vertical = 10.dp, horizontal = 22.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text("🔴 PLAYER 1", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$player1Score", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        if (isPlayer1Turn) {
-                            Text("YOUR TURN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
-                        }
-                    }
+                    Text(
+                        text = "PLAYER 1 | $player1Score",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ── 4x5 PERFECT SQUARE CARDS GRID WITH RE-DEAL ANIMATION ─────
+            // ── 4x5 PERFECT SQUARE CARDS GRID (CENTERED VERTICALLY) ──────
             key(restartTriggerCount) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
@@ -448,6 +441,7 @@ fun MemoryGameScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                         .weight(1f)
                 ) {
                     itemsIndexed(cards) { idx, card ->
@@ -461,40 +455,34 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ── BOTTOM: PLAYER 2 PILL BADGE (BOTTOM-RIGHT) ────────────────
+            // ── BOTTOM: PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ─────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 Box(
                     modifier = Modifier
-                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                        .shadow(8.dp, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
                         .background(
                             Brush.verticalGradient(
                                 if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
                         .border(
                             2.dp,
                             if (!isPlayer1Turn) Color.White else Color.Transparent,
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
-                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                        .padding(vertical = 10.dp, horizontal = 22.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (!isPlayer1Turn) {
-                            Text("YOUR TURN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Yellow)
-                        }
-                        Text("$player2Score", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("PLAYER 2 🔵", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    }
+                    Text(
+                        text = "PLAYER 2 | $player2Score",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
                 }
             }
 

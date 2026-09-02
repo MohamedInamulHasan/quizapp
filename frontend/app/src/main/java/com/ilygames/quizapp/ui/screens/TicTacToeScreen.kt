@@ -85,7 +85,6 @@ fun TicTacToeScreen(
 
     fun startNextRound() {
         if (currentRound >= 10) {
-            // Match Complete!
             if (!rewardEarned) {
                 rewardEarned = true
                 authViewModel.addAdReward(context)
@@ -179,15 +178,15 @@ fun TicTacToeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .statusBarsPadding(),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(14.dp))
-
             // ── Top Header Bar ───────────────────────────────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -221,7 +220,7 @@ fun TicTacToeScreen(
                             Brush.horizontalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                             RoundedCornerShape(16.dp)
                         )
-                        .padding(vertical = 6.dp, horizontal = 16.dp)
+                        .padding(vertical = 6.dp, horizontal = 18.dp)
                 ) {
                     Text(
                         text = "ROUND $currentRound / 10",
@@ -254,54 +253,46 @@ fun TicTacToeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ── TOP PLAYER 1 BADGE (TOP-LEFT) ────────────────────────────
+            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE OF SCREEN ─────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
             ) {
                 Box(
                     modifier = Modifier
-                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                        .shadow(8.dp, RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
                         .background(
                             Brush.verticalGradient(
                                 if (isXTurn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
                         .border(
                             2.dp,
                             if (isXTurn) Color.White else Color.Transparent,
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
-                        .padding(vertical = 10.dp, horizontal = 18.dp)
+                        .padding(vertical = 10.dp, horizontal = 22.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text("🔴 PLAYER 1 (X)", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White)
-                        Text("$p1Wins Wins", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24))
-                        if (isXTurn && !isRoundComplete) {
-                            Text("TURN", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Yellow)
-                        }
-                    }
+                    Text(
+                        text = "PLAYER 1 | $p1Wins",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ── CENTER 3x3 TIC TAC TOE GRID WITH WHITE CROSS LINES ────────
+            // ── CENTER 3x3 TIC TAC TOE GRID (PERFECTLY CENTERED VERTICALLY) ──────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Background White Lines Canvas (Center cross lines without outer bounding box!)
+                // Background White Cross Lines (Without outer box!)
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val width = size.width
                     val height = size.height
@@ -389,7 +380,6 @@ fun TicTacToeScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (mark.isNotEmpty()) {
-                                        // Pop-in Bouncy Scale Animation for X or O mark
                                         var isMarked by remember { mutableStateOf(false) }
                                         LaunchedEffect(mark) { isMarked = true }
 
@@ -403,7 +393,6 @@ fun TicTacToeScreen(
                                         )
 
                                         if (mark == "X") {
-                                            // Big Bold Red X
                                             Text(
                                                 text = "X",
                                                 fontSize = 62.sp,
@@ -412,7 +401,6 @@ fun TicTacToeScreen(
                                                 modifier = Modifier.scale(markScale)
                                             )
                                         } else if (mark == "O") {
-                                            // Big Bold Blue O
                                             Text(
                                                 text = "O",
                                                 fontSize = 62.sp,
@@ -429,40 +417,34 @@ fun TicTacToeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ── BOTTOM PLAYER 2 BADGE (BOTTOM-RIGHT) ──────────────────────
+            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 Box(
                     modifier = Modifier
-                        .shadow(8.dp, RoundedCornerShape(20.dp))
+                        .shadow(8.dp, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
                         .background(
                             Brush.verticalGradient(
                                 if (!isXTurn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
                         .border(
                             2.dp,
                             if (!isXTurn) Color.White else Color.Transparent,
-                            RoundedCornerShape(20.dp)
+                            RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
-                        .padding(vertical = 10.dp, horizontal = 18.dp)
+                        .padding(vertical = 10.dp, horizontal = 22.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        if (!isXTurn && !isRoundComplete) {
-                            Text("TURN", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Yellow)
-                        }
-                        Text("$p2Wins Wins", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24))
-                        Text("PLAYER 2 (O) 🔵", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White)
-                    }
+                    Text(
+                        text = "PLAYER 2 | $p2Wins",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
                 }
             }
 

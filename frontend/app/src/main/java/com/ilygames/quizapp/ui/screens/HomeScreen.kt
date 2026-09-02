@@ -845,7 +845,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         letterSpacing = 1.sp
                     )
 
-                    // Row 1: Passage Study
+                    // Row 1: Passage Study & Leaderboard (Next to each other!)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -858,6 +858,17 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             onClick = {
                                 SoundManager.playClickSound()
                                 onStartReadingQuiz()
+                            }
+                        )
+
+                        UnifiedEmeraldCard(
+                            title = "Leaderboard",
+                            description = "View top ranked players worldwide",
+                            icon = Icons.Default.Leaderboard,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToLeaderboard()
                             }
                         )
                     }
@@ -902,24 +913,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
                     }
 
-                    // Row 3: Leaderboard (Paired in Row 3)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        UnifiedEmeraldCard(
-                            title = "Leaderboard",
-                            description = "View top ranked players worldwide",
-                            icon = Icons.Default.Leaderboard,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClickSound()
-                                onNavigateToLeaderboard()
-                            }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // ── 🎮 2 PLAYER GAMES SECTION (MATCHING EXPLORE & REWARDS HEADER STYLE) ──
                     Text(
@@ -930,7 +924,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         letterSpacing = 1.sp
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     // 2 Player Games Grid Row: Memory Match & X | O Showdown
                     Row(
