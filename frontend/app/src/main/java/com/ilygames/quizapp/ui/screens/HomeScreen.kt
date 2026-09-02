@@ -943,13 +943,13 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 text = "🎮 2 Player Games",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black,
-                                color = if (isDark) Color.White else Color(0xFF0F172A)
+                                color = if (com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode) Color.White else Color(0xFF0F172A)
                             )
                             Text(
                                 text = "Play pass & play with a friend locally",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
+                                color = if (com.ilygames.quizapp.ui.theme.ThemeState.isDarkMode) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
                             )
                         }
                     }
