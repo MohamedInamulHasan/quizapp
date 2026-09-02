@@ -467,33 +467,7 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
 
-            // ── Active Turn Status Banner ─────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(4.dp, RoundedCornerShape(14.dp))
-                    .background(
-                        if (isPlayer1Turn) Color(0xFFEF4444).copy(alpha = 0.15f)
-                        else Color(0xFF255FF4).copy(alpha = 0.15f),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .border(
-                        1.dp,
-                        if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFF255FF4),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (isPlayer1Turn) "🔴 PLAYER 1'S TURN - TAP 2 TILES" else "🔵 PLAYER 2'S TURN - TAP 2 TILES",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Black,
-                    color = if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFF255FF4)
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
