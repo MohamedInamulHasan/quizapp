@@ -178,7 +178,8 @@ fun TicTacToeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
+                .statusBarsPadding()
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // ── TOP HEADER BAR WITH 3D METALLIC GLASSMORPHISM BUTTONS ─────

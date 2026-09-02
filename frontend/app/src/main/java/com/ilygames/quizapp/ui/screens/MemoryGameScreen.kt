@@ -332,11 +332,10 @@ fun MemoryGameScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── Top Header Bar ───────────────────────────────────────────
             // ── Top Header Bar with 3D Metallic Glassmorphism Buttons ─────
             Row(
                 modifier = Modifier
@@ -349,7 +348,7 @@ fun MemoryGameScreen(
                 // 3D Metallic Glassmorphism Back Button
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(44.dp)
                         .shadow(8.dp, CircleShape)
                         .background(
                             Brush.verticalGradient(
@@ -374,7 +373,7 @@ fun MemoryGameScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(20.dp))
                 }
 
                 // Title
@@ -388,7 +387,7 @@ fun MemoryGameScreen(
                 // 3D Metallic Glassmorphism Retry Button
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(44.dp)
                         .shadow(8.dp, CircleShape)
                         .background(
                             Brush.verticalGradient(
@@ -416,10 +415,12 @@ fun MemoryGameScreen(
                         Icons.Default.Refresh,
                         contentDescription = "Restart",
                         tint = textColor,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // ── TOP: PLAYER 1 CARD ATTACHED TO LEFT EDGE OF SCREEN ────────
             Row(
@@ -436,23 +437,25 @@ fun MemoryGameScreen(
                             ),
                             RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
-                        .padding(vertical = 10.dp, horizontal = 22.dp)
+                        .padding(vertical = 8.dp, horizontal = 20.dp)
                 ) {
                     Text(
                         text = "PLAYER 1 | $player1Score",
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                 }
             }
 
+            Spacer(modifier = Modifier.height(10.dp))
+
             // ── 4x5 PERFECT SQUARE CARDS GRID (CENTERED VERTICALLY) ──────
             key(restartTriggerCount) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -469,6 +472,8 @@ fun MemoryGameScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(10.dp))
+
             // ── BOTTOM: PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ─────
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -484,16 +489,18 @@ fun MemoryGameScreen(
                             ),
                             RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
-                        .padding(vertical = 10.dp, horizontal = 22.dp)
+                        .padding(vertical = 8.dp, horizontal = 20.dp)
                 ) {
                     Text(
                         text = "PLAYER 2 | $player2Score",
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             Spacer(modifier = Modifier.height(16.dp))
         }
