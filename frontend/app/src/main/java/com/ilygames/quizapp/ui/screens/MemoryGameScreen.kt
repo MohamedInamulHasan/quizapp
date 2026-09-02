@@ -572,22 +572,15 @@ fun ExcitingVictoryCardModal(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(24.dp, RoundedCornerShape(32.dp))
+                    .shadow(16.dp, RoundedCornerShape(28.dp))
                     .background(
-                        Brush.verticalGradient(
-                            colors = if (isDark) listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                            else listOf(Color.White, Color(0xFFF1F5F9))
-                        ),
-                        RoundedCornerShape(32.dp)
+                        if (isDark) Color(0xFF1E293B) else Color.White,
+                        RoundedCornerShape(28.dp)
                     )
                     .border(
-                        2.5.dp,
-                        Brush.verticalGradient(
-                            colors = if (p1Won) listOf(Color(0xFFEF4444), Color(0xFFF59E0B))
-                            else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF06B6D4))
-                            else listOf(Color(0xFFF59E0B), Color(0xFFEAB308))
-                        ),
-                        RoundedCornerShape(32.dp)
+                        1.dp,
+                        if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE2E8F0),
+                        RoundedCornerShape(28.dp)
                     )
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
@@ -596,26 +589,24 @@ fun ExcitingVictoryCardModal(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Floating Animated 3D Trophy Badge
+                    // 3D Circular Trophy Badge
                     Box(
                         modifier = Modifier
-                            .size(86.dp)
+                            .size(76.dp)
                             .scale(trophyScale)
-                            .shadow(12.dp, CircleShape)
+                            .shadow(10.dp, CircleShape)
                             .background(
-                                Brush.radialGradient(
-                                    colors = if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                                    else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF1E40AF))
-                                    else listOf(Color(0xFFF59E0B), Color(0xFFB45309))
-                                ),
+                                Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
                                 CircleShape
                             )
-                            .border(2.dp, Color.White, CircleShape),
+                            .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = if (p1Won || p2Won) "🏆" else "🤝",
-                            fontSize = 44.sp
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = "Trophy",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(40.dp)
                         )
                     }
 
@@ -623,127 +614,163 @@ fun ExcitingVictoryCardModal(
 
                     // Celebration Headline
                     Text(
-                        text = if (p1Won) "PLAYER 1 WINS!" else if (p2Won) "PLAYER 2 WINS!" else "IT'S A DRAW!",
+                        text = if (p1Won) "🎉 Player 1 Wins!" else if (p2Won) "🎉 Player 2 Wins!" else "🤝 It's a Draw!",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         color = textColor,
                         textAlign = TextAlign.Center
                     )
 
-                    Text(
-                        text = "🎉 What an Epic Memory Battle!",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B),
-                        textAlign = TextAlign.Center
-                    )
-
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Score Card Comparison Box
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(6.dp, RoundedCornerShape(20.dp))
-                            .background(
-                                if (isDark) Color(0xFF0F172A) else Color(0xFFE2E8F0),
-                                RoundedCornerShape(20.dp)
-                            )
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Player 1
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
-                            Text("$player1Score", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
-                            Text("Matched Pairs", fontSize = 10.sp, color = Color.Gray)
-                        }
-
-                        Text("VS", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFF59E0B))
-
-                        // Player 2
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
-                            Text("$player2Score", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
-                            Text("Matched Pairs", fontSize = 10.sp, color = Color.Gray)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    // 🪙 Bonus Coin Reward Pill
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(4.dp, RoundedCornerShape(14.dp))
-                            .background(
-                                Brush.horizontalGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706))),
-                                RoundedCornerShape(14.dp)
-                            )
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🪙 ", fontSize = 16.sp)
-                            Text(
-                                "+50 BONUS COINS ADDED TO WALLET!",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(22.dp))
-
-                    // Action Buttons
+                    // Stacked Score Cards (Matching Quiz Completed Stats Rows)
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // PLAY AGAIN 3D Pill Button
+                        // Player 1 Score Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isDark) Color(0xFF0F172A) else Color(0xFFF1F5F9),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .padding(vertical = 14.dp, horizontal = 18.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(Color(0xFFEF4444), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Player 1 Score",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
+                            }
+                            Text(
+                                text = "$player1Score pts",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF255FF4)
+                            )
+                        }
+
+                        // Player 2 Score Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isDark) Color(0xFF0F172A) else Color(0xFFF1F5F9),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .padding(vertical = 14.dp, horizontal = 18.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(Color(0xFF255FF4), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Player 2 Score",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
+                            }
+                            Text(
+                                text = "$player2Score pts",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF255FF4)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Side-by-side 3D Action Buttons (Play Again & Home)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // 3D Play Again Button
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 onPlayAgain()
                             },
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp)
+                                .weight(1f)
+                                .height(48.dp)
                                 .shadow(8.dp, RoundedCornerShape(16.dp)),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(0.dp)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("PLAY AGAIN", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Play Again",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                             }
                         }
 
-                        // BACK TO HOME Button
-                        OutlinedButton(
+                        // 3D Home Button
+                        Button(
                             onClick = onBackToHome,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                                .weight(1f)
+                                .height(48.dp)
+                                .shadow(8.dp, RoundedCornerShape(16.dp)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
                             shape = RoundedCornerShape(16.dp),
-                            border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.5.dp)
+                            contentPadding = PaddingValues(0.dp)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                Icon(Icons.Default.Home, contentDescription = null, tint = textColor, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("BACK TO HOME", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                                Icon(
+                                    imageVector = Icons.Default.Home,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Home",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                             }
                         }
                     }
+                }
+            }
                 }
             }
         }
