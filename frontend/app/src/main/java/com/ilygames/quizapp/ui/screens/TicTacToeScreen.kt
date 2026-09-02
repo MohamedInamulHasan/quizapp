@@ -347,7 +347,7 @@ fun TicTacToeScreen(
                         cap = StrokeCap.Round
                     )
 
-                    // PURE WHITE SOLID STRIKE OUT LINE (Clean white line with ZERO extra glow)
+                    // PURE WHITE SOLID COMPACT STRIKE OUT LINE
                     if (winningPattern != null && strikeAnimProgress > 0f) {
                         val pattern = winningPattern!!
                         val isRow = pattern == listOf(0, 1, 2) || pattern == listOf(3, 4, 5) || pattern == listOf(6, 7, 8)
@@ -359,27 +359,27 @@ fun TicTacToeScreen(
                             isRow -> {
                                 val rowIdx = pattern[0] / 3
                                 val y = (rowIdx + 0.5f) * rowHeight
-                                listOf(0f, y, width, y)
+                                listOf(colWidth * 0.15f, y, colWidth * 2.85f, y)
                             }
                             isCol -> {
                                 val colIdx = pattern[0] % 3
                                 val x = (colIdx + 0.5f) * colWidth
-                                listOf(x, 0f, x, height)
+                                listOf(x, rowHeight * 0.15f, x, rowHeight * 2.85f)
                             }
-                            isDiag1 -> listOf(0f, 0f, width, height)
-                            isDiag2 -> listOf(width, 0f, 0f, height)
-                            else -> listOf(0f, 0f, width, height)
+                            isDiag1 -> listOf(colWidth * 0.15f, rowHeight * 0.15f, colWidth * 2.85f, rowHeight * 2.85f)
+                            isDiag2 -> listOf(colWidth * 2.85f, rowHeight * 0.15f, colWidth * 0.15f, rowHeight * 2.85f)
+                            else -> listOf(colWidth * 0.15f, rowHeight * 0.15f, colWidth * 2.85f, rowHeight * 2.85f)
                         }
 
                         val curEndX = fullStartX + (fullEndX - fullStartX) * strikeAnimProgress
                         val curEndY = fullStartY + (fullEndY - fullStartY) * strikeAnimProgress
 
-                        // Single Clean Solid White Strike Line
+                        // Compact Solid White Strike Line
                         drawLine(
                             color = Color.White,
                             start = Offset(fullStartX, fullStartY),
                             end = Offset(curEndX, curEndY),
-                            strokeWidth = 10.dp.toPx(),
+                            strokeWidth = 8.dp.toPx(),
                             cap = StrokeCap.Round
                         )
                     }
@@ -703,12 +703,8 @@ fun TicTacToeScreen(
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White
-                                        )
-                                    }
                                 }
                             }
-                        }
-                    }
                         }
                     }
                 }

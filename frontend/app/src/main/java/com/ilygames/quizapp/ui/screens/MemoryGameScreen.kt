@@ -423,7 +423,7 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // ── TOP: PLAYER 1 CARD ATTACHED TO LEFT EDGE OF SCREEN ────────
             Row(
@@ -451,7 +451,7 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // ── 4x5 PERFECT SQUARE CARDS GRID (CENTERED IN DEAD CENTER OF SCREEN) ──
             Box(
@@ -481,7 +481,7 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // ── BOTTOM: PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ─────
             Row(
@@ -509,9 +509,7 @@ fun MemoryGameScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
         }
 
         // ── EXCITING ANIMATED 3D VICTORY CARD MODAL ──────────────────────
@@ -765,12 +763,10 @@ fun ExcitingVictoryCardModal(
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
-                                )
+                                }
                             }
                         }
                     }
-                }
-            }
                 }
             }
         }
