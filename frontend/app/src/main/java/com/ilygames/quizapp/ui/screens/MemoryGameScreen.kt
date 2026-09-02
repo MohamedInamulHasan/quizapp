@@ -337,7 +337,7 @@ fun MemoryGameScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // ── Top Header Bar ───────────────────────────────────────────
-            // ── Top Header Bar with 3D Royal Blue Buttons ─────────────────
+            // ── Top Header Bar with 3D Metallic Glassmorphism Buttons ─────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -346,23 +346,35 @@ fun MemoryGameScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // 3D Royal Blue Back Button
+                // 3D Metallic Glassmorphism Back Button
                 Box(
                     modifier = Modifier
                         .size(46.dp)
                         .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
+                            Brush.verticalGradient(
+                                if (isDark) listOf(Color(0xFF2C3E55), Color(0xFF1A2636))
+                                else listOf(Color.White, Color(0xFFE2E8F0))
+                            ),
                             CircleShape
                         )
-                        .border(1.5.dp, Color.White.copy(alpha = 0.6f), CircleShape)
+                        .border(
+                            1.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = if (isDark) 0.5f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDark) 0.6f else 0.15f)
+                                )
+                            ),
+                            CircleShape
+                        )
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(22.dp))
                 }
 
                 // Title
@@ -373,16 +385,28 @@ fun MemoryGameScreen(
                     color = textColor
                 )
 
-                // 3D Royal Blue Retry Button
+                // 3D Metallic Glassmorphism Retry Button
                 Box(
                     modifier = Modifier
                         .size(46.dp)
                         .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
+                            Brush.verticalGradient(
+                                if (isDark) listOf(Color(0xFF2C3E55), Color(0xFF1A2636))
+                                else listOf(Color.White, Color(0xFFE2E8F0))
+                            ),
                             CircleShape
                         )
-                        .border(1.5.dp, Color.White.copy(alpha = 0.6f), CircleShape)
+                        .border(
+                            1.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = if (isDark) 0.5f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDark) 0.6f else 0.15f)
+                                )
+                            ),
+                            CircleShape
+                        )
                         .clickable {
                             triggerAnimatedRestart()
                         },
@@ -391,7 +415,7 @@ fun MemoryGameScreen(
                     Icon(
                         Icons.Default.Refresh,
                         contentDescription = "Restart",
-                        tint = Color.White,
+                        tint = textColor,
                         modifier = Modifier.size(22.dp)
                     )
                 }
