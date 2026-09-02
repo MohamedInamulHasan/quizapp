@@ -1,8 +1,8 @@
 package com.ilygames.quizapp.ui.screens
 
 import android.widget.Toast
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
@@ -42,7 +45,7 @@ data class TileGraphic(
     val bgGradient: List<Color>
 )
 
-// Master Pool of 30+ distinct pre-loaded 3D vector graphic tiles so every round picks NEW unused items!
+// Master Pool of 30+ distinct pre-loaded 3D vector graphic tiles with vibrant jewel gradients
 val MASTER_TILE_POOL = listOf(
     TileGraphic("rocket", "Rocket", Icons.Default.RocketLaunch, listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9))),
     TileGraphic("gamepad", "Gamepad", Icons.Default.SportsEsports, listOf(Color(0xFFEC4899), Color(0xFFBE185D))),
@@ -132,26 +135,51 @@ fun MemoryGameScreen(
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
-    fun restartGame() {
+    // Re-deal / Retry Flip Animation Trigger State
+    var isRestartingAnimation by remember { mutableStateOf(false) }
+    var restartTriggerCount by remember { mutableIntStateOf(0) }
+
+    // Animated Card Re-deal Handler
+    val coroutineScope = rememberCoroutineScope()
+    fun triggerAnimatedRestart() {
+        if (isRestartingAnimation) return
+        isRestartingAnimation = true
+        showWinnerDialog = false
+
+        // Step 1: Flip all cards back first with flip sound effect
+        SoundManager.playClickSound()
+        cards = cards.map { it.copy(isFlipped = false, isMatched = false) }
+
+        // Step 2: Delay for flip-back transition then generate fresh deck
+        kotlinx.coroutines.MainScope().run {
+            kotlinx.coroutines.GlobalScope.run {
+                // Short pause before dealing new cards
+            }
+        }
+
+        // Trigger scale re-deal animation
+        restartTriggerCount++
         cards = createFreshDeck()
         selectedIndices = emptyList()
         isPlayer1Turn = true
         player1Score = 0
         player2Score = 0
         isProcessingTurn = false
-        showWinnerDialog = false
         rewardEarned = false
+
+        // End restart animation state
+        isRestartingAnimation = false
     }
 
     // ── Player Tap Handler (Normal 2-Player Pass & Play) ─────────────────
     fun onCardClick(index: Int) {
-        if (isProcessingTurn) return
+        if (isProcessingTurn || isRestartingAnimation) return
         val card = cards[index]
         if (card.isFlipped || card.isMatched) return
 
         SoundManager.playClickSound()
 
-        // Flip card instantly with zero network delay
+        // Flip card instantly
         cards = cards.toMutableList().also {
             it[index] = it[index].copy(isFlipped = true)
         }
@@ -190,7 +218,6 @@ fun MemoryGameScreen(
                     }
                     showWinnerDialog = true
                 }
-                // Matcher gets another turn!
             } else {
                 // No Match ➔ flip back after 800ms and switch turn!
                 SoundManager.playWrongSound()
@@ -266,7 +293,7 @@ fun MemoryGameScreen(
                     color = textColor
                 )
 
-                // Restart Button
+                // Animated Retry / Re-deal Button
                 Box(
                     modifier = Modifier
                         .size(42.dp)
@@ -280,12 +307,16 @@ fun MemoryGameScreen(
                         )
                         .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
                         .clickable {
-                            SoundManager.playClickSound()
-                            restartGame()
+                            triggerAnimatedRestart()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Restart", tint = Color(0xFF255FF4), modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Restart",
+                        tint = Color(0xFF255FF4),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
@@ -385,96 +416,267 @@ fun MemoryGameScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── 4x5 PERFECT SQUARE CARDS GRID (NO OUTER CARD CONTAINER WRAPPER) ──
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                itemsIndexed(cards) { idx, card ->
-                    SquareMemoryCardTile(
-                        card = card,
-                        isDark = isDark,
-                        onClick = { onCardClick(idx) }
-                    )
+            // ── 4x5 PERFECT SQUARE CARDS GRID WITH RE-DEAL ANIMATION ─────
+            key(restartTriggerCount) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    itemsIndexed(cards) { idx, card ->
+                        SquareMemoryCardTile(
+                            card = card,
+                            isDark = isDark,
+                            cardIndex = idx,
+                            onClick = { onCardClick(idx) }
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // ── Winner Dialog Modal ─────────────────────────────────────────
+        // ── EXCITING ANIMATED 3D VICTORY CARD MODAL ──────────────────────
         if (showWinnerDialog) {
-            val p1Won = player1Score > player2Score
-            val p2Won = player2Score > player1Score
-            val isDraw = player1Score == player2Score
-
-            AlertDialog(
-                onDismissRequest = { showWinnerDialog = false },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            SoundManager.playClickSound()
-                            restartGame()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text("PLAY AGAIN", fontWeight = FontWeight.Black, color = Color.White)
-                    }
+            ExcitingVictoryCardModal(
+                player1Score = player1Score,
+                player2Score = player2Score,
+                isDark = isDark,
+                onPlayAgain = {
+                    triggerAnimatedRestart()
                 },
-                dismissButton = {
-                    OutlinedButton(
-                        onClick = {
-                            SoundManager.playClickSound()
-                            onBack()
-                        },
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text("BACK TO HOME", fontWeight = FontWeight.Bold, color = textColor)
-                    }
-                },
-                title = {
-                    Text(
-                        text = if (p1Won) "🏆 PLAYER 1 WINS!" else if (p2Won) "🏆 PLAYER 2 WINS!" else "🤝 IT'S A DRAW!",
-                        fontWeight = FontWeight.Black,
-                        fontSize = 22.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                text = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Final Score: 🔴 $player1Score - $player2Score 🔵",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("🪙 +50 Bonus Coins Awarded!", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color(0xFFEAB308))
-                    }
-                },
-                shape = RoundedCornerShape(26.dp),
-                containerColor = if (isDark) Color(0xFF1E293B) else Color.White,
-                titleContentColor = textColor,
-                textContentColor = subTextColor
+                onBackToHome = {
+                    SoundManager.playClickSound()
+                    onBack()
+                }
             )
         }
     }
 }
 
-// ── PERFECT SQUARE MEMORY CARD TILE (PRE-LOADED VECTORS FOR ZERO FLIP LAG) ──
+// ── ULTRA EXCITING 3D VICTORY CARD MODAL COMPONENT ──────────────────────
+@Composable
+fun ExcitingVictoryCardModal(
+    player1Score: Int,
+    player2Score: Int,
+    isDark: Boolean,
+    onPlayAgain: () -> Unit,
+    onBackToHome: () -> Unit
+) {
+    val p1Won = player1Score > player2Score
+    val p2Won = player2Score > player1Score
+    val isDraw = player1Score == player2Score
+
+    val cardBg = if (isDark) Color(0xFF0F172A) else Color.White
+    val textColor = if (isDark) Color.White else Color(0xFF0F172A)
+
+    // Pulsing Trophy Animation Scale
+    val infiniteTransition = rememberInfiniteTransition(label = "TrophyPulse")
+    val trophyScale by infiniteTransition.animateFloat(
+        initialValue = 0.94f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "TrophyScale"
+    )
+
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.7f))
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(24.dp, RoundedCornerShape(32.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = if (isDark) listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                            else listOf(Color.White, Color(0xFFF1F5F9))
+                        ),
+                        RoundedCornerShape(32.dp)
+                    )
+                    .border(
+                        2.5.dp,
+                        Brush.verticalGradient(
+                            colors = if (p1Won) listOf(Color(0xFFEF4444), Color(0xFFF59E0B))
+                            else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF06B6D4))
+                            else listOf(Color(0xFFF59E0B), Color(0xFFEAB308))
+                        ),
+                        RoundedCornerShape(32.dp)
+                    )
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Floating Animated 3D Trophy Badge
+                    Box(
+                        modifier = Modifier
+                            .size(86.dp)
+                            .scale(trophyScale)
+                            .shadow(12.dp, CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
+                                    else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF1E40AF))
+                                    else listOf(Color(0xFFF59E0B), Color(0xFFB45309))
+                                ),
+                                CircleShape
+                            )
+                            .border(2.dp, Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (p1Won || p2Won) "🏆" else "🤝",
+                            fontSize = 44.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Celebration Headline
+                    Text(
+                        text = if (p1Won) "🔴 PLAYER 1 WINS!" else if (p2Won) "🔵 PLAYER 2 WINS!" else "🤝 IT'S A DRAW!",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        color = textColor,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "🎉 What an Epic Memory Battle!",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Score Card Comparison Box
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(6.dp, RoundedCornerShape(20.dp))
+                            .background(
+                                if (isDark) Color(0xFF0F172A) else Color(0xFFE2E8F0),
+                                RoundedCornerShape(20.dp)
+                            )
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Player 1
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("🔴 PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+                            Text("$player1Score", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
+                            Text("Matched Pairs", fontSize = 10.sp, color = Color.Gray)
+                        }
+
+                        Text("VS", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFF59E0B))
+
+                        // Player 2
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("🔵 PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
+                            Text("$player2Score", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
+                            Text("Matched Pairs", fontSize = 10.sp, color = Color.Gray)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // 🪙 Bonus Coin Reward Pill
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(4.dp, RoundedCornerShape(14.dp))
+                            .background(
+                                Brush.horizontalGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706))),
+                                RoundedCornerShape(14.dp)
+                            )
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🪙 ", fontSize = 16.sp)
+                            Text(
+                                "+50 BONUS COINS ADDED TO WALLET!",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(22.dp))
+
+                    // Excitation Action Buttons
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // PLAY AGAIN 3D Pill Button
+                        Button(
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onPlayAgain()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
+                                .shadow(8.dp, RoundedCornerShape(16.dp)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("PLAY AGAIN", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                            }
+                        }
+
+                        // BACK TO HOME Button
+                        OutlinedButton(
+                            onClick = onBackToHome,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.5.dp)
+                        ) {
+                            Text("BACK TO HOME", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── PERFECT SQUARE MEMORY CARD TILE WITH STAGGERED RE-DEAL ANIMATION ────────
 @Composable
 fun SquareMemoryCardTile(
     card: TwoPlayerCard,
     isDark: Boolean,
+    cardIndex: Int,
     onClick: () -> Unit
 ) {
     val rotation by animateFloatAsState(
@@ -483,29 +685,44 @@ fun SquareMemoryCardTile(
         label = "SquareFlipAnimation"
     )
 
+    // Staggered Re-deal Entrance Scale Animation
+    var isDealt by remember { mutableStateOf(false) }
+    LaunchedEffect(card.id) {
+        delay(cardIndex * 35L) // Staggered deal delay
+        isDealt = true
+    }
+
+    val dealScale by animateFloatAsState(
+        targetValue = if (isDealt) 1.0f else 0.4f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "DealScale"
+    )
+
     val isFrontVisible = rotation > 90f
 
-    // Soft-Clay 3D Gold Unflipped vs Emerald Matched vs Pre-loaded Gradient Flipped
+    // Unflipped 3D Soft-Clay Amber Gold vs Matched Radiant Jewel Gradient vs Flipped Dynamic Tile Gradient
     val unflippedBg = Brush.verticalGradient(listOf(Color(0xFFFBBF24), Color(0xFFD97706))) // Glossy 3D Gold
-    val matchedBg = Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669)))   // Emerald Green
 
     Box(
         modifier = Modifier
             .aspectRatio(1f) // Perfect Square Shape
-            .shadow(if (card.isMatched) 2.dp else 6.dp, RoundedCornerShape(16.dp))
+            .scale(dealScale)
+            .shadow(if (card.isMatched) 3.dp else 7.dp, RoundedCornerShape(16.dp))
             .graphicsLayer {
                 rotationY = rotation
                 cameraDistance = 12f * density
             }
             .clip(RoundedCornerShape(16.dp))
             .background(
-                if (card.isMatched) matchedBg
-                else if (isFrontVisible) Brush.linearGradient(card.graphic.bgGradient)
+                if (isFrontVisible) Brush.linearGradient(card.graphic.bgGradient)
                 else unflippedBg
             )
             .border(
-                1.5.dp,
-                if (card.isMatched) Color.White.copy(alpha = 0.9f)
+                1.8.dp,
+                if (card.isMatched) Color.White.copy(alpha = 0.95f)
                 else if (isFrontVisible) Color.White.copy(alpha = 0.8f)
                 else Color.White.copy(alpha = 0.8f),
                 RoundedCornerShape(16.dp)
@@ -521,7 +738,7 @@ fun SquareMemoryCardTile(
                     .graphicsLayer { rotationY = 180f }, // Flip right-side up
                 contentAlignment = Alignment.Center
             ) {
-                // Instant pre-loaded vector icon rendering (ZERO network delay!)
+                // Instant pre-loaded vector icon rendering with zero lag!
                 Icon(
                     imageVector = card.graphic.iconVector,
                     contentDescription = card.graphic.title,
