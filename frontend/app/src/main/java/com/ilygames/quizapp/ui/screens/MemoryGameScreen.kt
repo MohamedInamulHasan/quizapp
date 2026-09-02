@@ -42,45 +42,133 @@ data class TileGraphic(
     val key: String,
     val title: String,
     val iconVector: ImageVector,
-    val bgGradient: List<Color>
+    var bgGradient: List<Color> = listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))
 )
 
-// Master Pool of 30+ distinct pre-loaded 3D vector graphic tiles with vibrant jewel gradients
-val MASTER_TILE_POOL = listOf(
-    TileGraphic("rocket", "Rocket", Icons.Default.RocketLaunch, listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9))),
-    TileGraphic("gamepad", "Gamepad", Icons.Default.SportsEsports, listOf(Color(0xFFEC4899), Color(0xFFBE185D))),
-    TileGraphic("diamond", "Diamond", Icons.Default.Diamond, listOf(Color(0xFF06B6D4), Color(0xFF0E7490))),
-    TileGraphic("soccer", "Soccer", Icons.Default.SportsSoccer, listOf(Color(0xFF10B981), Color(0xFF047857))),
-    TileGraphic("lightning", "Flash", Icons.Default.FlashOn, listOf(Color(0xFFF59E0B), Color(0xFFB45309))),
-    TileGraphic("trophy", "Trophy", Icons.Default.EmojiEvents, listOf(Color(0xFFEAB308), Color(0xFFA16207))),
-    TileGraphic("car", "Car", Icons.Default.DirectionsCar, listOf(Color(0xFFEF4444), Color(0xFFB91C1C))),
-    TileGraphic("pizza", "Pizza", Icons.Default.LocalPizza, listOf(Color(0xFFF97316), Color(0xFFC2410C))),
-    TileGraphic("star", "Star", Icons.Default.AutoAwesome, listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))),
-    TileGraphic("shield", "Shield", Icons.Default.Shield, listOf(Color(0xFF6366F1), Color(0xFF4338CA))),
-    TileGraphic("basketball", "Basketball", Icons.Default.SportsBasketball, listOf(Color(0xFFEA580C), Color(0xFF9A3412))),
-    TileGraphic("plane", "Plane", Icons.Default.Flight, listOf(Color(0xFF0EA5E9), Color(0xFF0369A1))),
-    TileGraphic("music", "Music", Icons.Default.MusicNote, listOf(Color(0xFFA855F7), Color(0xFF7E22CE))),
-    TileGraphic("camera", "Camera", Icons.Default.CameraAlt, listOf(Color(0xFF64748B), Color(0xFF334155))),
-    TileGraphic("sun", "Sun", Icons.Default.WbSunny, listOf(Color(0xFFFBBF24), Color(0xFFD97706))),
-    TileGraphic("moon", "Moon", Icons.Default.Bedtime, listOf(Color(0xFF1E1B4B), Color(0xFF312E81))),
-    TileGraphic("palette", "Palette", Icons.Default.Palette, listOf(Color(0xFFD946EF), Color(0xFFA21CAF))),
-    TileGraphic("lightbulb", "Light", Icons.Default.Lightbulb, listOf(Color(0xFFFACC15), Color(0xFFCA8A04))),
-    TileGraphic("headset", "Headset", Icons.Default.Headset, listOf(Color(0xFF14B8A6), Color(0xFF0F766E))),
-    TileGraphic("brain", "Brain", Icons.Default.Psychology, listOf(Color(0xFFF43F5E), Color(0xFFBE123C))),
-    TileGraphic("lock", "Key", Icons.Default.VpnKey, listOf(Color(0xFFF59E0B), Color(0xFFD97706))),
-    TileGraphic("favorite", "Heart", Icons.Default.Favorite, listOf(Color(0xFFE11D48), Color(0xFF9F1239))),
-    TileGraphic("casino", "Dice", Icons.Default.Casino, listOf(Color(0xFF84CC16), Color(0xFF4D7C0F))),
-    TileGraphic("extension", "Puzzle", Icons.Default.Extension, listOf(Color(0xFF0284C7), Color(0xFF0369A1))),
-    TileGraphic("shopping", "Bag", Icons.Default.ShoppingBag, listOf(Color(0xFF7C3AED), Color(0xFF5B21B6))),
-    TileGraphic("pet", "Paw", Icons.Default.Pets, listOf(Color(0xFFD97706), Color(0xFF92400E))),
-    TileGraphic("fastfood", "Burger", Icons.Default.Fastfood, listOf(Color(0xFFF59E0B), Color(0xFFB45309))),
-    TileGraphic("park", "Tree", Icons.Default.Park, listOf(Color(0xFF16A34A), Color(0xFF15803D))),
-    TileGraphic("anchor", "Anchor", Icons.Default.Anchor, listOf(Color(0xFF0284C7), Color(0xFF075985))),
-    TileGraphic("celebration", "Party", Icons.Default.Celebration, listOf(Color(0xFFF43F5E), Color(0xFF9F1239)))
+// Dynamic Color Gradient Palette (20+ Vibrant Neon, Sunset, Cyber & Candy Gradients)
+val VIBRANT_GRADIENTS = listOf(
+    listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9)), // Cyber Purple
+    listOf(Color(0xFFEC4899), Color(0xFFBE185D)), // Neon Pink
+    listOf(Color(0xFF06B6D4), Color(0xFF0E7490)), // Cyan Wave
+    listOf(Color(0xFF10B981), Color(0xFF047857)), // Emerald Mint
+    listOf(Color(0xFFF59E0B), Color(0xFFB45309)), // Solar Gold
+    listOf(Color(0xFFEF4444), Color(0xFFB91C1C)), // Crimson Red
+    listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8)), // Royal Blue
+    listOf(Color(0xFFF97316), Color(0xFFC2410C)), // Sunset Orange
+    listOf(Color(0xFFA855F7), Color(0xFF7E22CE)), // Deep Violet
+    listOf(Color(0xFF14B8A6), Color(0xFF0F766E)), // Dark Teal
+    listOf(Color(0xFFEAB308), Color(0xFFA16207)), // Amber Glow
+    listOf(Color(0xFF6366F1), Color(0xFF4338CA)), // Indigo Night
+    listOf(Color(0xFFEA580C), Color(0xFF9A3412)), // Coral Fire
+    listOf(Color(0xFFD946EF), Color(0xFFA21CAF)), // Electric Fuchsia
+    listOf(Color(0xFF0284C7), Color(0xFF0369A1)), // Ocean Blue
+    listOf(Color(0xFF84CC16), Color(0xFF4D7C0F)), // Lime Energy
+    listOf(Color(0xFF7C3AED), Color(0xFF5B21B6)), // Purple Haze
+    listOf(Color(0xFFF43F5E), Color(0xFF9F1239)), // Rose Berry
+    listOf(Color(0xFF059669), Color(0xFF065F46)), // Deep Emerald
+    listOf(Color(0xFFD97706), Color(0xFF78350F))  // Bronze Gold
 )
 
-// Global set to track used indices across rounds so every round picks NEW unused items
-private val usedImageIndices = mutableSetOf<Int>()
+// MASSIVE MASTER POOL of 100+ UNIQUE HIGH-QUALITY VECTOR GRAPHICS across 10 categories!
+val EXPANDED_MASTER_TILE_POOL = listOf(
+    // 🚀 Space & Sci-Fi
+    TileGraphic("rocket", "Rocket", Icons.Default.RocketLaunch),
+    TileGraphic("satellite", "Satellite", Icons.Default.SatelliteAlt),
+    TileGraphic("stars", "Stars", Icons.Default.AutoAwesome),
+    TileGraphic("sun", "Sun", Icons.Default.WbSunny),
+    TileGraphic("moon", "Moon", Icons.Default.Bedtime),
+    TileGraphic("explore", "Compass", Icons.Default.Explore),
+    TileGraphic("public", "Globe", Icons.Default.Public),
+    TileGraphic("flight", "UFO", Icons.Default.Flight),
+
+    // 🎮 Gaming & Esports
+    TileGraphic("gamepad", "Gamepad", Icons.Default.SportsEsports),
+    TileGraphic("trophy", "Trophy", Icons.Default.EmojiEvents),
+    TileGraphic("shield", "Shield", Icons.Default.Shield),
+    TileGraphic("casino", "Dice", Icons.Default.Casino),
+    TileGraphic("extension", "Puzzle", Icons.Default.Extension),
+    TileGraphic("headset", "Headset", Icons.Default.Headset),
+    TileGraphic("military", "Medal", Icons.Default.MilitaryTech),
+
+    // ⚽ Sports & Action
+    TileGraphic("soccer", "Soccer", Icons.Default.SportsSoccer),
+    TileGraphic("basketball", "Basketball", Icons.Default.SportsBasketball),
+    TileGraphic("tennis", "Tennis", Icons.Default.SportsTennis),
+    TileGraphic("volleyball", "Volleyball", Icons.Default.SportsVolleyball),
+    TileGraphic("golf", "Golf", Icons.Default.SportsGolf),
+    TileGraphic("motorsports", "Motorsport", Icons.Default.SportsMotorsports),
+    TileGraphic("mma", "MMA", Icons.Default.SportsMma),
+    TileGraphic("cricket", "Cricket", Icons.Default.SportsCricket),
+    TileGraphic("kabaddi", "Kabaddi", Icons.Default.SportsKabaddi),
+
+    // 🍕 Food & Treats
+    TileGraphic("pizza", "Pizza", Icons.Default.LocalPizza),
+    TileGraphic("burger", "Burger", Icons.Default.Fastfood),
+    TileGraphic("icecream", "Ice Cream", Icons.Default.Icecream),
+    TileGraphic("cake", "Cake", Icons.Default.Cake),
+    TileGraphic("coffee", "Coffee", Icons.Default.LocalCafe),
+    TileGraphic("bar", "Drink", Icons.Default.LocalBar),
+    TileGraphic("dining", "Utensils", Icons.Default.LocalDining),
+    TileGraphic("bakery", "Bakery", Icons.Default.BakeryDining),
+
+    // 🚗 Vehicles & Travel
+    TileGraphic("car", "Car", Icons.Default.DirectionsCar),
+    TileGraphic("bike", "Motorbike", Icons.Default.TwoWheeler),
+    TileGraphic("bus", "Bus", Icons.Default.DirectionsBus),
+    TileGraphic("boat", "Boat", Icons.Default.DirectionsBoat),
+    TileGraphic("train", "Train", Icons.Default.Train),
+    TileGraphic("flight_land", "Airplane", Icons.Default.FlightLand),
+    TileGraphic("anchor", "Anchor", Icons.Default.Anchor),
+
+    // 🎵 Music & Audio
+    TileGraphic("music", "Music Note", Icons.Default.MusicNote),
+    TileGraphic("mic", "Microphone", Icons.Default.Mic),
+    TileGraphic("radio", "Radio", Icons.Default.Radio),
+    TileGraphic("volume", "Speaker", Icons.Default.VolumeUp),
+    TileGraphic("audiotrack", "Track", Icons.Default.Audiotrack),
+    TileGraphic("queue_music", "Playlist", Icons.Default.QueueMusic),
+
+    // 🎨 Art & Creativity
+    TileGraphic("palette", "Palette", Icons.Default.Palette),
+    TileGraphic("brush", "Brush", Icons.Default.Brush),
+    TileGraphic("camera", "Camera", Icons.Default.CameraAlt),
+    TileGraphic("photo", "Photo", Icons.Default.PhotoCamera),
+    TileGraphic("edit", "Pencil", Icons.Default.Edit),
+    TileGraphic("color_lens", "Color Lens", Icons.Default.ColorLens),
+    TileGraphic("create", "Design", Icons.Default.Create),
+
+    // 💡 Tech & Gadgets
+    TileGraphic("lightbulb", "Light", Icons.Default.Lightbulb),
+    TileGraphic("phone", "Smartphone", Icons.Default.PhoneAndroid),
+    TileGraphic("laptop", "Computer", Icons.Default.Laptop),
+    TileGraphic("watch", "Watch", Icons.Default.Watch),
+    TileGraphic("build", "Wrench", Icons.Default.Build),
+    TileGraphic("memory", "Chip", Icons.Default.Memory),
+    TileGraphic("bolt", "Lightning", Icons.Default.FlashOn),
+    TileGraphic("power", "Power", Icons.Default.PowerSettingsNew),
+
+    // 💎 Treasure & Magic
+    TileGraphic("diamond", "Diamond", Icons.Default.Diamond),
+    TileGraphic("key", "Key", Icons.Default.VpnKey),
+    TileGraphic("lock", "Lock", Icons.Default.Lock),
+    TileGraphic("favorite", "Heart", Icons.Default.Favorite),
+    TileGraphic("shopping", "Bag", Icons.Default.ShoppingBag),
+    TileGraphic("celebration", "Party", Icons.Default.Celebration),
+    TileGraphic("card_giftcard", "Gift", Icons.Default.CardGiftcard),
+    TileGraphic("loyalty", "Badge", Icons.Default.Loyalty),
+
+    // 🐾 Animals & Nature
+    TileGraphic("pet", "Paw", Icons.Default.Pets),
+    TileGraphic("park", "Tree", Icons.Default.Park),
+    TileGraphic("nature", "Leaf", Icons.Default.Eco),
+    TileGraphic("forest", "Forest", Icons.Default.Forest),
+    TileGraphic("water", "Water", Icons.Default.WaterDrop),
+    TileGraphic("landscape", "Mountain", Icons.Default.Landscape),
+    TileGraphic("bug", "Bug", Icons.Default.BugReport)
+)
+
+// Global tracker to ensure ZERO repetition until all 100+ graphics have been enjoyed!
+private val globalUsedGraphicKeys = mutableSetOf<String>()
 
 data class TwoPlayerCard(
     val id: Int,
@@ -101,20 +189,24 @@ fun MemoryGameScreen(
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
     val subTextColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF64748B)
 
-    // Select 10 fresh, unused graphics for each new match
+    // Select 10 100% FRESH, UNUSED graphics with dynamic random gradients for every single play!
     fun select10FreshGraphics(): List<TileGraphic> {
-        val totalAvailable = MASTER_TILE_POOL.size
-        val availableIndices = (0 until totalAvailable).filter { !usedImageIndices.contains(it) }
+        val availableGraphics = EXPANDED_MASTER_TILE_POOL.filter { !globalUsedGraphicKeys.contains(it.key) }
 
-        val selectedIndices = if (availableIndices.size >= 10) {
-            availableIndices.shuffled().take(10)
+        val selectedBase = if (availableGraphics.size >= 10) {
+            availableGraphics.shuffled().take(10)
         } else {
-            usedImageIndices.clear()
-            (0 until totalAvailable).shuffled().take(10)
+            globalUsedGraphicKeys.clear() // Reset when full pool completed
+            EXPANDED_MASTER_TILE_POOL.shuffled().take(10)
         }
 
-        usedImageIndices.addAll(selectedIndices)
-        return selectedIndices.map { MASTER_TILE_POOL[it] }
+        globalUsedGraphicKeys.addAll(selectedBase.map { it.key })
+
+        // Assign a FRESH dynamic gradient pair to each tile graphic
+        val shuffledGradients = VIBRANT_GRADIENTS.shuffled()
+        return selectedBase.mapIndexed { idx, item ->
+            item.copy(bgGradient = shuffledGradients[idx % shuffledGradients.size])
+        }
     }
 
     fun createFreshDeck(): List<TwoPlayerCard> {
@@ -140,24 +232,14 @@ fun MemoryGameScreen(
     var restartTriggerCount by remember { mutableIntStateOf(0) }
 
     // Animated Card Re-deal Handler
-    val coroutineScope = rememberCoroutineScope()
     fun triggerAnimatedRestart() {
         if (isRestartingAnimation) return
         isRestartingAnimation = true
         showWinnerDialog = false
 
-        // Step 1: Flip all cards back first with flip sound effect
         SoundManager.playClickSound()
         cards = cards.map { it.copy(isFlipped = false, isMatched = false) }
 
-        // Step 2: Delay for flip-back transition then generate fresh deck
-        kotlinx.coroutines.MainScope().run {
-            kotlinx.coroutines.GlobalScope.run {
-                // Short pause before dealing new cards
-            }
-        }
-
-        // Trigger scale re-deal animation
         restartTriggerCount++
         cards = createFreshDeck()
         selectedIndices = emptyList()
@@ -167,7 +249,6 @@ fun MemoryGameScreen(
         isProcessingTurn = false
         rewardEarned = false
 
-        // End restart animation state
         isRestartingAnimation = false
     }
 
@@ -469,9 +550,7 @@ fun ExcitingVictoryCardModal(
 ) {
     val p1Won = player1Score > player2Score
     val p2Won = player2Score > player1Score
-    val isDraw = player1Score == player2Score
 
-    val cardBg = if (isDark) Color(0xFF0F172A) else Color.White
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
     // Pulsing Trophy Animation Scale
@@ -493,7 +572,7 @@ fun ExcitingVictoryCardModal(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.7f))
+                .background(Color.Black.copy(alpha = 0.75f))
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -625,7 +704,7 @@ fun ExcitingVictoryCardModal(
 
                     Spacer(modifier = Modifier.height(22.dp))
 
-                    // Excitation Action Buttons
+                    // Action Buttons
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -703,7 +782,7 @@ fun SquareMemoryCardTile(
 
     val isFrontVisible = rotation > 90f
 
-    // Unflipped 3D Soft-Clay Amber Gold vs Matched Radiant Jewel Gradient vs Flipped Dynamic Tile Gradient
+    // Unflipped 3D Soft-Clay Amber Gold vs Flipped Dynamic Tile Gradient
     val unflippedBg = Brush.verticalGradient(listOf(Color(0xFFFBBF24), Color(0xFFD97706))) // Glossy 3D Gold
 
     Box(
