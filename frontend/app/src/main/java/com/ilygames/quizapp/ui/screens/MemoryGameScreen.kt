@@ -450,24 +450,30 @@ fun MemoryGameScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // ── 4x5 PERFECT SQUARE CARDS GRID (CENTERED VERTICALLY) ──────
-            key(restartTriggerCount) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .weight(1f)
-                ) {
-                    itemsIndexed(cards) { idx, card ->
-                        SquareMemoryCardTile(
-                            card = card,
-                            isDark = isDark,
-                            cardIndex = idx,
-                            onClick = { onCardClick(idx) }
-                        )
+            // ── 4x5 PERFECT SQUARE CARDS GRID (CENTERED IN DEAD CENTER OF SCREEN) ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                key(restartTriggerCount) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(4),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        itemsIndexed(cards) { idx, card ->
+                            SquareMemoryCardTile(
+                                card = card,
+                                isDark = isDark,
+                                cardIndex = idx,
+                                onClick = { onCardClick(idx) }
+                            )
+                        }
                     }
                 }
             }
@@ -614,7 +620,7 @@ fun ExcitingVictoryCardModal(
 
                     // Celebration Headline
                     Text(
-                        text = if (p1Won) "🔴 PLAYER 1 WINS!" else if (p2Won) "🔵 PLAYER 2 WINS!" else "🤝 IT'S A DRAW!",
+                        text = if (p1Won) "PLAYER 1 WINS!" else if (p2Won) "PLAYER 2 WINS!" else "IT'S A DRAW!",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
                         color = textColor,
@@ -646,7 +652,7 @@ fun ExcitingVictoryCardModal(
                     ) {
                         // Player 1
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("🔴 PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+                            Text("PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
                             Text("$player1Score", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
                             Text("Matched Pairs", fontSize = 10.sp, color = Color.Gray)
                         }
@@ -655,7 +661,7 @@ fun ExcitingVictoryCardModal(
 
                         // Player 2
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("🔵 PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
+                            Text("PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
                             Text("$player2Score", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
                             Text("Matched Pairs", fontSize = 10.sp, color = Color.Gray)
                         }
@@ -725,7 +731,14 @@ fun ExcitingVictoryCardModal(
                             shape = RoundedCornerShape(16.dp),
                             border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.5.dp)
                         ) {
-                            Text("BACK TO HOME", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.Home, contentDescription = null, tint = textColor, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("BACK TO HOME", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                            }
                         }
                     }
                 }

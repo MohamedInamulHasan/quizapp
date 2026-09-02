@@ -346,7 +346,7 @@ fun TicTacToeScreen(
                         cap = StrokeCap.Round
                     )
 
-                    // PURE WHITE FULL-LENGTH ANIMATED STRIKE OUT LINE (Completely striking out XXX / OOO)
+                    // PURE WHITE SOLID STRIKE OUT LINE (Clean white line with ZERO extra glow)
                     if (winningPattern != null && strikeAnimProgress > 0f) {
                         val pattern = winningPattern!!
                         val isRow = pattern == listOf(0, 1, 2) || pattern == listOf(3, 4, 5) || pattern == listOf(6, 7, 8)
@@ -373,21 +373,12 @@ fun TicTacToeScreen(
                         val curEndX = fullStartX + (fullEndX - fullStartX) * strikeAnimProgress
                         val curEndY = fullStartY + (fullEndY - fullStartY) * strikeAnimProgress
 
-                        // Draw Glowing Outer Aura
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.5f),
-                            start = Offset(fullStartX, fullStartY),
-                            end = Offset(curEndX, curEndY),
-                            strokeWidth = 20.dp.toPx(),
-                            cap = StrokeCap.Round
-                        )
-
-                        // Draw Pure Solid White Strike Line
+                        // Single Clean Solid White Strike Line
                         drawLine(
                             color = Color.White,
                             start = Offset(fullStartX, fullStartY),
                             end = Offset(curEndX, curEndY),
-                            strokeWidth = 12.dp.toPx(),
+                            strokeWidth = 10.dp.toPx(),
                             cap = StrokeCap.Round
                         )
                     }
@@ -564,8 +555,8 @@ fun TicTacToeScreen(
 
                             // Celebration Headline
                             Text(
-                                text = if (p1WonMatch) "🔴 PLAYER 1 IS GRAND CHAMPION!"
-                                else if (p2WonMatch) "🔵 PLAYER 2 IS GRAND CHAMPION!"
+                                text = if (p1WonMatch) "PLAYER 1 IS GRAND CHAMPION!"
+                                else if (p2WonMatch) "PLAYER 2 IS GRAND CHAMPION!"
                                 else "🤝 10-ROUND MATCH IS A DRAW!",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Black,
@@ -597,7 +588,7 @@ fun TicTacToeScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("🔴 PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+                                    Text("PLAYER 1", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
                                     Text("$p1Wins", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
                                     Text("Rounds Won", fontSize = 10.sp, color = Color.Gray)
                                 }
@@ -605,7 +596,7 @@ fun TicTacToeScreen(
                                 Text("VS", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFF59E0B))
 
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("🔵 PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
+                                    Text("PLAYER 2", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF255FF4))
                                     Text("$p2Wins", fontSize = 28.sp, fontWeight = FontWeight.Black, color = textColor)
                                     Text("Rounds Won", fontSize = 10.sp, color = Color.Gray)
                                 }
@@ -661,7 +652,7 @@ fun TicTacToeScreen(
                                     ) {
                                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("NEW 10-ROUND MATCH", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                        Text("PLAY AGAIN", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
                                     }
                                 }
 
@@ -676,7 +667,14 @@ fun TicTacToeScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.5.dp)
                                 ) {
-                                    Text("BACK TO HOME", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Icon(Icons.Default.Home, contentDescription = null, tint = textColor, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("BACK TO HOME", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+                                    }
                                 }
                             }
                         }
