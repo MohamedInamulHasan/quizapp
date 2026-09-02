@@ -109,8 +109,8 @@ fun MemoryGameScreen(
     }
 
     fun createFreshDeck(): List<TwoPlayerCard> {
-        val 10Graphics = select10FreshGraphics()
-        val pairs = (10Graphics + 10Graphics).shuffled()
+        val freshGraphics = select10FreshGraphics()
+        val pairs = (freshGraphics + freshGraphics).shuffled()
         return pairs.mapIndexed { idx, graphic ->
             TwoPlayerCard(id = idx, graphic = graphic)
         }
