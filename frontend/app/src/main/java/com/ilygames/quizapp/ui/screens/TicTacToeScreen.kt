@@ -289,14 +289,34 @@ fun TicTacToeScreen(
                             ),
                             RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                         )
-                        .padding(vertical = 10.dp, horizontal = 22.dp)
+                        .padding(vertical = 6.dp, horizontal = 16.dp)
                 ) {
-                    Text(
-                        text = "PLAYER 1 | $p1Wins",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "PLAYER 1",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        // Small White Box displaying score
+                        Box(
+                            modifier = Modifier
+                                .shadow(2.dp, RoundedCornerShape(6.dp))
+                                .background(Color.White, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$p1Wins",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (isXTurn) Color(0xFFDC2626) else Color(0xFF334155)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -461,14 +481,34 @@ fun TicTacToeScreen(
                             ),
                             RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                         )
-                        .padding(vertical = 10.dp, horizontal = 22.dp)
+                        .padding(vertical = 6.dp, horizontal = 16.dp)
                 ) {
-                    Text(
-                        text = "PLAYER 2 | $p2Wins",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "PLAYER 2",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        // Small White Box displaying score
+                        Box(
+                            modifier = Modifier
+                                .shadow(2.dp, RoundedCornerShape(6.dp))
+                                .background(Color.White, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$p2Wins",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (!isXTurn) Color(0xFF1D4ED8) else Color(0xFF334155)
+                            )
+                        }
+                    }
                 }
             }
 
