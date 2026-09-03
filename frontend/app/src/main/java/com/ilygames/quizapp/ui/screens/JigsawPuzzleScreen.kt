@@ -24,17 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -42,20 +40,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-// 5 Different Image Themes for Jigsaw Puzzle
-enum class JigsawTheme(val title: String, val emoji: String) {
-    PUPPY("Cute Golden Puppy", "🐶"),
-    JUNGLE("Jungle Safari", "🦁"),
-    SPACE("Cosmic Galaxy", "🚀"),
-    OCEAN("Ocean World", "🐠"),
-    CASTLE("Fantasy Castle", "🏰")
-}
+// 5 Real High-Res Photography Images
+data class RealJigsawImage(
+    val title: String,
+    val imageUrl: String,
+    val fallbackEmoji: String
+)
+
+val REAL_JIGSAW_IMAGES = listOf(
+    RealJigsawImage("Golden Puppy", "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=800&auto=format&fit=crop", "🐶"),
+    RealJigsawImage("Safari Lion", "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?q=80&w=800&auto=format&fit=crop", "🦁"),
+    RealJigsawImage("Tropical Beach", "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop", "🏖️"),
+    RealJigsawImage("Cosmic Nebula", "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop", "🌌"),
+    RealJigsawImage("Taj Mahal", "https://images.unsplash.com/photo-1564507592333-c60657eea523?q=80&w=800&auto=format&fit=crop", "🌆")
+)
 
 @Composable
 fun JigsawPuzzleScreen(
@@ -66,15 +72,18 @@ fun JigsawPuzzleScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // Random Theme Selection on launch & restart
-    var activeTheme by remember { mutableStateOf(JigsawTheme.values()[Random.nextInt(JigsawTheme.values().size)]) }
+    // Random Real Image Theme Selection (4 Rows x 5 Columns = 20 Pieces)
+    var currentImageIndex by remember { mutableIntStateOf(Random.nextInt(REAL_JIGSAW_IMAGES.size)) }
+    val currentImage = REAL_JIGSAW_IMAGES[currentImageIndex]
 
-    // 16 Target Slots for 4x4 Grid Board (holds pieceId 0..15 or null)
-    var boardSlots by remember { mutableStateOf(Array<Int?>(16) { null }) }
-    // Unplaced Tray Pieces (Shuffled 0..15)
-    var trayPieceIds by remember { mutableStateOf((0..15).shuffled()) }
-    // Selected Piece ID (for tap or drag)
-    var selectedPieceId by remember { mutableStateOf<Int?>(null) }
+    // 20 Target Slots on 4x5 Grid Board (array holds pieceId 0..19 or null)
+    var boardSlots by remember { mutableStateOf(Array<Int?>(20) { null }) }
+    // Unplaced Pieces in Tray (Shuffled 0..19)
+    var trayPieceIds by remember { mutableStateOf((0..19).shuffled()) }
+
+    // Active Dragging State
+    var draggingPieceId by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
 
     var p1Score by remember { mutableIntStateOf(0) }
     var p2Score by remember { mutableIntStateOf(0) }
@@ -82,7 +91,7 @@ fun JigsawPuzzleScreen(
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
-    // Board position bounds for exact drag-and-drop drop detection
+    // Board Position Bounds on Screen for Drag & Drop calculation
     var boardBounds by remember { mutableStateOf(Rect.Zero) }
 
     LaunchedEffect(Unit) {
@@ -90,13 +99,12 @@ fun JigsawPuzzleScreen(
     }
 
     fun resetPuzzle() {
-        // Pick a NEW DIFFERENT Image Theme on every play!
-        val nextThemes = JigsawTheme.values().filter { it != activeTheme }
-        activeTheme = nextThemes[Random.nextInt(nextThemes.size)]
-
-        boardSlots = Array(16) { null }
-        trayPieceIds = (0..15).shuffled()
-        selectedPieceId = null
+        // Pick a NEW Real Image on every play!
+        currentImageIndex = (currentImageIndex + 1) % REAL_JIGSAW_IMAGES.size
+        boardSlots = Array(20) { null }
+        trayPieceIds = (0..19).shuffled()
+        draggingPieceId = null
+        dragOffset = Offset.Zero
         p1Score = 0
         p2Score = 0
         isPlayer1Turn = true
@@ -111,22 +119,21 @@ fun JigsawPuzzleScreen(
             if (!rewardEarned) {
                 rewardEarned = true
                 authViewModel.addAdReward(context)
-                Toast.makeText(context, "🪙 +50 Coins Earned for Jigsaw!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "🪙 +50 Coins Earned for 20-Piece Real Jigsaw!", Toast.LENGTH_SHORT).show()
             }
             showWinnerDialog = true
         }
     }
 
-    fun placePiece(pieceId: Int, slotIndex: Int) {
-        if (slotIndex !in 0..15) return
-        if (boardSlots[slotIndex] != null) return // Already occupied
+    fun placePieceInSlot(pieceId: Int, slotIndex: Int) {
+        if (slotIndex !in 0..19) return
+        if (boardSlots[slotIndex] != null) return // Slot occupied
 
         SoundManager.playPopSound()
         val newSlots = boardSlots.clone()
         newSlots[slotIndex] = pieceId
         boardSlots = newSlots
         trayPieceIds = trayPieceIds.filter { it != pieceId }
-        selectedPieceId = null
 
         if (pieceId == slotIndex) {
             SoundManager.playCorrectSound()
@@ -151,7 +158,7 @@ fun JigsawPuzzleScreen(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── TOP HEADER BAR (3D BUTTONS & THEME PILL) ───────────────────
+            // ── TOP HEADER BAR (3D BUTTONS & PILL) ─────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -191,7 +198,7 @@ fun JigsawPuzzleScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(22.dp))
                 }
 
-                // Theme Badge Pill (Shows current image theme name & emoji)
+                // Image Title Badge Pill
                 Box(
                     modifier = Modifier
                         .shadow(6.dp, RoundedCornerShape(16.dp))
@@ -203,14 +210,14 @@ fun JigsawPuzzleScreen(
                         .padding(vertical = 6.dp, horizontal = 16.dp)
                 ) {
                     Text(
-                        text = "${activeTheme.emoji} ${activeTheme.title}",
+                        text = "${currentImage.fallbackEmoji} ${currentImage.title} (20P)",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                 }
 
-                // 3D Retry Button (Generates a new image theme!)
+                // 3D Retry Button (Changes Image on Retry!)
                 Box(
                     modifier = Modifier
                         .size(46.dp)
@@ -237,11 +244,11 @@ fun JigsawPuzzleScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset Theme", tint = textColor, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Next Picture", tint = textColor, modifier = Modifier.size(22.dp))
                 }
             }
 
-            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (EXACT MEMORY MATCH SIZE) ──
+            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (MEMORY MATCH EXACT SIZE) ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
@@ -288,19 +295,19 @@ fun JigsawPuzzleScreen(
                 }
             }
 
-            // ── 4x4 IMAGE JIGSAW BOARD WITH WOODEN SLOT CUTOUTS (MATCHING SCREENSHOT) ──
+            // ── 20-PIECE JIGSAW PUZZLE BOARD (4 ROWS x 5 COLUMNS) ───────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
+                    .height(280.dp)
                     .padding(horizontal = 16.dp)
                     .onGloballyPositioned { coords ->
                         boardBounds = coords.boundsInRoot()
                     }
                     .shadow(16.dp, RoundedCornerShape(20.dp))
-                    .background(Color(0xFF3D2314), RoundedCornerShape(20.dp)) // Dark Wooden Frame
+                    .background(Color(0xFF3D2314), RoundedCornerShape(20.dp)) // Dark Wooden Cutout Frame
                     .border(3.dp, Color(0xFF78350F), RoundedCornerShape(20.dp))
-                    .padding(8.dp),
+                    .padding(6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -314,8 +321,8 @@ fun JigsawPuzzleScreen(
                                 .weight(1f),
                             horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
-                            for (c in 0..3) {
-                                val slotIndex = r * 4 + c
+                            for (c in 0..4) {
+                                val slotIndex = r * 5 + c
                                 val pieceId = boardSlots[slotIndex]
 
                                 Box(
@@ -324,30 +331,27 @@ fun JigsawPuzzleScreen(
                                         .fillMaxHeight()
                                         .background(
                                             if (pieceId != null) Color.Transparent
-                                            else Color(0xFF5A3816), // Dark Wood Slot Cutout
+                                            else Color(0xFF5A3816), // Dark Wooden Slot Cutout Texture
                                             RoundedCornerShape(4.dp)
                                         )
                                         .border(
                                             1.dp,
-                                            if (selectedPieceId != null && pieceId == null) Color.Yellow
-                                            else Color(0xFF2C190B),
+                                            Color(0xFF2C190B),
                                             RoundedCornerShape(4.dp)
-                                        )
-                                        .clickable {
-                                            selectedPieceId?.let { pId ->
-                                                placePiece(pId, slotIndex)
-                                            }
-                                        },
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (pieceId != null) {
-                                        DynamicJigsawImageCanvas(pieceId = pieceId, theme = activeTheme)
+                                        RealJigsawPieceTile(
+                                            pieceId = pieceId,
+                                            imageUrl = currentImage.imageUrl
+                                        )
                                     } else {
                                         Text(
                                             text = "${slotIndex + 1}",
-                                            fontSize = 12.sp,
+                                            fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.White.copy(alpha = 0.25f)
+                                            color = Color.White.copy(alpha = 0.2f)
                                         )
                                     }
                                 }
@@ -357,16 +361,16 @@ fun JigsawPuzzleScreen(
                 }
             }
 
-            // ── 16 PIECES TRAY (SUPPORTING DRAG AND DROP & TAP TO PLACE) ──────
+            // ── 20 PIECES TRAY (DRAG & DROP ONLY MODE) ─────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .height(135.dp),
+                    .height(140.dp),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = if (selectedPieceId != null) "✨ Drag or tap any slot to drop piece!" else "👇 Drag or tap a piece from tray to place:",
+                    text = "🖐️ Drag any piece from tray to drop on the board:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White.copy(alpha = 0.85f),
@@ -374,65 +378,67 @@ fun JigsawPuzzleScreen(
                 )
 
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(8),
+                    columns = GridCells.Fixed(10),
                     modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     items(trayPieceIds) { pieceId ->
-                        val isSelected = selectedPieceId == pieceId
-                        var pieceOffset by remember { mutableStateOf(Offset.Zero) }
+                        var localDragOffset by remember { mutableStateOf(Offset.Zero) }
 
                         Box(
                             modifier = Modifier
                                 .aspectRatio(1f)
                                 .offset {
                                     IntOffset(
-                                        pieceOffset.x.roundToInt(),
-                                        pieceOffset.y.roundToInt()
+                                        localDragOffset.x.roundToInt(),
+                                        localDragOffset.y.roundToInt()
                                     )
                                 }
-                                .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(8.dp))
-                                .border(
-                                    if (isSelected) 2.5.dp else 1.dp,
-                                    if (isSelected) Color.Yellow else Color.White.copy(alpha = 0.4f),
-                                    RoundedCornerShape(8.dp)
-                                )
+                                .shadow(2.dp, RoundedCornerShape(6.dp))
+                                .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                                 .pointerInput(pieceId) {
                                     detectDragGestures(
                                         onDragStart = {
-                                            selectedPieceId = pieceId
+                                            draggingPieceId = pieceId
                                             SoundManager.playPopSound()
                                         },
                                         onDrag = { change, dragAmount ->
                                             change.consume()
-                                            pieceOffset += dragAmount
+                                            localDragOffset += dragAmount
+                                            dragOffset += dragAmount
                                         },
                                         onDragEnd = {
-                                            // Check drop target relative to board
-                                            if (pieceOffset.y < -120f) {
-                                                val dropCol = ((pieceOffset.x + boardBounds.width / 2f) / (boardBounds.width / 4f)).coerceIn(0f, 3f).toInt()
-                                                val dropRow = ((pieceOffset.y + boardBounds.height) / (boardBounds.height / 4f)).coerceIn(0f, 3f).toInt()
-                                                val targetSlot = (dropRow * 4 + dropCol).coerceIn(0, 15)
+                                            // Calculate drop position relative to board
+                                            if (localDragOffset.y < -100f) {
+                                                val colWidth = boardBounds.width / 5f
+                                                val rowHeight = boardBounds.height / 4f
 
-                                                placePiece(pieceId, targetSlot)
+                                                val dropX = localDragOffset.x + boardBounds.width / 2f
+                                                val dropY = localDragOffset.y + boardBounds.height
+
+                                                val c = (dropX / colWidth).coerceIn(0f, 4f).toInt()
+                                                val r = (dropY / rowHeight).coerceIn(0f, 3f).toInt()
+                                                val slotIndex = (r * 5 + c).coerceIn(0, 19)
+
+                                                placePieceInSlot(pieceId, slotIndex)
                                             }
-                                            pieceOffset = Offset.Zero
+                                            localDragOffset = Offset.Zero
+                                            draggingPieceId = null
                                         }
                                     )
                                 }
-                                .clickable {
-                                    SoundManager.playPopSound()
-                                    selectedPieceId = if (isSelected) null else pieceId
-                                }
                         ) {
-                            DynamicJigsawImageCanvas(pieceId = pieceId, theme = activeTheme)
+                            RealJigsawPieceTile(
+                                pieceId = pieceId,
+                                imageUrl = currentImage.imageUrl
+                            )
                         }
                     }
                 }
             }
 
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (EXACT MEMORY MATCH SIZE) ──
+            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (MEMORY MATCH EXACT SIZE) ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -525,13 +531,13 @@ fun JigsawPuzzleScreen(
                                     .border(2.dp, Color.White, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(activeTheme.emoji, fontSize = 42.sp)
+                                Text(currentImage.fallbackEmoji, fontSize = 42.sp)
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = if (p1Won) "🎉 Player 1 Solved It!" else if (p2Won) "🎉 Player 2 Solved It!" else "🧩 ${activeTheme.title} Solved!",
+                                text = if (p1Won) "🎉 Player 1 Solved It!" else if (p2Won) "🎉 Player 2 Solved It!" else "🧩 ${currentImage.title} Solved!",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -635,112 +641,43 @@ fun JigsawPuzzleScreen(
     }
 }
 
-// ── DYNAMIC MULTI-IMAGE CANVAS RENDERING SYSTEM (SUPPORTING 5 DIFFERENT PICTURE THEMES) ──
+// ── REAL PHOTOGRAPHY 20-PIECE JIGSAW TILE (4 ROWS x 5 COLUMNS) ──────────────
 @Composable
-fun DynamicJigsawImageCanvas(pieceId: Int, theme: JigsawTheme) {
-    val pieceRow = pieceId / 4
-    val pieceCol = pieceId % 4
+fun RealJigsawPieceTile(pieceId: Int, imageUrl: String) {
+    val pieceRow = pieceId / 5
+    val pieceCol = pieceId % 5
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(4.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        // Load Real High-Res Photography Picture via Coil
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Jigsaw Piece",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-        val fullW = w * 4f
-        val fullH = h * 4f
-
-        val offsetX = -pieceCol * w
-        val offsetY = -pieceRow * h
-
-        clipRect(0f, 0f, w, h) {
-            when (theme) {
-                JigsawTheme.PUPPY -> drawCutePuppyDogScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
-                JigsawTheme.JUNGLE -> drawJungleSafariScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
-                JigsawTheme.SPACE -> drawSpaceGalaxyScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
-                JigsawTheme.OCEAN -> drawOceanWorldScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
-                JigsawTheme.CASTLE -> drawFantasyCastleScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
-            }
-
-            // Draw Interlocking Jigsaw Contour Lines
-            drawJigsawInterlockingContour(pieceRow = pieceRow, pieceCol = pieceCol, w = w, h = h)
+        // Draw Black 4x5 Interlocking Jigsaw Piece Outlines Over Image
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            draw20PieceJigsawInterlockingContour(pieceRow = pieceRow, pieceCol = pieceCol, w = size.width, h = size.height)
         }
     }
 }
 
-// 1. CUTE GOLDEN PUPPY DOG SCENE 🐶 (MATCHING USER SCREENSHOT uploaded_media_1788423535261.png)
-fun DrawScope.drawCutePuppyDogScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
-    // Green Garden Grass Background
-    drawRect(
-        brush = Brush.verticalGradient(listOf(Color(0xFF86EFAC), Color(0xFF15803D))),
-        topLeft = Offset(offsetX, offsetY),
-        size = Size(fullW, fullH)
-    )
-
-    val pupX = offsetX + fullW * 0.5f
-    val pupY = offsetY + fullH * 0.52f
-    val pupR = fullW * 0.32f
-
-    // Fluffy Ears
-    drawCircle(color = Color(0xFFD97706), center = Offset(pupX - pupR * 0.85f, pupY - pupR * 0.2f), radius = pupR * 0.5f)
-    drawCircle(color = Color(0xFFD97706), center = Offset(pupX + pupR * 0.85f, pupY - pupR * 0.2f), radius = pupR * 0.5f)
-
-    // Puppy Fluffy Head & Muzzle
-    drawCircle(color = Color(0xFFFEF3C7), center = Offset(pupX, pupY), radius = pupR)
-    drawCircle(color = Color.White, center = Offset(pupX, pupY + pupR * 0.25f), radius = pupR * 0.55f)
-
-    // Cute Dark Eyes
-    drawCircle(color = Color(0xFF1E293B), center = Offset(pupX - pupR * 0.35f, pupY - pupR * 0.15f), radius = pupR * 0.16f)
-    drawCircle(color = Color.White, center = Offset(pupX - pupR * 0.38f, pupY - pupR * 0.18f), radius = pupR * 0.05f)
-    drawCircle(color = Color(0xFF1E293B), center = Offset(pupX + pupR * 0.35f, pupY - pupR * 0.15f), radius = pupR * 0.16f)
-    drawCircle(color = Color.White, center = Offset(pupX + pupR * 0.32f, pupY - pupR * 0.18f), radius = pupR * 0.05f)
-
-    // Nose
-    drawCircle(color = Color(0xFF0F172A), center = Offset(pupX, pupY + pupR * 0.12f), radius = pupR * 0.12f)
-
-    // Pink Tongue Output
-    drawCircle(color = Color(0xFFF43F5E), center = Offset(pupX, pupY + pupR * 0.42f), radius = pupR * 0.18f)
-}
-
-// 2. JUNGLE SAFARI SCENE 🦁
-fun DrawScope.drawJungleSafariScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
-    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFF34D399), Color(0xFF059669))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
-    drawCircle(color = Color(0xFFA855F7), center = Offset(offsetX + fullW * 0.3f, offsetY + fullH * 0.4f), radius = fullW * 0.18f) // Elephant
-    drawRect(color = Color(0xFFFBBF24), topLeft = Offset(offsetX + fullW * 0.7f, offsetY + fullH * 0.2f), size = Size(fullW * 0.12f, fullH * 0.5f)) // Giraffe
-    drawCircle(color = Color(0xFFB45309), center = Offset(offsetX + fullW * 0.55f, offsetY + fullH * 0.75f), radius = fullW * 0.16f) // Lion Mane
-}
-
-// 3. COSMIC GALAXY SCENE 🚀
-fun DrawScope.drawSpaceGalaxyScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
-    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E1B4B))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
-    drawCircle(color = Color(0xFFF59E0B), center = Offset(offsetX + fullW * 0.75f, offsetY + fullH * 0.3f), radius = fullW * 0.15f) // Saturn
-    drawCircle(color = Color(0xFFEF4444), center = Offset(offsetX + fullW * 0.3f, offsetY + fullH * 0.5f), radius = fullW * 0.1f) // Mars
-    drawCircle(color = Color.White, center = Offset(offsetX + fullW * 0.2f, offsetY + fullH * 0.2f), radius = fullW * 0.02f) // Star
-    drawCircle(color = Color.White, center = Offset(offsetX + fullW * 0.5f, offsetY + fullH * 0.8f), radius = fullW * 0.025f)
-}
-
-// 4. OCEAN WORLD SCENE 🐠
-fun DrawScope.drawOceanWorldScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
-    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFF38BDF8), Color(0xFF0369A1))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
-    drawCircle(color = Color(0xFFF97316), center = Offset(offsetX + fullW * 0.4f, offsetY + fullH * 0.45f), radius = fullW * 0.12f) // Clownfish
-    drawCircle(color = Color(0xFF10B981), center = Offset(offsetX + fullW * 0.75f, offsetY + fullH * 0.7f), radius = fullW * 0.14f) // Sea Turtle
-}
-
-// 5. FANTASY CASTLE SCENE 🏰
-fun DrawScope.drawFantasyCastleScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
-    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFFF472B6), Color(0xFF8B5CF6))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
-    drawRect(color = Color(0xFFE2E8F0), topLeft = Offset(offsetX + fullW * 0.35f, offsetY + fullH * 0.4f), size = Size(fullW * 0.3f, fullH * 0.45f)) // Castle
-    drawRect(color = Color(0xFFEC4899), topLeft = Offset(offsetX + fullW * 0.38f, offsetY + fullH * 0.25f), size = Size(fullW * 0.08f, fullH * 0.15f)) // Spire 1
-    drawRect(color = Color(0xFFEC4899), topLeft = Offset(offsetX + fullW * 0.54f, offsetY + fullH * 0.25f), size = Size(fullW * 0.08f, fullH * 0.15f)) // Spire 2
-}
-
-// Draw Classic Dark Interlocking Jigsaw Outline Edges
-fun DrawScope.drawJigsawInterlockingContour(pieceRow: Int, pieceCol: Int, w: Float, h: Float) {
+// Draw Black 4x5 Interlocking Jigsaw Edge Contour (Matching User Screenshot metabetageek.com pattern)
+fun androidx.compose.ui.graphics.drawscope.DrawScope.draw20PieceJigsawInterlockingContour(pieceRow: Int, pieceCol: Int, w: Float, h: Float) {
     val strokeWidth = 3f
-    val contourColor = Color.Black.copy(alpha = 0.5f)
-    val tabR = w * 0.18f
+    val contourColor = Color.Black.copy(alpha = 0.85f)
+    val tabR = w * 0.22f
 
     val path = Path()
-
-    // Outer Piece Rect Outline with Interlocking Tabs & Socket Cutouts
     path.moveTo(0f, 0f)
 
     // Top Edge
@@ -756,7 +693,7 @@ fun DrawScope.drawJigsawInterlockingContour(pieceRow: Int, pieceCol: Int, w: Flo
     path.lineTo(w, 0f)
 
     // Right Edge
-    if (pieceCol < 3) {
+    if (pieceCol < 4) {
         val midY = h / 2f
         path.lineTo(w, midY - tabR)
         if (pieceCol % 2 == 0) {
