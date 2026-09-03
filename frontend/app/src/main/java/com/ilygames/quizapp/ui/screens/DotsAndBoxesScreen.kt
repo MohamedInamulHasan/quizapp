@@ -17,9 +17,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -41,20 +42,18 @@ fun DotsAndBoxesScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // 4x4 Boxes Grid -> 5x5 Dots Grid
-    // Horizontal lines: 5 rows x 4 columns = 20 boolean lines
-    var hLines by remember { mutableStateOf(Array(5) { BooleanArray(4) { false } }) }
-    // Vertical lines: 4 rows x 5 columns = 20 boolean lines
-    var vLines by remember { mutableStateOf(Array(4) { BooleanArray(5) { false } }) }
-    // Box Owner Matrix: 4 rows x 4 columns (0 = none, 1 = P1, 2 = P2)
+    // 4x4 Boxes Grid -> 5x5 Blue Dots Grid
+    // Line Owners: 0 = Un-drawn (White), 1 = Red (P1), 2 = Yellow (P2)
+    var hLinesOwner by remember { mutableStateOf(Array(5) { IntArray(4) { 0 } }) }
+    var vLinesOwner by remember { mutableStateOf(Array(4) { IntArray(5) { 0 } }) }
+    // Box Owners: 0 = none, 1 = Red P1, 2 = Yellow P2
     var boxOwners by remember { mutableStateOf(Array(4) { IntArray(4) { 0 } }) }
 
-    var currentRound by remember { mutableIntStateOf(1) }
     var p1Wins by remember { mutableIntStateOf(0) }
     var p2Wins by remember { mutableIntStateOf(0) }
     var p1BoxCount by remember { mutableIntStateOf(0) }
     var p2BoxCount by remember { mutableIntStateOf(0) }
-    var isPlayer1Turn by remember { mutableStateOf(true) }
+    var isPlayer1Turn by remember { mutableStateOf(true) } // true = Red (P1), false = Yellow (P2)
 
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
@@ -64,8 +63,8 @@ fun DotsAndBoxesScreen(
     }
 
     fun resetMatch() {
-        hLines = Array(5) { BooleanArray(4) { false } }
-        vLines = Array(4) { BooleanArray(5) { false } }
+        hLinesOwner = Array(5) { IntArray(4) { 0 } }
+        vLinesOwner = Array(4) { IntArray(5) { 0 } }
         boxOwners = Array(4) { IntArray(4) { 0 } }
         p1BoxCount = 0
         p2BoxCount = 0
@@ -75,7 +74,7 @@ fun DotsAndBoxesScreen(
         SoundManager.playRetrySound()
     }
 
-    // Check if drawing a line completes any surround boxes
+    // Check if a newly drawn line completes 1 or 2 surrounding boxes
     fun checkCompletedBoxes(): Boolean {
         var boxClaimedThisTurn = false
         val newOwners = Array(4) { r -> boxOwners[r].clone() }
@@ -85,10 +84,10 @@ fun DotsAndBoxesScreen(
 
         for (r in 0..3) {
             for (c in 0..3) {
-                val hasTop = hLines[r][c]
-                val hasBottom = hLines[r + 1][c]
-                val hasLeft = vLines[r][c]
-                val hasRight = vLines[r][c + 1]
+                val hasTop = hLinesOwner[r][c] != 0
+                val hasBottom = hLinesOwner[r + 1][c] != 0
+                val hasLeft = vLinesOwner[r][c] != 0
+                val hasRight = vLinesOwner[r][c + 1] != 0
 
                 if (hasTop && hasBottom && hasLeft && hasRight) {
                     if (newOwners[r][c] == 0) {
@@ -107,7 +106,7 @@ fun DotsAndBoxesScreen(
         p1BoxCount = countP1
         p2BoxCount = countP2
 
-        // Game Over when all 16 boxes claimed
+        // Check Match Complete (16 boxes)
         if (countP1 + countP2 == 16) {
             if (countP1 > countP2) p1Wins++
             else if (countP2 > countP1) p2Wins++
@@ -125,12 +124,12 @@ fun DotsAndBoxesScreen(
     }
 
     fun onHorizontalLineClick(r: Int, c: Int) {
-        if (hLines[r][c] || showWinnerDialog) return
+        if (hLinesOwner[r][c] != 0 || showWinnerDialog) return
         SoundManager.playPopSound()
 
-        val newHLines = Array(5) { row -> hLines[row].clone() }
-        newHLines[r][c] = true
-        hLines = newHLines
+        val newHLines = Array(5) { row -> hLinesOwner[row].clone() }
+        newHLines[r][c] = if (isPlayer1Turn) 1 else 2
+        hLinesOwner = newHLines
 
         val claimed = checkCompletedBoxes()
         if (!claimed) {
@@ -139,12 +138,12 @@ fun DotsAndBoxesScreen(
     }
 
     fun onVerticalLineClick(r: Int, c: Int) {
-        if (vLines[r][c] || showWinnerDialog) return
+        if (vLinesOwner[r][c] != 0 || showWinnerDialog) return
         SoundManager.playPopSound()
 
-        val newVLines = Array(4) { row -> vLines[row].clone() }
-        newVLines[r][c] = true
-        vLines = newVLines
+        val newVLines = Array(4) { row -> vLinesOwner[row].clone() }
+        newVLines[r][c] = if (isPlayer1Turn) 1 else 2
+        vLinesOwner = newVLines
 
         val claimed = checkCompletedBoxes()
         if (!claimed) {
@@ -164,7 +163,7 @@ fun DotsAndBoxesScreen(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── TOP HEADER BAR (3D BUTTONS & ROUND PILL) ───────────────────
+            // ── TOP HEADER BAR (3D BUTTONS & TITLE PILL) ───────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -254,7 +253,7 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (MEMORY MATCH EXACT SIZE) ──
+            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (RED P1) ────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
@@ -301,15 +300,17 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── 4x4 DOTS & BOXES BOARD (5x5 DOTS MATRIX) ─────────────────────
+            // ── CLEAN DIRECT BOARD CANVAS (OUTER CARD CONTAINER REMOVED AS REQUESTED) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .padding(horizontal = 24.dp)
-                    .shadow(16.dp, RoundedCornerShape(24.dp))
-                    .background(Color(0xFF0F172A), RoundedCornerShape(24.dp))
-                    .border(2.5.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
+                    .padding(horizontal = 20.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        if (isDark) Color(0xFF1E293B).copy(alpha = 0.7f)
+                        else Color.White.copy(alpha = 0.95f)
+                    )
                     .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -319,73 +320,90 @@ fun DotsAndBoxesScreen(
 
                     val stepX = w / 4f
                     val stepY = h / 4f
-                    val dotRadius = 9.dp.toPx()
-                    val lineStroke = 6.dp.toPx()
+                    val dotRadius = 11.dp.toPx()
+                    val lineStroke = 7.dp.toPx()
 
-                    // 1. Draw Claimed Boxes Background Color (Red for P1, Blue for P2)
+                    // 1. Draw Claimed Box Fill Colors (Red P1 vs Yellow P2)
                     for (r in 0..3) {
                         for (c in 0..3) {
                             val owner = boxOwners[r][c]
                             if (owner != 0) {
-                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.45f) else Color(0xFF255FF4).copy(alpha = 0.45f)
+                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.4f) else Color(0xFFFFD700).copy(alpha = 0.45f)
                                 drawRoundRect(
                                     color = boxColor,
                                     topLeft = Offset(c * stepX + 6.dp.toPx(), r * stepY + 6.dp.toPx()),
                                     size = Size(stepX - 12.dp.toPx(), stepY - 12.dp.toPx()),
-                                    cornerRadius = CornerRadius(12f, 12f)
+                                    cornerRadius = CornerRadius(10f, 10f)
                                 )
                             }
                         }
                     }
 
-                    // 2. Draw Horizontal Lines
+                    // 2. Draw Horizontal Lines (White if un-drawn, Red for P1, Yellow for P2)
                     for (r in 0..4) {
                         for (c in 0..3) {
-                            val isDrawn = hLines[r][c]
+                            val owner = hLinesOwner[r][c]
+                            val lineColor = when (owner) {
+                                1 -> Color(0xFFEF4444) // Red for Player 1
+                                2 -> Color(0xFFFFD700) // Yellow for Player 2
+                                else -> Color.White.copy(alpha = if (isDark) 0.35f else 0.85f) // White Line
+                            }
                             drawLine(
-                                color = if (isDrawn) Color.White else Color.White.copy(alpha = 0.15f),
+                                color = lineColor,
                                 start = Offset(c * stepX, r * stepY),
                                 end = Offset((c + 1) * stepX, r * stepY),
-                                strokeWidth = if (isDrawn) lineStroke else 3.dp.toPx(),
+                                strokeWidth = if (owner != 0) lineStroke else 4.dp.toPx(),
                                 cap = StrokeCap.Round
                             )
                         }
                     }
 
-                    // 3. Draw Vertical Lines
+                    // 3. Draw Vertical Lines (White if un-drawn, Red for P1, Yellow for P2)
                     for (r in 0..3) {
                         for (c in 0..4) {
-                            val isDrawn = vLines[r][c]
+                            val owner = vLinesOwner[r][c]
+                            val lineColor = when (owner) {
+                                1 -> Color(0xFFEF4444) // Red for Player 1
+                                2 -> Color(0xFFFFD700) // Yellow for Player 2
+                                else -> Color.White.copy(alpha = if (isDark) 0.35f else 0.85f) // White Line
+                            }
                             drawLine(
-                                color = if (isDrawn) Color.White else Color.White.copy(alpha = 0.15f),
+                                color = lineColor,
                                 start = Offset(c * stepX, r * stepY),
                                 end = Offset(c * stepX, (r + 1) * stepY),
-                                strokeWidth = if (isDrawn) lineStroke else 3.dp.toPx(),
+                                strokeWidth = if (owner != 0) lineStroke else 4.dp.toPx(),
                                 cap = StrokeCap.Round
                             )
                         }
                     }
 
-                    // 4. Draw 5x5 White Glossy Dots
+                    // 4. Draw 5x5 Glossy Blue Dots (Matching Screenshot)
                     for (r in 0..4) {
                         for (c in 0..4) {
+                            // Outer Shadow Dot Rim
                             drawCircle(
-                                color = Color.White,
+                                color = Color(0xFF0284C7),
                                 center = Offset(c * stepX, r * stepY),
                                 radius = dotRadius
+                            )
+                            // Inner Glossy Blue Dot
+                            drawCircle(
+                                color = Color(0xFF255FF4),
+                                center = Offset(c * stepX, r * stepY),
+                                radius = dotRadius * 0.8f
                             )
                         }
                     }
                 }
 
-                // Interactive Touch Overlay for Line Clicking
+                // Interactive Line Touch Grid Overlay
                 Column(modifier = Modifier.fillMaxSize()) {
                     for (r in 0..4) {
-                        // Horizontal Click Row
+                        // Horizontal Click Strip
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(24.dp),
+                                .height(28.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             for (c in 0..3) {
@@ -399,7 +417,7 @@ fun DotsAndBoxesScreen(
                         }
 
                         if (r < 4) {
-                            // Vertical Click Row
+                            // Vertical Click Strip
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -409,7 +427,7 @@ fun DotsAndBoxesScreen(
                                 for (c in 0..4) {
                                     Box(
                                         modifier = Modifier
-                                            .width(24.dp)
+                                            .width(28.dp)
                                             .fillMaxHeight()
                                             .clickable { onVerticalLineClick(r, c) }
                                     )
@@ -421,7 +439,7 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (MEMORY MATCH EXACT SIZE) ──
+            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (YELLOW P2) ─────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -432,7 +450,7 @@ fun DotsAndBoxesScreen(
                         .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
                         .background(
                             Brush.verticalGradient(
-                                if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                if (!isPlayer1Turn) listOf(Color(0xFFF59E0B), Color(0xFFD97706))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
                             RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
@@ -461,7 +479,7 @@ fun DotsAndBoxesScreen(
                                 text = "$p2BoxCount",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
-                                color = if (!isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFF334155)
+                                color = if (!isPlayer1Turn) Color(0xFFD97706) else Color(0xFF334155)
                             )
                         }
                     }
@@ -506,8 +524,8 @@ fun DotsAndBoxesScreen(
                                     .background(
                                         Brush.verticalGradient(
                                             if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                                            else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF1E40AF))
-                                            else listOf(Color(0xFFF59E0B), Color(0xFFB45309))
+                                            else if (p2Won) listOf(Color(0xFFF59E0B), Color(0xFFB45309))
+                                            else listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                         ),
                                         CircleShape
                                     )
@@ -556,7 +574,7 @@ fun DotsAndBoxesScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(modifier = Modifier.size(10.dp).background(Color(0xFF255FF4), CircleShape))
+                                        Box(modifier = Modifier.size(10.dp).background(Color(0xFFFFD700), CircleShape))
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text("Player 2 Boxes", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
                                     }
