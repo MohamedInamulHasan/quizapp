@@ -321,11 +321,13 @@ fun ConnectFourScreen(
                 }
             }
 
-            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE ─────────────────────────
+            // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) ──────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Player 1 Card (Attached to Left Edge)
                 Box(
                     modifier = Modifier
                         .offset(x = (-3).dp)
@@ -366,132 +368,8 @@ fun ConnectFourScreen(
                         }
                     }
                 }
-            }
 
-            // ── TOP COLUMN DROP INDICATOR BUTTONS (DISCS ABOVE BOARD) ───────
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 26.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                for (c in 0..6) {
-                    val activePlayerColor = if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFFFFD700)
-                    val isDroppingThisCol = activeDroppingCol == c
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(38.dp)
-                            .shadow(4.dp, RoundedCornerShape(10.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(activePlayerColor, activePlayerColor.copy(alpha = 0.75f))
-                                ),
-                                RoundedCornerShape(10.dp)
-                            )
-                            .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(10.dp))
-                            .clickable { dropDiscInColumn(c) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.ArrowDropDown,
-                            contentDescription = "Drop Column $c",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
-
-            // ── 6x7 CONNECT 4 BOARD (ROYAL BLUE CONTAINER WITH ANIMATED DROP DISCS) ──
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(16.dp, RoundedCornerShape(20.dp))
-                        .background(
-                            Brush.verticalGradient(listOf(Color(0xFF1E40AF), Color(0xFF1E3A8A))),
-                            RoundedCornerShape(20.dp)
-                        )
-                        .border(2.5.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(20.dp))
-                        .padding(10.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        for (r in 0..5) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                for (c in 0..6) {
-                                    val cellVal = board[r][c]
-                                    val isWinningDisc = winningCoords?.contains(Pair(r, c)) == true
-                                    val isDroppingInThisCol = activeDroppingCol == c
-
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .aspectRatio(1f)
-                                            .shadow(if (isWinningDisc) 8.dp else 2.dp, CircleShape)
-                                            .background(
-                                                when (cellVal) {
-                                                    1 -> Brush.radialGradient(listOf(Color(0xFFFF5252), Color(0xFFD32F2F)))
-                                                    2 -> Brush.radialGradient(listOf(Color(0xFFFFEB3B), Color(0xFFFBC02D)))
-                                                    else -> Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B)))
-                                                },
-                                                CircleShape
-                                            )
-                                            .border(
-                                                if (isWinningDisc) 3.dp else 1.dp,
-                                                if (isWinningDisc) Color.White else Color.White.copy(alpha = 0.2f),
-                                                CircleShape
-                                            )
-                                            .clickable { dropDiscInColumn(c) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (cellVal != 0) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize(0.85f)
-                                                    .clip(CircleShape)
-                                                    .background(
-                                                        if (cellVal == 1) Color(0xFFEF4444) else Color(0xFFFFD700)
-                                                    )
-                                            )
-                                        } else if (isDroppingInThisCol) {
-                                            // Gravity Drop Animation Disc falling from top to bottom
-                                            val animatedOffsetY = (dropAnimProgress.value * (r + 1) * 35f)
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize(0.85f)
-                                                    .offset(y = (-animatedOffsetY).dp)
-                                                    .clip(CircleShape)
-                                                    .background(
-                                                        if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFFFFD700)
-                                                    )
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE ────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+                // Player 2 Card (Attached to Right Edge)
                 Box(
                     modifier = Modifier
                         .offset(x = 3.dp)

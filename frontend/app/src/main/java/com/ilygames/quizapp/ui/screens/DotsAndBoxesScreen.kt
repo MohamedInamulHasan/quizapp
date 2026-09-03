@@ -253,11 +253,13 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (RED P1) ────────────────
+            // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) ──────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Player 1 Card (Attached to Left Edge)
                 Box(
                     modifier = Modifier
                         .offset(x = (-3).dp)
@@ -298,170 +300,8 @@ fun DotsAndBoxesScreen(
                         }
                     }
                 }
-            }
 
-            // ── 6x6 DOTS CANVAS BOARD (5x5 BOXES GRID) ──────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        if (isDark) Color(0xFF1E293B).copy(alpha = 0.75f)
-                        else Color.White.copy(alpha = 0.95f)
-                    )
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val w = size.width
-                    val h = size.height
-
-                    val stepX = w / 5f
-                    val stepY = h / 5f
-                    val dotRadius = 8.5.dp.toPx() // Sleek 3D Glossy White Dots
-                    val boldLineStrokeDrawn = 11.dp.toPx() // BOLD Player Drawn Lines
-                    val boldLineStrokeUndrawn = 7.dp.toPx() // THICK Solid White Guide Lines
-
-                    // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Blue P2)
-                    for (r in 0..4) {
-                        for (c in 0..4) {
-                            val owner = boxOwners[r][c]
-                            if (owner != 0) {
-                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.88f) else Color(0xFF255FF4).copy(alpha = 0.88f)
-                                drawRoundRect(
-                                    color = boxColor,
-                                    topLeft = Offset(c * stepX + 5.dp.toPx(), r * stepY + 5.dp.toPx()),
-                                    size = Size(stepX - 10.dp.toPx(), stepY - 10.dp.toPx()),
-                                    cornerRadius = CornerRadius(8f, 8f)
-                                )
-                            }
-                        }
-                    }
-
-                    // 2. Draw BOLD Horizontal Lines (Thick Solid White for un-drawn, Red P1, Blue P2)
-                    for (r in 0..5) {
-                        for (c in 0..4) {
-                            val owner = hLinesOwner[r][c]
-                            val lineColor = when (owner) {
-                                1 -> Color(0xFFEF4444) // BOLD Red for Player 1
-                                2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
-                                else -> Color.White // Thick Solid White Line in Normal State
-                            }
-                            drawLine(
-                                color = lineColor,
-                                start = Offset(c * stepX, r * stepY),
-                                end = Offset((c + 1) * stepX, r * stepY),
-                                strokeWidth = if (owner != 0) boldLineStrokeDrawn else boldLineStrokeUndrawn,
-                                cap = StrokeCap.Round
-                            )
-                        }
-                    }
-
-                    // 3. Draw BOLD Vertical Lines (Thick Solid White for un-drawn, Red P1, Blue P2)
-                    for (r in 0..4) {
-                        for (c in 0..5) {
-                            val owner = vLinesOwner[r][c]
-                            val lineColor = when (owner) {
-                                1 -> Color(0xFFEF4444) // BOLD Red for Player 1
-                                2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
-                                else -> Color.White // Thick Solid White Line in Normal State
-                            }
-                            drawLine(
-                                color = lineColor,
-                                start = Offset(c * stepX, r * stepY),
-                                end = Offset(c * stepX, (r + 1) * stepY),
-                                strokeWidth = if (owner != 0) boldLineStrokeDrawn else boldLineStrokeUndrawn,
-                                cap = StrokeCap.Round
-                            )
-                        }
-                    }
-
-                    // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY WHITE DOTS
-                    for (r in 0..5) {
-                        for (c in 0..5) {
-                            val center = Offset(c * stepX, r * stepY)
-
-                            // Drop shadow behind white dot
-                            drawCircle(
-                                color = Color.Black.copy(alpha = 0.35f),
-                                center = Offset(center.x + 2.dp.toPx(), center.y + 3.dp.toPx()),
-                                radius = dotRadius
-                            )
-
-                            // Base 3D Soft White/Gray Rim
-                            drawCircle(
-                                color = Color(0xFFCBD5E1),
-                                center = center,
-                                radius = dotRadius
-                            )
-
-                            // Glossy Inner Pure White Sphere
-                            drawCircle(
-                                color = Color.White,
-                                center = center,
-                                radius = dotRadius * 0.85f
-                            )
-
-                            // Top-Left 3D Shine Highlight
-                            drawCircle(
-                                color = Color.White,
-                                center = Offset(center.x - dotRadius * 0.35f, center.y - dotRadius * 0.35f),
-                                radius = dotRadius * 0.35f
-                            )
-                        }
-                    }
-                }
-
-                // Interactive Line Touch Grid Overlay (6x6 Dots Grid)
-                Column(modifier = Modifier.fillMaxSize()) {
-                    for (r in 0..5) {
-                        // Horizontal Click Strip
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(26.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            for (c in 0..4) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .clickable { onHorizontalLineClick(r, c) }
-                                )
-                            }
-                        }
-
-                        if (r < 5) {
-                            // Vertical Click Strip
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                for (c in 0..5) {
-                                    Box(
-                                        modifier = Modifier
-                                            .width(26.dp)
-                                            .fillMaxHeight()
-                                            .clickable { onVerticalLineClick(r, c) }
-                                    )
-                                    if (c < 5) Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (BLUE P2) ─────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+                // Player 2 Card (Attached to Right Edge)
                 Box(
                     modifier = Modifier
                         .offset(x = 3.dp)

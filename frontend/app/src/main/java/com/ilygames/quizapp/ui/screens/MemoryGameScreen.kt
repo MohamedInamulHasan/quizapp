@@ -435,11 +435,13 @@ fun MemoryGameScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // ── TOP: PLAYER 1 CARD ATTACHED TO LEFT EDGE OF SCREEN ────────
+                // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) ──────
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Player 1 Card (Attached to Left Edge)
                     Box(
                         modifier = Modifier
                             .offset(x = (-3).dp)
@@ -468,7 +470,6 @@ fun MemoryGameScreen(
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
                             )
-                            // Small White Box displaying score
                             Box(
                                 modifier = Modifier
                                     .shadow(2.dp, RoundedCornerShape(6.dp))
@@ -485,38 +486,8 @@ fun MemoryGameScreen(
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // ── 4x5 PERFECT SQUARE CARDS GRID ──────────────────────────────
-                key(restartTriggerCount) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(4),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        itemsIndexed(cards) { idx, card ->
-                            SquareMemoryCardTile(
-                                card = card,
-                                isDark = isDark,
-                                cardIndex = idx,
-                                onClick = { onCardClick(idx) }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // ── BOTTOM: PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ─────
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
+                    // Player 2 Card (Attached to Right Edge)
                     Box(
                         modifier = Modifier
                             .offset(x = 3.dp)
@@ -545,7 +516,6 @@ fun MemoryGameScreen(
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
                             )
-                            // Small White Box displaying score
                             Box(
                                 modifier = Modifier
                                     .shadow(2.dp, RoundedCornerShape(6.dp))
@@ -560,6 +530,29 @@ fun MemoryGameScreen(
                                     color = if (!isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFF334155)
                                 )
                             }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ── 4x5 PERFECT SQUARE CARDS GRID ──────────────────────────────
+                key(restartTriggerCount) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(4),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        itemsIndexed(cards) { idx, card ->
+                            SquareMemoryCardTile(
+                                card = card,
+                                isDark = isDark,
+                                cardIndex = idx,
+                                onClick = { onCardClick(idx) }
+                            )
                         }
                     }
                 }
