@@ -887,24 +887,16 @@ fun GuessWhoCharacterCardItem(
         contentAlignment = Alignment.Center
     ) {
         if (flipRotation > 90f) {
-            // Flipped Card Back Side (3D Dark Metallic Face-Down Card)
+            // Flipped Card Back Side (Clean Flat Minimal Design)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { rotationY = 180f }
                     .background(
-                        Brush.verticalGradient(listOf(Color(0xFF334155), Color(0xFF1E293B))),
+                        Color(0xFF334155),
                         RoundedCornerShape(14.dp)
                     )
-                    .border(1.5.dp, Color(0xFF475569), RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "❓", fontSize = 28.sp)
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(text = "FLIPPED", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF94A3B8))
-                }
-            }
+            )
         } else {
             // Front Face-Up Side
             Column(
