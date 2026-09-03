@@ -893,9 +893,14 @@ fun GuessWhoCharacterCardItem(
         ) {
             // Stylized Avatar Box / Custom Uploaded Image
             val context = LocalContext.current
-            val drawableName = "avatar_${character.name.lowercase()}"
+            val rawName = character.name.lowercase()
             val imageResId = remember(character.name) {
-                context.resources.getIdentifier(drawableName, "drawable", context.packageName)
+                val nameVariant = if (rawName == "sara") "sora" else rawName
+                var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
+                if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
+                if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
+                if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
+                id
             }
 
             Box(
