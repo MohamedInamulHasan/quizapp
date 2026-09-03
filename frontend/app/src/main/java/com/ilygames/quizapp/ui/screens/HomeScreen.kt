@@ -936,7 +936,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         UnifiedEmeraldCard(
                             title = "Memory Match",
                             description = "Flip cards & match pairs to win",
-                            icon = Icons.Default.Extension,
+                            icon = Icons.Default.Style,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClickSound()
@@ -947,7 +947,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         UnifiedEmeraldCard(
                             title = "X | O Showdown",
                             description = "Classic 2 Player Tic Tac Toe game",
-                            icon = Icons.Default.GridOn,
+                            icon = Icons.Default.Close,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClickSound()
