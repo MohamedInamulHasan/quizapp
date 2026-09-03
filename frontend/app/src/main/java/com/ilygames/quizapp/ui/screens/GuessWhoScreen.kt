@@ -47,6 +47,7 @@ import com.ilygames.quizapp.utils.SoundManager
 enum class Gender { MALE, FEMALE }
 enum class EyeColor { BLUE, GREEN, BROWN, BLACK }
 enum class HairColor { BLACK, BROWN, BLONDE, RED, GREY }
+enum class HairStyle { SHORT, LONG, BALD }
 enum class SkinTone { FAIR, MEDIUM, DARK }
 enum class Accessory { GLASSES, HAT, EARRINGS, NONE }
 enum class FacialHair { BEARD, MUSTACHE, NONE }
@@ -57,6 +58,7 @@ data class GuessWhoCharacter(
     val gender: Gender,
     val eyeColor: EyeColor,
     val hairColor: HairColor,
+    val hairStyle: HairStyle,
     val skinTone: SkinTone,
     val accessory: Accessory,
     val facialHair: FacialHair,
@@ -66,41 +68,41 @@ data class GuessWhoCharacter(
 
 // 30 Unique Character Roster
 val ALL_CHARACTERS = listOf(
-    GuessWhoCharacter("1", "Lucy", Gender.FEMALE, EyeColor.BROWN, HairColor.BLACK, SkinTone.FAIR, Accessory.HAT, FacialHair.NONE, Color(0xFF8B5CF6)),
-    GuessWhoCharacter("2", "Tom", Gender.MALE, EyeColor.BLUE, HairColor.BLACK, SkinTone.FAIR, Accessory.GLASSES, FacialHair.MUSTACHE, Color(0xFF3B82F6)),
-    GuessWhoCharacter("3", "Sara", Gender.FEMALE, EyeColor.BLUE, HairColor.BLACK, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEC4899)),
-    GuessWhoCharacter("4", "Emma", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, SkinTone.MEDIUM, Accessory.NONE, FacialHair.NONE, Color(0xFF10B981)),
-    GuessWhoCharacter("5", "Henry", Gender.MALE, EyeColor.BROWN, HairColor.BLACK, SkinTone.MEDIUM, Accessory.NONE, FacialHair.BEARD, Color(0xFFF59E0B)),
+    GuessWhoCharacter("1", "Lucy", Gender.FEMALE, EyeColor.BROWN, HairColor.BLACK, HairStyle.LONG, SkinTone.FAIR, Accessory.HAT, FacialHair.NONE, Color(0xFF8B5CF6)),
+    GuessWhoCharacter("2", "Tom", Gender.MALE, EyeColor.BLUE, HairColor.BLACK, HairStyle.BALD, SkinTone.FAIR, Accessory.GLASSES, FacialHair.MUSTACHE, Color(0xFF3B82F6)),
+    GuessWhoCharacter("3", "Sara", Gender.FEMALE, EyeColor.BLUE, HairColor.BLACK, HairStyle.LONG, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEC4899)),
+    GuessWhoCharacter("4", "Emma", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.MEDIUM, Accessory.NONE, FacialHair.NONE, Color(0xFF10B981)),
+    GuessWhoCharacter("5", "Henry", Gender.MALE, EyeColor.BROWN, HairColor.BLACK, HairStyle.SHORT, SkinTone.MEDIUM, Accessory.NONE, FacialHair.BEARD, Color(0xFFF59E0B)),
 
-    GuessWhoCharacter("6", "Rose", Gender.FEMALE, EyeColor.BLUE, HairColor.BLACK, SkinTone.FAIR, Accessory.HAT, FacialHair.NONE, Color(0xFF6366F1)),
-    GuessWhoCharacter("7", "Jeff", Gender.MALE, EyeColor.BLACK, HairColor.BLONDE, SkinTone.FAIR, Accessory.GLASSES, FacialHair.BEARD, Color(0xFF14B8A6)),
-    GuessWhoCharacter("8", "Lia", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFF43F5E)),
-    GuessWhoCharacter("9", "Rob", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, SkinTone.MEDIUM, Accessory.HAT, FacialHair.BEARD, Color(0xFF06B6D4)),
-    GuessWhoCharacter("10", "Aria", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFFA855F7)),
+    GuessWhoCharacter("6", "Rose", Gender.FEMALE, EyeColor.BLUE, HairColor.BLACK, HairStyle.LONG, SkinTone.FAIR, Accessory.HAT, FacialHair.NONE, Color(0xFF6366F1)),
+    GuessWhoCharacter("7", "Jeff", Gender.MALE, EyeColor.BLACK, HairColor.BLONDE, HairStyle.SHORT, SkinTone.FAIR, Accessory.GLASSES, FacialHair.BEARD, Color(0xFF14B8A6)),
+    GuessWhoCharacter("8", "Lia", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFF43F5E)),
+    GuessWhoCharacter("9", "Rob", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, HairStyle.SHORT, SkinTone.MEDIUM, Accessory.HAT, FacialHair.BEARD, Color(0xFF06B6D4)),
+    GuessWhoCharacter("10", "Aria", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFFA855F7)),
 
-    GuessWhoCharacter("11", "Bob", Gender.MALE, EyeColor.BROWN, HairColor.BLACK, SkinTone.MEDIUM, Accessory.NONE, FacialHair.NONE, Color(0xFFEF4444)),
-    GuessWhoCharacter("12", "Bella", Gender.FEMALE, EyeColor.GREEN, HairColor.RED, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF3B82F6)),
-    GuessWhoCharacter("13", "Sophia", Gender.FEMALE, EyeColor.BROWN, HairColor.BLONDE, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFF59E0B)),
-    GuessWhoCharacter("14", "Jack", Gender.MALE, EyeColor.GREEN, HairColor.GREY, SkinTone.FAIR, Accessory.HAT, FacialHair.BEARD, Color(0xFF8B5CF6)),
-    GuessWhoCharacter("15", "Jose", Gender.MALE, EyeColor.GREEN, HairColor.BLACK, SkinTone.DARK, Accessory.NONE, FacialHair.BEARD, Color(0xFF10B981)),
+    GuessWhoCharacter("11", "Bob", Gender.MALE, EyeColor.BROWN, HairColor.BLACK, HairStyle.SHORT, SkinTone.MEDIUM, Accessory.NONE, FacialHair.NONE, Color(0xFFEF4444)),
+    GuessWhoCharacter("12", "Bella", Gender.FEMALE, EyeColor.GREEN, HairColor.RED, HairStyle.LONG, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF3B82F6)),
+    GuessWhoCharacter("13", "Sophia", Gender.FEMALE, EyeColor.BROWN, HairColor.BLONDE, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFF59E0B)),
+    GuessWhoCharacter("14", "Jack", Gender.MALE, EyeColor.GREEN, HairColor.GREY, HairStyle.SHORT, SkinTone.FAIR, Accessory.HAT, FacialHair.BEARD, Color(0xFF8B5CF6)),
+    GuessWhoCharacter("15", "Jose", Gender.MALE, EyeColor.GREEN, HairColor.BLACK, HairStyle.BALD, SkinTone.DARK, Accessory.NONE, FacialHair.BEARD, Color(0xFF10B981)),
 
-    GuessWhoCharacter("16", "Theo", Gender.MALE, EyeColor.BLUE, HairColor.BLONDE, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF6366F1)),
-    GuessWhoCharacter("17", "Annie", Gender.FEMALE, EyeColor.BROWN, HairColor.RED, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFEC4899)),
-    GuessWhoCharacter("18", "Paul", Gender.MALE, EyeColor.BROWN, HairColor.RED, SkinTone.MEDIUM, Accessory.NONE, FacialHair.BEARD, Color(0xFFF43F5E)),
-    GuessWhoCharacter("19", "Olivia", Gender.FEMALE, EyeColor.BROWN, HairColor.BLACK, SkinTone.DARK, Accessory.EARRINGS, FacialHair.NONE, Color(0xFF06B6D4)),
-    GuessWhoCharacter("20", "Chloe", Gender.FEMALE, EyeColor.GREEN, HairColor.BROWN, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFA855F7)),
+    GuessWhoCharacter("16", "Theo", Gender.MALE, EyeColor.BLUE, HairColor.BLONDE, HairStyle.SHORT, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF6366F1)),
+    GuessWhoCharacter("17", "Annie", Gender.FEMALE, EyeColor.BROWN, HairColor.RED, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFEC4899)),
+    GuessWhoCharacter("18", "Paul", Gender.MALE, EyeColor.BROWN, HairColor.RED, HairStyle.SHORT, SkinTone.MEDIUM, Accessory.NONE, FacialHair.BEARD, Color(0xFFF43F5E)),
+    GuessWhoCharacter("19", "Olivia", Gender.FEMALE, EyeColor.BROWN, HairColor.BLACK, HairStyle.LONG, SkinTone.DARK, Accessory.EARRINGS, FacialHair.NONE, Color(0xFF06B6D4)),
+    GuessWhoCharacter("20", "Chloe", Gender.FEMALE, EyeColor.GREEN, HairColor.BROWN, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFA855F7)),
 
-    GuessWhoCharacter("21", "Nora", Gender.FEMALE, EyeColor.BLACK, HairColor.BROWN, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEF4444)),
-    GuessWhoCharacter("22", "James", Gender.MALE, EyeColor.BROWN, HairColor.BROWN, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFF3B82F6)),
-    GuessWhoCharacter("23", "Bill", Gender.MALE, EyeColor.BLUE, HairColor.BLONDE, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF10B981)),
-    GuessWhoCharacter("24", "Julia", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, SkinTone.DARK, Accessory.NONE, FacialHair.NONE, Color(0xFFF59E0B)),
-    GuessWhoCharacter("25", "Naomi", Gender.FEMALE, EyeColor.BLACK, HairColor.BLACK, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFF8B5CF6)),
+    GuessWhoCharacter("21", "Nora", Gender.FEMALE, EyeColor.BLACK, HairColor.BROWN, HairStyle.LONG, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEF4444)),
+    GuessWhoCharacter("22", "James", Gender.MALE, EyeColor.BROWN, HairColor.BROWN, HairStyle.SHORT, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFF3B82F6)),
+    GuessWhoCharacter("23", "Bill", Gender.MALE, EyeColor.BLUE, HairColor.BLONDE, HairStyle.SHORT, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF10B981)),
+    GuessWhoCharacter("24", "Julia", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.DARK, Accessory.NONE, FacialHair.NONE, Color(0xFFF59E0B)),
+    GuessWhoCharacter("25", "Naomi", Gender.FEMALE, EyeColor.BLACK, HairColor.BLACK, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFF8B5CF6)),
 
-    GuessWhoCharacter("26", "Ryan", Gender.MALE, EyeColor.BLUE, HairColor.BROWN, SkinTone.FAIR, Accessory.GLASSES, FacialHair.MUSTACHE, Color(0xFF6366F1)),
-    GuessWhoCharacter("27", "David", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, SkinTone.DARK, Accessory.NONE, FacialHair.MUSTACHE, Color(0xFF14B8A6)),
-    GuessWhoCharacter("28", "Mila", Gender.FEMALE, EyeColor.BROWN, HairColor.BLONDE, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEC4899)),
-    GuessWhoCharacter("29", "John", Gender.MALE, EyeColor.BLUE, HairColor.GREY, SkinTone.DARK, Accessory.HAT, FacialHair.BEARD, Color(0xFF06B6D4)),
-    GuessWhoCharacter("30", "Ben", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFF59E0B))
+    GuessWhoCharacter("26", "Ryan", Gender.MALE, EyeColor.BLUE, HairColor.BROWN, HairStyle.SHORT, SkinTone.FAIR, Accessory.GLASSES, FacialHair.MUSTACHE, Color(0xFF6366F1)),
+    GuessWhoCharacter("27", "David", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, HairStyle.SHORT, SkinTone.DARK, Accessory.NONE, FacialHair.MUSTACHE, Color(0xFF14B8A6)),
+    GuessWhoCharacter("28", "Mila", Gender.FEMALE, EyeColor.BROWN, HairColor.BLONDE, HairStyle.LONG, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEC4899)),
+    GuessWhoCharacter("29", "John", Gender.MALE, EyeColor.BLUE, HairColor.GREY, HairStyle.SHORT, SkinTone.DARK, Accessory.HAT, FacialHair.BEARD, Color(0xFF06B6D4)),
+    GuessWhoCharacter("30", "Ben", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, HairStyle.BALD, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFF59E0B))
 )
 
 @Composable
@@ -663,21 +665,21 @@ fun GuessWhoScreen(
                                     }
                                 }
                                 "HAIR" -> {
-                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("SHORT HAIR", "💇‍♂️") { applyQuestionFilter("Does the person have short hair?") { it.gender == Gender.MALE } }
-                                            TraitOptionCard("LONG HAIR", "💇‍♀️") { applyQuestionFilter("Does the person have long hair?") { it.gender == Gender.FEMALE } }
-                                        }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        TraitOptionCard("SHORT", "👨‍🦱") { applyQuestionFilter("Does the person have short hair?") { it.hairStyle == HairStyle.SHORT } }
+                                        TraitOptionCard("LONG", "👩‍🦰") { applyQuestionFilter("Does the person have long hair?") { it.hairStyle == HairStyle.LONG } }
+                                        TraitOptionCard("BALD", "👨‍🦲") { applyQuestionFilter("Is the person bald?") { it.hairStyle == HairStyle.BALD } }
                                     }
                                 }
                                 "HAIR_COLOR" -> {
                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("BLACK", "⬛") { applyQuestionFilter("Does the person have black hair?") { it.hairColor == HairColor.BLACK } }
                                             TraitOptionCard("BROWN", "🟫") { applyQuestionFilter("Does the person have brown hair?") { it.hairColor == HairColor.BROWN } }
+                                            TraitOptionCard("BLACK", "⬛") { applyQuestionFilter("Does the person have black hair?") { it.hairColor == HairColor.BLACK } }
+                                            TraitOptionCard("BLONDE", "🟨") { applyQuestionFilter("Does the person have blonde hair?") { it.hairColor == HairColor.BLONDE } }
                                         }
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("BLONDE", "🟨") { applyQuestionFilter("Does the person have blonde hair?") { it.hairColor == HairColor.BLONDE } }
+                                            TraitOptionCard("GRAY", "👵") { applyQuestionFilter("Does the person have gray hair?") { it.hairColor == HairColor.GREY } }
                                             TraitOptionCard("RED", "🟥") { applyQuestionFilter("Does the person have red hair?") { it.hairColor == HairColor.RED } }
                                         }
                                     }
