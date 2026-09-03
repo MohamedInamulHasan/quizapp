@@ -54,7 +54,7 @@ fun DotsAndBoxesScreen(
     var p2Wins by remember { mutableIntStateOf(0) }
     var p1BoxCount by remember { mutableIntStateOf(0) }
     var p2BoxCount by remember { mutableIntStateOf(0) }
-    var isPlayer1Turn by remember { mutableStateOf(true) } // true = Red (P1), false = Yellow (P2)
+    var isPlayer1Turn by remember { mutableStateOf(true) } // true = Red (P1), false = Blue (P2)
 
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
@@ -324,12 +324,12 @@ fun DotsAndBoxesScreen(
                     val boldLineStrokeDrawn = 10.dp.toPx() // BOLD Player Drawn Lines
                     val boldLineStrokeUndrawn = 5.5.dp.toPx() // BOLD Solid White Guide Lines
 
-                    // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Yellow P2)
+                    // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Blue P2)
                     for (r in 0..4) {
                         for (c in 0..4) {
                             val owner = boxOwners[r][c]
                             if (owner != 0) {
-                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.88f) else Color(0xFFFFD700).copy(alpha = 0.88f)
+                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.88f) else Color(0xFF255FF4).copy(alpha = 0.88f)
                                 drawRoundRect(
                                     color = boxColor,
                                     topLeft = Offset(c * stepX + 5.dp.toPx(), r * stepY + 5.dp.toPx()),
@@ -340,13 +340,13 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 2. Draw BOLD Horizontal Lines (Solid White for un-drawn)
+                    // 2. Draw BOLD Horizontal Lines (Solid White for un-drawn, Red P1, Blue P2)
                     for (r in 0..5) {
                         for (c in 0..4) {
                             val owner = hLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
-                                2 -> Color(0xFFFFD700) // BOLD Yellow for Player 2
+                                2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
                                 else -> Color.White.copy(alpha = 0.95f) // Solid White Line in Normal State
                             }
                             drawLine(
@@ -359,13 +359,13 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 3. Draw BOLD Vertical Lines (Solid White for un-drawn)
+                    // 3. Draw BOLD Vertical Lines (Solid White for un-drawn, Red P1, Blue P2)
                     for (r in 0..4) {
                         for (c in 0..5) {
                             val owner = vLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
-                                2 -> Color(0xFFFFD700) // BOLD Yellow for Player 2
+                                2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
                                 else -> Color.White.copy(alpha = 0.95f) // Solid White Line in Normal State
                             }
                             drawLine(
@@ -378,7 +378,7 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 4. Draw 6x6 REAL 3D SPHERICAL BLUE DOTS
+                    // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY YELLOW DOTS
                     for (r in 0..5) {
                         for (c in 0..5) {
                             val center = Offset(c * stepX, r * stepY)
@@ -390,23 +390,23 @@ fun DotsAndBoxesScreen(
                                 radius = dotRadius
                             )
 
-                            // Base 3D Royal Blue Sphere
+                            // Base 3D Yellow Sphere
                             drawCircle(
-                                color = Color(0xFF1D4ED8),
+                                color = Color(0xFFD97706),
                                 center = center,
                                 radius = dotRadius
                             )
 
-                            // Glossy Inner Blue Gradient
+                            // Glossy Inner Golden Yellow Gradient
                             drawCircle(
-                                color = Color(0xFF255FF4),
+                                color = Color(0xFFFFD700),
                                 center = center,
                                 radius = dotRadius * 0.85f
                             )
 
                             // Top-Left 3D Shine Highlight
                             drawCircle(
-                                color = Color.White.copy(alpha = 0.85f),
+                                color = Color.White.copy(alpha = 0.9f),
                                 center = Offset(center.x - dotRadius * 0.35f, center.y - dotRadius * 0.35f),
                                 radius = dotRadius * 0.35f
                             )
@@ -457,7 +457,7 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (YELLOW P2) ─────────────
+            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (BLUE P2) ─────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -468,7 +468,7 @@ fun DotsAndBoxesScreen(
                         .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
                         .background(
                             Brush.verticalGradient(
-                                if (!isPlayer1Turn) listOf(Color(0xFFF59E0B), Color(0xFFD97706))
+                                if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                 else listOf(Color(0xFF475569), Color(0xFF334155))
                             ),
                             RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
@@ -497,7 +497,7 @@ fun DotsAndBoxesScreen(
                                 text = "$p2BoxCount",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
-                                color = if (!isPlayer1Turn) Color(0xFFD97706) else Color(0xFF334155)
+                                color = if (!isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFF334155)
                             )
                         }
                     }
@@ -592,7 +592,7 @@ fun DotsAndBoxesScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(modifier = Modifier.size(10.dp).background(Color(0xFFFFD700), CircleShape))
+                                        Box(modifier = Modifier.size(10.dp).background(Color(0xFF255FF4), CircleShape))
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text("Player 2 Boxes", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
                                     }
