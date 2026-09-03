@@ -2007,6 +2007,12 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun UnifiedEmeraldCard(
