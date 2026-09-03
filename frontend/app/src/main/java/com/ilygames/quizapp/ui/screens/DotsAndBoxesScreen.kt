@@ -42,12 +42,13 @@ fun DotsAndBoxesScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // 4x4 Boxes Grid -> 5x5 3D Blue Dots Grid
-    // Line Owners: 0 = Un-drawn (Bold White), 1 = Red (P1), 2 = Yellow (P2)
-    var hLinesOwner by remember { mutableStateOf(Array(5) { IntArray(4) { 0 } }) }
-    var vLinesOwner by remember { mutableStateOf(Array(4) { IntArray(5) { 0 } }) }
-    // Box Owners: 0 = none, 1 = Red P1, 2 = Yellow P2
-    var boxOwners by remember { mutableStateOf(Array(4) { IntArray(4) { 0 } }) }
+    // 6x6 Dots Grid -> 5x5 Boxes Grid (25 Total Boxes)
+    // Horizontal lines: 6 rows x 5 columns = 30 lines
+    var hLinesOwner by remember { mutableStateOf(Array(6) { IntArray(5) { 0 } }) }
+    // Vertical lines: 5 rows x 6 columns = 30 lines
+    var vLinesOwner by remember { mutableStateOf(Array(5) { IntArray(6) { 0 } }) }
+    // Box Owners: 5 rows x 5 columns (0 = none, 1 = Red P1, 2 = Yellow P2)
+    var boxOwners by remember { mutableStateOf(Array(5) { IntArray(5) { 0 } }) }
 
     var p1Wins by remember { mutableIntStateOf(0) }
     var p2Wins by remember { mutableIntStateOf(0) }
@@ -63,9 +64,9 @@ fun DotsAndBoxesScreen(
     }
 
     fun resetMatch() {
-        hLinesOwner = Array(5) { IntArray(4) { 0 } }
-        vLinesOwner = Array(4) { IntArray(5) { 0 } }
-        boxOwners = Array(4) { IntArray(4) { 0 } }
+        hLinesOwner = Array(6) { IntArray(5) { 0 } }
+        vLinesOwner = Array(5) { IntArray(6) { 0 } }
+        boxOwners = Array(5) { IntArray(5) { 0 } }
         p1BoxCount = 0
         p2BoxCount = 0
         isPlayer1Turn = true
@@ -76,13 +77,13 @@ fun DotsAndBoxesScreen(
 
     fun checkCompletedBoxes(): Boolean {
         var boxClaimedThisTurn = false
-        val newOwners = Array(4) { r -> boxOwners[r].clone() }
+        val newOwners = Array(5) { r -> boxOwners[r].clone() }
 
         var countP1 = 0
         var countP2 = 0
 
-        for (r in 0..3) {
-            for (c in 0..3) {
+        for (r in 0..4) {
+            for (c in 0..4) {
                 val hasTop = hLinesOwner[r][c] != 0
                 val hasBottom = hLinesOwner[r + 1][c] != 0
                 val hasLeft = vLinesOwner[r][c] != 0
@@ -105,7 +106,8 @@ fun DotsAndBoxesScreen(
         p1BoxCount = countP1
         p2BoxCount = countP2
 
-        if (countP1 + countP2 == 16) {
+        // Check Match Complete (25 boxes)
+        if (countP1 + countP2 == 25) {
             if (countP1 > countP2) p1Wins++
             else if (countP2 > countP1) p2Wins++
 
@@ -113,7 +115,7 @@ fun DotsAndBoxesScreen(
             if (!rewardEarned) {
                 rewardEarned = true
                 authViewModel.addAdReward(context)
-                Toast.makeText(context, "🪙 +50 Coins Earned for Dots & Boxes!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "🪙 +50 Coins Earned for 6x6 Dots & Boxes!", Toast.LENGTH_SHORT).show()
             }
             showWinnerDialog = true
         }
@@ -125,7 +127,7 @@ fun DotsAndBoxesScreen(
         if (hLinesOwner[r][c] != 0 || showWinnerDialog) return
         SoundManager.playPopSound()
 
-        val newHLines = Array(5) { row -> hLinesOwner[row].clone() }
+        val newHLines = Array(6) { row -> hLinesOwner[row].clone() }
         newHLines[r][c] = if (isPlayer1Turn) 1 else 2
         hLinesOwner = newHLines
 
@@ -139,7 +141,7 @@ fun DotsAndBoxesScreen(
         if (vLinesOwner[r][c] != 0 || showWinnerDialog) return
         SoundManager.playPopSound()
 
-        val newVLines = Array(4) { row -> vLinesOwner[row].clone() }
+        val newVLines = Array(5) { row -> vLinesOwner[row].clone() }
         newVLines[r][c] = if (isPlayer1Turn) 1 else 2
         vLinesOwner = newVLines
 
@@ -213,7 +215,7 @@ fun DotsAndBoxesScreen(
                         .padding(vertical = 6.dp, horizontal = 18.dp)
                 ) {
                     Text(
-                        text = "DOTS & BOXES 2P",
+                        text = "DOTS & BOXES 6x6",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
@@ -298,49 +300,49 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── CLEAN DIRECT BOARD CANVAS (BOLD LINES, THICK BOX COLORS & 3D BLUE DOTS) ──
+            // ── 6x6 DOTS CANVAS BOARD (5x5 BOXES GRID) ──────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(20.dp))
                     .background(
                         if (isDark) Color(0xFF1E293B).copy(alpha = 0.75f)
                         else Color.White.copy(alpha = 0.95f)
                     )
-                    .padding(20.dp),
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val w = size.width
                     val h = size.height
 
-                    val stepX = w / 4f
-                    val stepY = h / 4f
-                    val dotRadius = 14.dp.toPx() // Larger 3D Glossy Spherical Dots
-                    val boldLineStrokeDrawn = 11.dp.toPx() // BOLD Drawn Lines
-                    val boldLineStrokeUndrawn = 6.dp.toPx() // BOLD White Guide Lines
+                    val stepX = w / 5f
+                    val stepY = h / 5f
+                    val dotRadius = 12.dp.toPx() // 3D Glossy Spherical Dots
+                    val boldLineStrokeDrawn = 10.dp.toPx() // BOLD Drawn Lines
+                    val boldLineStrokeUndrawn = 5.5.dp.toPx() // BOLD White Guide Lines
 
                     // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Yellow P2)
-                    for (r in 0..3) {
-                        for (c in 0..3) {
+                    for (r in 0..4) {
+                        for (c in 0..4) {
                             val owner = boxOwners[r][c]
                             if (owner != 0) {
                                 val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.88f) else Color(0xFFFFD700).copy(alpha = 0.88f)
                                 drawRoundRect(
                                     color = boxColor,
-                                    topLeft = Offset(c * stepX + 6.dp.toPx(), r * stepY + 6.dp.toPx()),
-                                    size = Size(stepX - 12.dp.toPx(), stepY - 12.dp.toPx()),
-                                    cornerRadius = CornerRadius(10f, 10f)
+                                    topLeft = Offset(c * stepX + 5.dp.toPx(), r * stepY + 5.dp.toPx()),
+                                    size = Size(stepX - 10.dp.toPx(), stepY - 10.dp.toPx()),
+                                    cornerRadius = CornerRadius(8f, 8f)
                                 )
                             }
                         }
                     }
 
-                    // 2. Draw BOLD Horizontal Lines
-                    for (r in 0..4) {
-                        for (c in 0..3) {
+                    // 2. Draw BOLD Horizontal Lines (6 Rows x 5 Columns)
+                    for (r in 0..5) {
+                        for (c in 0..4) {
                             val owner = hLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
@@ -357,9 +359,9 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 3. Draw BOLD Vertical Lines
-                    for (r in 0..3) {
-                        for (c in 0..4) {
+                    // 3. Draw BOLD Vertical Lines (5 Rows x 6 Columns)
+                    for (r in 0..4) {
+                        for (c in 0..5) {
                             val owner = vLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
@@ -376,9 +378,9 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 4. Draw 5x5 REAL 3D SPHERICAL BLUE DOTS
-                    for (r in 0..4) {
-                        for (c in 0..4) {
+                    // 4. Draw 6x6 REAL 3D SPHERICAL BLUE DOTS
+                    for (r in 0..5) {
+                        for (c in 0..5) {
                             val center = Offset(c * stepX, r * stepY)
 
                             // Drop shadow behind dot
@@ -412,17 +414,17 @@ fun DotsAndBoxesScreen(
                     }
                 }
 
-                // Interactive Line Touch Grid Overlay
+                // Interactive Line Touch Grid Overlay (6x6 Dots Grid)
                 Column(modifier = Modifier.fillMaxSize()) {
-                    for (r in 0..4) {
+                    for (r in 0..5) {
                         // Horizontal Click Strip
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(32.dp),
+                                .height(26.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            for (c in 0..3) {
+                            for (c in 0..4) {
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
@@ -432,7 +434,7 @@ fun DotsAndBoxesScreen(
                             }
                         }
 
-                        if (r < 4) {
+                        if (r < 5) {
                             // Vertical Click Strip
                             Row(
                                 modifier = Modifier
@@ -440,14 +442,14 @@ fun DotsAndBoxesScreen(
                                     .weight(1f),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                for (c in 0..4) {
+                                for (c in 0..5) {
                                     Box(
                                         modifier = Modifier
-                                            .width(32.dp)
+                                            .width(26.dp)
                                             .fillMaxHeight()
                                             .clickable { onVerticalLineClick(r, c) }
                                     )
-                                    if (c < 4) Spacer(modifier = Modifier.weight(1f))
+                                    if (c < 5) Spacer(modifier = Modifier.weight(1f))
                                 }
                             }
                         }
