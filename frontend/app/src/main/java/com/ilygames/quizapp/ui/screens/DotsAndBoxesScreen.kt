@@ -42,8 +42,8 @@ fun DotsAndBoxesScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // 4x4 Boxes Grid -> 5x5 Blue Dots Grid
-    // Line Owners: 0 = Un-drawn (White), 1 = Red (P1), 2 = Yellow (P2)
+    // 4x4 Boxes Grid -> 5x5 3D Blue Dots Grid
+    // Line Owners: 0 = Un-drawn (Bold White), 1 = Red (P1), 2 = Yellow (P2)
     var hLinesOwner by remember { mutableStateOf(Array(5) { IntArray(4) { 0 } }) }
     var vLinesOwner by remember { mutableStateOf(Array(4) { IntArray(5) { 0 } }) }
     // Box Owners: 0 = none, 1 = Red P1, 2 = Yellow P2
@@ -74,7 +74,6 @@ fun DotsAndBoxesScreen(
         SoundManager.playRetrySound()
     }
 
-    // Check if a newly drawn line completes 1 or 2 surrounding boxes
     fun checkCompletedBoxes(): Boolean {
         var boxClaimedThisTurn = false
         val newOwners = Array(4) { r -> boxOwners[r].clone() }
@@ -106,7 +105,6 @@ fun DotsAndBoxesScreen(
         p1BoxCount = countP1
         p2BoxCount = countP2
 
-        // Check Match Complete (16 boxes)
         if (countP1 + countP2 == 16) {
             if (countP1 > countP2) p1Wins++
             else if (countP2 > countP1) p2Wins++
@@ -300,7 +298,7 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            // ── CLEAN DIRECT BOARD CANVAS (OUTER CARD CONTAINER REMOVED AS REQUESTED) ──
+            // ── CLEAN DIRECT BOARD CANVAS (BOLD LINES, THICK BOX COLORS & 3D BLUE DOTS) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -308,7 +306,7 @@ fun DotsAndBoxesScreen(
                     .padding(horizontal = 20.dp)
                     .clip(RoundedCornerShape(20.dp))
                     .background(
-                        if (isDark) Color(0xFF1E293B).copy(alpha = 0.7f)
+                        if (isDark) Color(0xFF1E293B).copy(alpha = 0.75f)
                         else Color.White.copy(alpha = 0.95f)
                     )
                     .padding(20.dp),
@@ -320,15 +318,16 @@ fun DotsAndBoxesScreen(
 
                     val stepX = w / 4f
                     val stepY = h / 4f
-                    val dotRadius = 11.dp.toPx()
-                    val lineStroke = 7.dp.toPx()
+                    val dotRadius = 14.dp.toPx() // Larger 3D Glossy Spherical Dots
+                    val boldLineStrokeDrawn = 11.dp.toPx() // BOLD Drawn Lines
+                    val boldLineStrokeUndrawn = 6.dp.toPx() // BOLD White Guide Lines
 
-                    // 1. Draw Claimed Box Fill Colors (Red P1 vs Yellow P2)
+                    // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Yellow P2)
                     for (r in 0..3) {
                         for (c in 0..3) {
                             val owner = boxOwners[r][c]
                             if (owner != 0) {
-                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.4f) else Color(0xFFFFD700).copy(alpha = 0.45f)
+                                val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.88f) else Color(0xFFFFD700).copy(alpha = 0.88f)
                                 drawRoundRect(
                                     color = boxColor,
                                     topLeft = Offset(c * stepX + 6.dp.toPx(), r * stepY + 6.dp.toPx()),
@@ -339,58 +338,75 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 2. Draw Horizontal Lines (White if un-drawn, Red for P1, Yellow for P2)
+                    // 2. Draw BOLD Horizontal Lines
                     for (r in 0..4) {
                         for (c in 0..3) {
                             val owner = hLinesOwner[r][c]
                             val lineColor = when (owner) {
-                                1 -> Color(0xFFEF4444) // Red for Player 1
-                                2 -> Color(0xFFFFD700) // Yellow for Player 2
-                                else -> Color.White.copy(alpha = if (isDark) 0.35f else 0.85f) // White Line
+                                1 -> Color(0xFFEF4444) // BOLD Red for Player 1
+                                2 -> Color(0xFFFFD700) // BOLD Yellow for Player 2
+                                else -> Color.White.copy(alpha = if (isDark) 0.45f else 0.9f) // BOLD White Line
                             }
                             drawLine(
                                 color = lineColor,
                                 start = Offset(c * stepX, r * stepY),
                                 end = Offset((c + 1) * stepX, r * stepY),
-                                strokeWidth = if (owner != 0) lineStroke else 4.dp.toPx(),
+                                strokeWidth = if (owner != 0) boldLineStrokeDrawn else boldLineStrokeUndrawn,
                                 cap = StrokeCap.Round
                             )
                         }
                     }
 
-                    // 3. Draw Vertical Lines (White if un-drawn, Red for P1, Yellow for P2)
+                    // 3. Draw BOLD Vertical Lines
                     for (r in 0..3) {
                         for (c in 0..4) {
                             val owner = vLinesOwner[r][c]
                             val lineColor = when (owner) {
-                                1 -> Color(0xFFEF4444) // Red for Player 1
-                                2 -> Color(0xFFFFD700) // Yellow for Player 2
-                                else -> Color.White.copy(alpha = if (isDark) 0.35f else 0.85f) // White Line
+                                1 -> Color(0xFFEF4444) // BOLD Red for Player 1
+                                2 -> Color(0xFFFFD700) // BOLD Yellow for Player 2
+                                else -> Color.White.copy(alpha = if (isDark) 0.45f else 0.9f) // BOLD White Line
                             }
                             drawLine(
                                 color = lineColor,
                                 start = Offset(c * stepX, r * stepY),
                                 end = Offset(c * stepX, (r + 1) * stepY),
-                                strokeWidth = if (owner != 0) lineStroke else 4.dp.toPx(),
+                                strokeWidth = if (owner != 0) boldLineStrokeDrawn else boldLineStrokeUndrawn,
                                 cap = StrokeCap.Round
                             )
                         }
                     }
 
-                    // 4. Draw 5x5 Glossy Blue Dots (Matching Screenshot)
+                    // 4. Draw 5x5 REAL 3D SPHERICAL BLUE DOTS
                     for (r in 0..4) {
                         for (c in 0..4) {
-                            // Outer Shadow Dot Rim
+                            val center = Offset(c * stepX, r * stepY)
+
+                            // Drop shadow behind dot
                             drawCircle(
-                                color = Color(0xFF0284C7),
-                                center = Offset(c * stepX, r * stepY),
+                                color = Color.Black.copy(alpha = 0.35f),
+                                center = Offset(center.x + 2.dp.toPx(), center.y + 3.dp.toPx()),
                                 radius = dotRadius
                             )
-                            // Inner Glossy Blue Dot
+
+                            // Base 3D Royal Blue Sphere
+                            drawCircle(
+                                color = Color(0xFF1D4ED8),
+                                center = center,
+                                radius = dotRadius
+                            )
+
+                            // Glossy Inner Blue Gradient
                             drawCircle(
                                 color = Color(0xFF255FF4),
-                                center = Offset(c * stepX, r * stepY),
-                                radius = dotRadius * 0.8f
+                                center = center,
+                                radius = dotRadius * 0.85f
+                            )
+
+                            // Top-Left 3D Shine Highlight
+                            drawCircle(
+                                color = Color.White.copy(alpha = 0.85f),
+                                center = Offset(center.x - dotRadius * 0.35f, center.y - dotRadius * 0.35f),
+                                radius = dotRadius * 0.35f
                             )
                         }
                     }
@@ -403,7 +419,7 @@ fun DotsAndBoxesScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(28.dp),
+                                .height(32.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             for (c in 0..3) {
@@ -427,7 +443,7 @@ fun DotsAndBoxesScreen(
                                 for (c in 0..4) {
                                     Box(
                                         modifier = Modifier
-                                            .width(28.dp)
+                                            .width(32.dp)
                                             .fillMaxHeight()
                                             .clickable { onVerticalLineClick(r, c) }
                                     )
