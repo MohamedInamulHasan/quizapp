@@ -692,16 +692,22 @@ fun GuessWhoScreen(
                                     }
                                 }
                                 "ACCESSORY" -> {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        TraitOptionCard("GLASSES", "👓") { applyQuestionFilter("Is the person wearing glasses?") { it.accessory == Accessory.GLASSES } }
-                                        TraitOptionCard("HAT", "🧢") { applyQuestionFilter("Is the person wearing a hat?") { it.accessory == Accessory.HAT } }
-                                        TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS } }
+                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                            TraitOptionCard("NONE", "🚫") { applyQuestionFilter("Does the person have no accessories?") { it.accessory == Accessory.NONE } }
+                                            TraitOptionCard("GLASSES", "👓") { applyQuestionFilter("Is the person wearing glasses?") { it.accessory == Accessory.GLASSES } }
+                                        }
+                                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                            TraitOptionCard("HAT", "🧢") { applyQuestionFilter("Is the person wearing a hat?") { it.accessory == Accessory.HAT } }
+                                            TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS } }
+                                        }
                                     }
                                 }
                                 "FACIAL_HAIR" -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        TraitOptionCard("BEARD", "🧔") { applyQuestionFilter("Does the person have a beard?") { it.facialHair == FacialHair.BEARD } }
+                                        TraitOptionCard("NONE", "🚫") { applyQuestionFilter("Does the person have no facial hair?") { it.facialHair == FacialHair.NONE } }
                                         TraitOptionCard("MUSTACHE", "👨‍🦰") { applyQuestionFilter("Does the person have a mustache?") { it.facialHair == FacialHair.MUSTACHE } }
+                                        TraitOptionCard("BEARD", "🧔") { applyQuestionFilter("Does the person have a beard?") { it.facialHair == FacialHair.BEARD } }
                                     }
                                 }
                             }
