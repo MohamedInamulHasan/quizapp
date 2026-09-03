@@ -487,7 +487,7 @@ fun MemoryGameScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 // ── 4x5 PERFECT SQUARE CARDS GRID ──────────────────────────────
                 key(restartTriggerCount) {
@@ -510,7 +510,7 @@ fun MemoryGameScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 // ── BOTTOM: PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ─────
                 Row(

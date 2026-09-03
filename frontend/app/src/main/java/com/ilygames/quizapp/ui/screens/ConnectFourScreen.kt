@@ -224,7 +224,7 @@ fun ConnectFourScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Back Button
+                // 3D Back Button
                 Box(
                     modifier = Modifier
                         .size(46.dp)
@@ -236,7 +236,16 @@ fun ConnectFourScreen(
                             ),
                             CircleShape
                         )
-                        .border(1.5.dp, Color.White.copy(alpha = if (isDark) 0.5f else 0.9f), CircleShape)
+                        .border(
+                            1.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = if (isDark) 0.5f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDark) 0.6f else 0.15f)
+                                )
+                            ),
+                            CircleShape
+                        )
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
@@ -265,7 +274,7 @@ fun ConnectFourScreen(
                     )
                 }
 
-                // Retry Button
+                // 3D Retry Button
                 Box(
                     modifier = Modifier
                         .size(46.dp)
@@ -277,7 +286,16 @@ fun ConnectFourScreen(
                             ),
                             CircleShape
                         )
-                        .border(1.5.dp, Color.White.copy(alpha = if (isDark) 0.5f else 0.9f), CircleShape)
+                        .border(
+                            1.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = if (isDark) 0.5f else 0.9f),
+                                    Color.Black.copy(alpha = if (isDark) 0.6f else 0.15f)
+                                )
+                            ),
+                            CircleShape
+                        )
                         .clickable {
                             SoundManager.playRetrySound()
                             resetFullMatch()
