@@ -140,6 +140,10 @@ fun GuessWhoScreen(
         SoundManager.playRetrySound()
     }
 
+    // Question Filter State
+    var lastAskedQuestion by remember { mutableStateOf<String?>(null) }
+    var lastQuestionAnswer by remember { mutableStateOf<Boolean?>(null) }
+
     // Auto-select secret character for Player 2 (AI/Opponent)
     fun setupNewRound() {
         gamePhase = "SELECTION"
@@ -147,6 +151,8 @@ fun GuessWhoScreen(
         p2SecretCharacter = ALL_CHARACTERS.random()
         selectedCharacterForChoice = null
         boardCharacters = ALL_CHARACTERS.map { it.copy(isEliminated = false) }
+        lastAskedQuestion = null
+        lastQuestionAnswer = null
     }
 
     LaunchedEffect(currentRound) {
@@ -166,11 +172,14 @@ fun GuessWhoScreen(
     }
 
     // Question Filter Eliminator
-    fun applyQuestionFilter(matchingCondition: (GuessWhoCharacter) -> Boolean) {
+    fun applyQuestionFilter(questionText: String, matchingCondition: (GuessWhoCharacter) -> Boolean) {
         val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
         val isYes = matchingCondition(targetSecret)
 
         SoundManager.playPopSound()
+
+        lastAskedQuestion = questionText
+        lastQuestionAnswer = isYes
 
         // Eliminate non-matching characters
         boardCharacters = boardCharacters.map { char ->
@@ -183,12 +192,6 @@ fun GuessWhoScreen(
                 char.copy(isEliminated = char.isEliminated || matchesFilter)
             }
         }
-
-        Toast.makeText(
-            context,
-            if (isYes) "YES! Target has this trait!" else "NO! Target does NOT have this trait!",
-            Toast.LENGTH_SHORT
-        ).show()
 
         activeTraitModal = null
 
@@ -226,7 +229,7 @@ fun GuessWhoScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgColor)
+            .background(Color(0xFFFA8B73))
     ) {
         Column(
             modifier = Modifier
@@ -403,7 +406,7 @@ fun GuessWhoScreen(
                         text = "Choose your character!",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFFE07A5F),
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
@@ -473,7 +476,7 @@ fun GuessWhoScreen(
                     Spacer(modifier = Modifier.height(14.dp))
                 }
             } else {
-                // ── PHASE 2: DEDUCTION BOARD & TRAIT FILTER BAR (Matching Screenshot 3, 4, 5) ──
+                // ── PHASE 2: DEDUCTION BOARD & QUESTION RESULT BANNER (Matching Screenshot 6) ──
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -481,28 +484,6 @@ fun GuessWhoScreen(
                         .padding(horizontal = 14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Secret Character Target Preview Pill
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Your Target: ${p1SecretCharacter?.name ?: ""}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color(0xFF10B981)
-                        )
-                        Text(
-                            text = "Tap any card to GUESS!",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textColor.copy(alpha = 0.7f)
-                        )
-                    }
-
                     // 5x6 Roster Grid
                     Box(
                         modifier = Modifier
@@ -534,35 +515,110 @@ fun GuessWhoScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // BOTTOM TRAIT FILTER BUTTONS ROW (Exact match to Screenshots 3, 4, 5)
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Row 1: GENDER, EYE COLOR, HAIR, HAIR COLOR
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    // ── WHITE QUESTION & RESULT BANNER (Exact Match to Screenshot 6) ──
+                    if (lastAskedQuestion != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(8.dp, RoundedCornerShape(22.dp))
+                                .background(Color.White, RoundedCornerShape(22.dp))
+                                .border(1.5.dp, Color(0xFFE2E8F0), RoundedCornerShape(22.dp))
+                                .padding(vertical = 14.dp, horizontal = 18.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            TraitCategoryButton(label = "GENDER", icon = "👫", modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
-                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1.1f)) { activeTraitModal = "EYE_COLOR" }
-                            TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(0.9f)) { activeTraitModal = "HAIR" }
-                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1.1f)) { activeTraitModal = "HAIR_COLOR" }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = lastAskedQuestion!!,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF17181C),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (lastQuestionAnswer == true) "👤✅ Yes!" else "👤❌ No!",
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
+                                    )
+                                }
+                            }
                         }
 
-                        // Row 2: SKIN TONE, ACCESSORIES, FACIAL HAIR
-                        Row(
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // FOOTER HELP TEXT (Exact Match to Screenshot 6)
+                        Text(
+                            text = "HELP: Tap the cards to remove candidates that do not match the question's trait.",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                    } else {
+                        // BOTTOM TRAIT FILTER BUTTONS ROW (Exact match to Screenshots 3, 4, 5)
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            TraitCategoryButton(label = "SKIN TONE", icon = "🏽", modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
-                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1.2f)) { activeTraitModal = "ACCESSORY" }
-                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1.2f)) { activeTraitModal = "FACIAL_HAIR" }
+                            // Row 1: GENDER, EYE COLOR, HAIR, HAIR COLOR
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                TraitCategoryButton(label = "GENDER", icon = "👫", modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
+                                TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1.1f)) { activeTraitModal = "EYE_COLOR" }
+                                TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(0.9f)) { activeTraitModal = "HAIR" }
+                                TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1.1f)) { activeTraitModal = "HAIR_COLOR" }
+                            }
+
+                            // Row 2: SKIN TONE, ACCESSORIES, FACIAL HAIR
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                TraitCategoryButton(label = "SKIN TONE", icon = "🏽", modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
+                                TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1.2f)) { activeTraitModal = "ACCESSORY" }
+                                TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1.2f)) { activeTraitModal = "FACIAL_HAIR" }
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
+            }
+        }
+
+        // ── FLOATING CIRCULAR EXIT BUTTON AT BOTTOM RIGHT (Exact Match to Screenshot 6) ──
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(10.dp, CircleShape)
+                    .background(Color.White, CircleShape)
+                    .border(2.dp, Color(0xFFE2E8F0), CircleShape)
+                    .clickable {
+                        SoundManager.playClickSound()
+                        onBack()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "EXIT",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFF17181C),
+                    textAlign = TextAlign.Center
+                )
             }
         }
 
@@ -619,60 +675,60 @@ fun GuessWhoScreen(
                             when (activeTraitModal) {
                                 "GENDER" -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                        TraitOptionCard("MALE", "👨") { applyQuestionFilter { it.gender == Gender.MALE } }
-                                        TraitOptionCard("FEMALE", "👩") { applyQuestionFilter { it.gender == Gender.FEMALE } }
+                                        TraitOptionCard("MALE", "👨") { applyQuestionFilter("Is the person male?") { it.gender == Gender.MALE } }
+                                        TraitOptionCard("FEMALE", "👩") { applyQuestionFilter("Is the person female?") { it.gender == Gender.FEMALE } }
                                     }
                                 }
                                 "EYE_COLOR" -> {
                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("BLUE", "🟦") { applyQuestionFilter { it.eyeColor == EyeColor.BLUE } }
-                                            TraitOptionCard("GREEN", "🟩") { applyQuestionFilter { it.eyeColor == EyeColor.GREEN } }
+                                            TraitOptionCard("BLUE", "🟦") { applyQuestionFilter("Does the person have blue eyes?") { it.eyeColor == EyeColor.BLUE } }
+                                            TraitOptionCard("GREEN", "🟩") { applyQuestionFilter("Does the person have green eyes?") { it.eyeColor == EyeColor.GREEN } }
                                         }
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("BROWN", "🟫") { applyQuestionFilter { it.eyeColor == EyeColor.BROWN } }
-                                            TraitOptionCard("BLACK", "⬛") { applyQuestionFilter { it.eyeColor == EyeColor.BLACK } }
+                                            TraitOptionCard("BROWN", "🟫") { applyQuestionFilter("Does the person have brown eyes?") { it.eyeColor == EyeColor.BROWN } }
+                                            TraitOptionCard("BLACK", "⬛") { applyQuestionFilter("Does the person have black eyes?") { it.eyeColor == EyeColor.BLACK } }
                                         }
                                     }
                                 }
                                 "HAIR" -> {
                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("GLASSES", "👓") { applyQuestionFilter { it.accessory == Accessory.GLASSES } }
-                                            TraitOptionCard("HAT", "🧢") { applyQuestionFilter { it.accessory == Accessory.HAT } }
+                                            TraitOptionCard("SHORT HAIR", "💇‍♂️") { applyQuestionFilter("Does the person have short hair?") { it.gender == Gender.MALE } }
+                                            TraitOptionCard("LONG HAIR", "💇‍♀️") { applyQuestionFilter("Does the person have long hair?") { it.gender == Gender.FEMALE } }
                                         }
                                     }
                                 }
                                 "HAIR_COLOR" -> {
                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("BLACK", "⬛") { applyQuestionFilter { it.hairColor == HairColor.BLACK } }
-                                            TraitOptionCard("BROWN", "🟫") { applyQuestionFilter { it.hairColor == HairColor.BROWN } }
+                                            TraitOptionCard("BLACK", "⬛") { applyQuestionFilter("Does the person have black hair?") { it.hairColor == HairColor.BLACK } }
+                                            TraitOptionCard("BROWN", "🟫") { applyQuestionFilter("Does the person have brown hair?") { it.hairColor == HairColor.BROWN } }
                                         }
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("BLONDE", "🟨") { applyQuestionFilter { it.hairColor == HairColor.BLONDE } }
-                                            TraitOptionCard("RED", "🟥") { applyQuestionFilter { it.hairColor == HairColor.RED } }
+                                            TraitOptionCard("BLONDE", "🟨") { applyQuestionFilter("Does the person have blonde hair?") { it.hairColor == HairColor.BLONDE } }
+                                            TraitOptionCard("RED", "🟥") { applyQuestionFilter("Does the person have red hair?") { it.hairColor == HairColor.RED } }
                                         }
                                     }
                                 }
                                 "SKIN_TONE" -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        TraitOptionCard("FAIR", "🏻") { applyQuestionFilter { it.skinTone == SkinTone.FAIR } }
-                                        TraitOptionCard("MEDIUM", "🏽") { applyQuestionFilter { it.skinTone == SkinTone.MEDIUM } }
-                                        TraitOptionCard("DARK", "🏿") { applyQuestionFilter { it.skinTone == SkinTone.DARK } }
+                                        TraitOptionCard("FAIR", "🏻") { applyQuestionFilter("Does the person have fair skin?") { it.skinTone == SkinTone.FAIR } }
+                                        TraitOptionCard("MEDIUM", "🏽") { applyQuestionFilter("Does the person have medium skin?") { it.skinTone == SkinTone.MEDIUM } }
+                                        TraitOptionCard("DARK", "🏿") { applyQuestionFilter("Does the person have dark skin?") { it.skinTone == SkinTone.DARK } }
                                     }
                                 }
                                 "ACCESSORY" -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        TraitOptionCard("GLASSES", "👓") { applyQuestionFilter { it.accessory == Accessory.GLASSES } }
-                                        TraitOptionCard("HAT", "🧢") { applyQuestionFilter { it.accessory == Accessory.HAT } }
-                                        TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter { it.accessory == Accessory.EARRINGS } }
+                                        TraitOptionCard("GLASSES", "👓") { applyQuestionFilter("Is the person wearing glasses?") { it.accessory == Accessory.GLASSES } }
+                                        TraitOptionCard("HAT", "🧢") { applyQuestionFilter("Is the person wearing a hat?") { it.accessory == Accessory.HAT } }
+                                        TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS } }
                                     }
                                 }
                                 "FACIAL_HAIR" -> {
                                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        TraitOptionCard("BEARD", "🧔") { applyQuestionFilter { it.facialHair == FacialHair.BEARD } }
-                                        TraitOptionCard("MUSTACHE", "👨‍🦰") { applyQuestionFilter { it.facialHair == FacialHair.MUSTACHE } }
+                                        TraitOptionCard("BEARD", "🧔") { applyQuestionFilter("Does the person have a beard?") { it.facialHair == FacialHair.BEARD } }
+                                        TraitOptionCard("MUSTACHE", "👨‍🦰") { applyQuestionFilter("Does the person have a mustache?") { it.facialHair == FacialHair.MUSTACHE } }
                                     }
                                 }
                             }
