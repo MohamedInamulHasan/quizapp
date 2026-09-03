@@ -61,6 +61,7 @@ fun TicTacToeScreen(
     // Alternating Starting Chance per Round
     var isXTurn by remember { mutableStateOf(true) }
     var winningPattern by remember { mutableStateOf<List<Int>?>(null) }
+    var isRoundComplete by remember { mutableStateOf(false) }
     var showMatchVictoryDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
