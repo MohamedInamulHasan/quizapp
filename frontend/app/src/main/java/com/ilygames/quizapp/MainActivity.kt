@@ -137,6 +137,9 @@ fun AppNavigation() {
                 onNavigateToJigsawPuzzle = {
                     navController.navigate("jigsaw_puzzle")
                 },
+                onNavigateToDotsAndBoxes = {
+                    navController.navigate("dots_and_boxes")
+                },
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
@@ -169,6 +172,13 @@ fun AppNavigation() {
 
         composable("jigsaw_puzzle") {
             com.ilygames.quizapp.ui.screens.JigsawPuzzleScreen(
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("dots_and_boxes") {
+            com.ilygames.quizapp.ui.screens.DotsAndBoxesScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() }
             )

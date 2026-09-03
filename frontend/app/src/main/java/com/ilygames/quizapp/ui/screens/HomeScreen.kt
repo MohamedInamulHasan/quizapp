@@ -85,6 +85,7 @@ fun HomeScreen(
     onNavigateToTicTacToe: () -> Unit = {},
     onNavigateToConnectFour: () -> Unit = {},
     onNavigateToJigsawPuzzle: () -> Unit = {},
+    onNavigateToDotsAndBoxes: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
@@ -974,7 +975,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
 
                         UnifiedEmeraldCard(
                             title = "Jigsaw Puzzle",
-                            description = "Swap 3x3 tiles to solve picture",
+                            description = "Drag & drop 20 real image pieces",
                             icon = Icons.Default.Category,
                             modifier = Modifier.weight(1f),
                             onClick = {
@@ -982,6 +983,25 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 onNavigateToJigsawPuzzle()
                             }
                         )
+                    }
+
+                    // 2 Player Games Grid Row 3: Dots & Boxes Territory Showdown
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        UnifiedEmeraldCard(
+                            title = "Dots & Boxes",
+                            description = "Connect lines & claim boxes to win",
+                            icon = Icons.Default.GridOn,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToDotsAndBoxes()
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
