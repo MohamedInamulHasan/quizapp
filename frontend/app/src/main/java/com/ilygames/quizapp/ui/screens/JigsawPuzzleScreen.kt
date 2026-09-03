@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -25,6 +26,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -32,13 +34,28 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
+import kotlin.math.roundToInt
+import kotlin.random.Random
+
+// 5 Different Image Themes for Jigsaw Puzzle
+enum class JigsawTheme(val title: String, val emoji: String) {
+    PUPPY("Cute Golden Puppy", "🐶"),
+    JUNGLE("Jungle Safari", "🦁"),
+    SPACE("Cosmic Galaxy", "🚀"),
+    OCEAN("Ocean World", "🐠"),
+    CASTLE("Fantasy Castle", "🏰")
+}
 
 @Composable
 fun JigsawPuzzleScreen(
@@ -49,11 +66,14 @@ fun JigsawPuzzleScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // 16 Target Slots for 4x4 Grid Board (array holds pieceId 0..15 or null)
+    // Random Theme Selection on launch & restart
+    var activeTheme by remember { mutableStateOf(JigsawTheme.values()[Random.nextInt(JigsawTheme.values().size)]) }
+
+    // 16 Target Slots for 4x4 Grid Board (holds pieceId 0..15 or null)
     var boardSlots by remember { mutableStateOf(Array<Int?>(16) { null }) }
     // Unplaced Tray Pieces (Shuffled 0..15)
     var trayPieceIds by remember { mutableStateOf((0..15).shuffled()) }
-    // Currently highlighted piece in tray
+    // Selected Piece ID (for tap or drag)
     var selectedPieceId by remember { mutableStateOf<Int?>(null) }
 
     var p1Score by remember { mutableIntStateOf(0) }
@@ -62,11 +82,18 @@ fun JigsawPuzzleScreen(
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
+    // Board position bounds for exact drag-and-drop drop detection
+    var boardBounds by remember { mutableStateOf(Rect.Zero) }
+
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
     }
 
     fun resetPuzzle() {
+        // Pick a NEW DIFFERENT Image Theme on every play!
+        val nextThemes = JigsawTheme.values().filter { it != activeTheme }
+        activeTheme = nextThemes[Random.nextInt(nextThemes.size)]
+
         boardSlots = Array(16) { null }
         trayPieceIds = (0..15).shuffled()
         selectedPieceId = null
@@ -84,14 +111,15 @@ fun JigsawPuzzleScreen(
             if (!rewardEarned) {
                 rewardEarned = true
                 authViewModel.addAdReward(context)
-                Toast.makeText(context, "🪙 +50 Coins Earned for Jungle Jigsaw!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "🪙 +50 Coins Earned for Jigsaw!", Toast.LENGTH_SHORT).show()
             }
             showWinnerDialog = true
         }
     }
 
     fun placePiece(pieceId: Int, slotIndex: Int) {
-        if (boardSlots[slotIndex] != null) return // Already filled
+        if (slotIndex !in 0..15) return
+        if (boardSlots[slotIndex] != null) return // Already occupied
 
         SoundManager.playPopSound()
         val newSlots = boardSlots.clone()
@@ -123,7 +151,7 @@ fun JigsawPuzzleScreen(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── TOP HEADER BAR (3D BUTTONS & PILL) ─────────────────────────
+            // ── TOP HEADER BAR (3D BUTTONS & THEME PILL) ───────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -163,7 +191,7 @@ fun JigsawPuzzleScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(22.dp))
                 }
 
-                // Title Pill Badge
+                // Theme Badge Pill (Shows current image theme name & emoji)
                 Box(
                     modifier = Modifier
                         .shadow(6.dp, RoundedCornerShape(16.dp))
@@ -172,17 +200,17 @@ fun JigsawPuzzleScreen(
                             RoundedCornerShape(16.dp)
                         )
                         .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                        .padding(vertical = 6.dp, horizontal = 18.dp)
+                        .padding(vertical = 6.dp, horizontal = 16.dp)
                 ) {
                     Text(
-                        text = "JUNGLE JIGSAW 16P",
-                        fontSize = 14.sp,
+                        text = "${activeTheme.emoji} ${activeTheme.title}",
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                 }
 
-                // 3D Retry Button
+                // 3D Retry Button (Generates a new image theme!)
                 Box(
                     modifier = Modifier
                         .size(46.dp)
@@ -209,7 +237,7 @@ fun JigsawPuzzleScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset", tint = textColor, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset Theme", tint = textColor, modifier = Modifier.size(22.dp))
                 }
             }
 
@@ -260,15 +288,18 @@ fun JigsawPuzzleScreen(
                 }
             }
 
-            // ── 4x4 CARTOON JUNGLE JIGSAW PUZZLE BOARD ────────────────────────
+            // ── 4x4 IMAGE JIGSAW BOARD WITH WOODEN SLOT CUTOUTS (MATCHING SCREENSHOT) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .padding(horizontal = 16.dp)
+                    .onGloballyPositioned { coords ->
+                        boardBounds = coords.boundsInRoot()
+                    }
                     .shadow(16.dp, RoundedCornerShape(20.dp))
-                    .background(Color(0xFF0F172A), RoundedCornerShape(20.dp))
-                    .border(2.5.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(20.dp))
+                    .background(Color(0xFF3D2314), RoundedCornerShape(20.dp)) // Dark Wooden Frame
+                    .border(3.dp, Color(0xFF78350F), RoundedCornerShape(20.dp))
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -293,13 +324,13 @@ fun JigsawPuzzleScreen(
                                         .fillMaxHeight()
                                         .background(
                                             if (pieceId != null) Color.Transparent
-                                            else Color.White.copy(alpha = 0.08f),
+                                            else Color(0xFF5A3816), // Dark Wood Slot Cutout
                                             RoundedCornerShape(4.dp)
                                         )
                                         .border(
                                             1.dp,
                                             if (selectedPieceId != null && pieceId == null) Color.Yellow
-                                            else Color.White.copy(alpha = 0.15f),
+                                            else Color(0xFF2C190B),
                                             RoundedCornerShape(4.dp)
                                         )
                                         .clickable {
@@ -310,13 +341,13 @@ fun JigsawPuzzleScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (pieceId != null) {
-                                        JigsawImageSliceCanvas(pieceId = pieceId)
+                                        DynamicJigsawImageCanvas(pieceId = pieceId, theme = activeTheme)
                                     } else {
                                         Text(
                                             text = "${slotIndex + 1}",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.White.copy(alpha = 0.35f)
+                                            color = Color.White.copy(alpha = 0.25f)
                                         )
                                     }
                                 }
@@ -326,7 +357,7 @@ fun JigsawPuzzleScreen(
                 }
             }
 
-            // ── 16 CARTOON IMAGE PIECES TRAY ──────────────────────────────────
+            // ── 16 PIECES TRAY (SUPPORTING DRAG AND DROP & TAP TO PLACE) ──────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -335,7 +366,7 @@ fun JigsawPuzzleScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = if (selectedPieceId != null) "✨ Tap any target slot to drop piece!" else "👇 Tap a piece from tray to place on board:",
+                    text = if (selectedPieceId != null) "✨ Drag or tap any slot to drop piece!" else "👇 Drag or tap a piece from tray to place:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White.copy(alpha = 0.85f),
@@ -350,22 +381,52 @@ fun JigsawPuzzleScreen(
                 ) {
                     items(trayPieceIds) { pieceId ->
                         val isSelected = selectedPieceId == pieceId
+                        var pieceOffset by remember { mutableStateOf(Offset.Zero) }
 
                         Box(
                             modifier = Modifier
                                 .aspectRatio(1f)
+                                .offset {
+                                    IntOffset(
+                                        pieceOffset.x.roundToInt(),
+                                        pieceOffset.y.roundToInt()
+                                    )
+                                }
                                 .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(8.dp))
                                 .border(
                                     if (isSelected) 2.5.dp else 1.dp,
                                     if (isSelected) Color.Yellow else Color.White.copy(alpha = 0.4f),
                                     RoundedCornerShape(8.dp)
                                 )
+                                .pointerInput(pieceId) {
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            selectedPieceId = pieceId
+                                            SoundManager.playPopSound()
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            pieceOffset += dragAmount
+                                        },
+                                        onDragEnd = {
+                                            // Check drop target relative to board
+                                            if (pieceOffset.y < -120f) {
+                                                val dropCol = ((pieceOffset.x + boardBounds.width / 2f) / (boardBounds.width / 4f)).coerceIn(0f, 3f).toInt()
+                                                val dropRow = ((pieceOffset.y + boardBounds.height) / (boardBounds.height / 4f)).coerceIn(0f, 3f).toInt()
+                                                val targetSlot = (dropRow * 4 + dropCol).coerceIn(0, 15)
+
+                                                placePiece(pieceId, targetSlot)
+                                            }
+                                            pieceOffset = Offset.Zero
+                                        }
+                                    )
+                                }
                                 .clickable {
                                     SoundManager.playPopSound()
                                     selectedPieceId = if (isSelected) null else pieceId
                                 }
                         ) {
-                            JigsawImageSliceCanvas(pieceId = pieceId)
+                            DynamicJigsawImageCanvas(pieceId = pieceId, theme = activeTheme)
                         }
                     }
                 }
@@ -464,13 +525,13 @@ fun JigsawPuzzleScreen(
                                     .border(2.dp, Color.White, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("🦁", fontSize = 42.sp)
+                                Text(activeTheme.emoji, fontSize = 42.sp)
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = if (p1Won) "🎉 Player 1 Solved It!" else if (p2Won) "🎉 Player 2 Solved It!" else "🧩 Jungle Jigsaw Solved!",
+                                text = if (p1Won) "🎉 Player 1 Solved It!" else if (p2Won) "🎉 Player 2 Solved It!" else "🧩 ${activeTheme.title} Solved!",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -539,7 +600,7 @@ fun JigsawPuzzleScreen(
                                     ) {
                                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Play Again", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text("Next Picture", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                     }
                                 }
 
@@ -574,9 +635,9 @@ fun JigsawPuzzleScreen(
     }
 }
 
-// ── CANVAS DRAWING FOR CARTOON JUNGLE ANIMAL SCENE (16 CROPPED JIGSAW SLICES) ──
+// ── DYNAMIC MULTI-IMAGE CANVAS RENDERING SYSTEM (SUPPORTING 5 DIFFERENT PICTURE THEMES) ──
 @Composable
-fun JigsawImageSliceCanvas(pieceId: Int) {
+fun DynamicJigsawImageCanvas(pieceId: Int, theme: JigsawTheme) {
     val pieceRow = pieceId / 4
     val pieceCol = pieceId % 4
 
@@ -584,7 +645,6 @@ fun JigsawImageSliceCanvas(pieceId: Int) {
         val w = size.width
         val h = size.height
 
-        // Full virtual picture is 4x size of a single piece
         val fullW = w * 4f
         val fullH = h * 4f
 
@@ -592,177 +652,82 @@ fun JigsawImageSliceCanvas(pieceId: Int) {
         val offsetY = -pieceRow * h
 
         clipRect(0f, 0f, w, h) {
-            // Draw Full Cartoon Jungle Picture offset by piece coordinates!
-            drawCartoonJungleArt(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
+            when (theme) {
+                JigsawTheme.PUPPY -> drawCutePuppyDogScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
+                JigsawTheme.JUNGLE -> drawJungleSafariScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
+                JigsawTheme.SPACE -> drawSpaceGalaxyScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
+                JigsawTheme.OCEAN -> drawOceanWorldScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
+                JigsawTheme.CASTLE -> drawFantasyCastleScene(fullW = fullW, fullH = fullH, offsetX = offsetX, offsetY = offsetY)
+            }
 
-            // Draw Interlocking Jigsaw Contour Lines Over Piece
+            // Draw Interlocking Jigsaw Contour Lines
             drawJigsawInterlockingContour(pieceRow = pieceRow, pieceCol = pieceCol, w = w, h = h)
         }
     }
 }
 
-// Draw Full Cartoon Jungle Safari Art Scene on Canvas (Matching Screenshot)
-fun DrawScope.drawCartoonJungleArt(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
-    // 1. Lush Green Jungle Background
+// 1. CUTE GOLDEN PUPPY DOG SCENE 🐶 (MATCHING USER SCREENSHOT uploaded_media_1788423535261.png)
+fun DrawScope.drawCutePuppyDogScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
+    // Green Garden Grass Background
     drawRect(
-        brush = Brush.verticalGradient(listOf(Color(0xFF34D399), Color(0xFF059669))),
+        brush = Brush.verticalGradient(listOf(Color(0xFF86EFAC), Color(0xFF15803D))),
         topLeft = Offset(offsetX, offsetY),
         size = Size(fullW, fullH)
     )
 
-    // Jungle Tree Branch (Top)
-    drawRect(
-        color = Color(0xFF78350F),
-        topLeft = Offset(offsetX, offsetY),
-        size = Size(fullW, fullH * 0.22f)
-    )
-    drawCircle(
-        color = Color(0xFF047857),
-        center = Offset(offsetX + fullW * 0.5f, offsetY + fullH * 0.1f),
-        radius = fullW * 0.35f
-    )
+    val pupX = offsetX + fullW * 0.5f
+    val pupY = offsetY + fullH * 0.52f
+    val pupR = fullW * 0.32f
 
-    // 2. Cute Purple Elephant 🐘 (Top-Left / Center-Left)
-    val eleCenterX = offsetX + fullW * 0.32f
-    val eleCenterY = offsetY + fullH * 0.42f
-    val eleRadius = fullW * 0.18f
+    // Fluffy Ears
+    drawCircle(color = Color(0xFFD97706), center = Offset(pupX - pupR * 0.85f, pupY - pupR * 0.2f), radius = pupR * 0.5f)
+    drawCircle(color = Color(0xFFD97706), center = Offset(pupX + pupR * 0.85f, pupY - pupR * 0.2f), radius = pupR * 0.5f)
 
-    // Ears
-    drawCircle(color = Color(0xFFC084FC), center = Offset(eleCenterX - eleRadius * 0.8f, eleCenterY - eleRadius * 0.2f), radius = eleRadius * 0.65f)
-    drawCircle(color = Color(0xFFE9D5FF), center = Offset(eleCenterX - eleRadius * 0.8f, eleCenterY - eleRadius * 0.2f), radius = eleRadius * 0.4f)
-    // Head & Body
-    drawCircle(color = Color(0xFFA855F7), center = Offset(eleCenterX, eleCenterY), radius = eleRadius)
-    // Eyes
-    drawCircle(color = Color.White, center = Offset(eleCenterX + eleRadius * 0.2f, eleCenterY - eleRadius * 0.3f), radius = eleRadius * 0.25f)
-    drawCircle(color = Color(0xFF2563EB), center = Offset(eleCenterX + eleRadius * 0.25f, eleCenterY - eleRadius * 0.3f), radius = eleRadius * 0.14f)
-    // Trunk
-    drawArc(
-        color = Color(0xFFA855F7),
-        startAngle = 180f,
-        sweepAngle = 140f,
-        useCenter = false,
-        topLeft = Offset(eleCenterX - eleRadius * 0.9f, eleCenterY - eleRadius * 0.1f),
-        size = Size(eleRadius * 1.2f, eleRadius * 1.2f),
-        style = Stroke(width = eleRadius * 0.3f)
-    )
+    // Puppy Fluffy Head & Muzzle
+    drawCircle(color = Color(0xFFFEF3C7), center = Offset(pupX, pupY), radius = pupR)
+    drawCircle(color = Color.White, center = Offset(pupX, pupY + pupR * 0.25f), radius = pupR * 0.55f)
 
-    // 3. Cute Yellow Giraffe 🦒 (Right Side)
-    val girX = offsetX + fullW * 0.78f
-    val girY = offsetY + fullH * 0.48f
+    // Cute Dark Eyes
+    drawCircle(color = Color(0xFF1E293B), center = Offset(pupX - pupR * 0.35f, pupY - pupR * 0.15f), radius = pupR * 0.16f)
+    drawCircle(color = Color.White, center = Offset(pupX - pupR * 0.38f, pupY - pupR * 0.18f), radius = pupR * 0.05f)
+    drawCircle(color = Color(0xFF1E293B), center = Offset(pupX + pupR * 0.35f, pupY - pupR * 0.15f), radius = pupR * 0.16f)
+    drawCircle(color = Color.White, center = Offset(pupX + pupR * 0.32f, pupY - pupR * 0.18f), radius = pupR * 0.05f)
 
-    // Neck
-    drawRect(color = Color(0xFFFBBF24), topLeft = Offset(girX - fullW * 0.05f, girY - fullH * 0.25f), size = Size(fullW * 0.12f, fullH * 0.45f))
-    // Head
-    drawCircle(color = Color(0xFFF59E0B), center = Offset(girX, girY - fullH * 0.25f), radius = fullW * 0.1f)
-    // Spots
-    drawCircle(color = Color(0xFFB45309), center = Offset(girX, girY - fullH * 0.15f), radius = fullW * 0.025f)
-    drawCircle(color = Color(0xFFB45309), center = Offset(girX + fullW * 0.03f, girY), radius = fullW * 0.03f)
-    // Eye
-    drawCircle(color = Color.White, center = Offset(girX - fullW * 0.02f, girY - fullH * 0.27f), radius = fullW * 0.025f)
-    drawCircle(color = Color.Black, center = Offset(girX - fullW * 0.02f, girY - fullH * 0.27f), radius = fullW * 0.012f)
+    // Nose
+    drawCircle(color = Color(0xFF0F172A), center = Offset(pupX, pupY + pupR * 0.12f), radius = pupR * 0.12f)
 
-    // 4. Cute Cheerful Lion 🦁 (Bottom Center)
-    val lionX = offsetX + fullW * 0.58f
-    val lionY = offsetY + fullH * 0.76f
-    val lionR = fullW * 0.14f
-
-    // Mane
-    drawCircle(color = Color(0xFFB45309), center = Offset(lionX, lionY), radius = lionR * 1.35f)
-    // Face
-    drawCircle(color = Color(0xFFF59E0B), center = Offset(lionX, lionY), radius = lionR)
-    // Eyes
-    drawCircle(color = Color.White, center = Offset(lionX - lionR * 0.35f, lionY - lionR * 0.25f), radius = lionR * 0.28f)
-    drawCircle(color = Color(0xFF1D4ED8), center = Offset(lionX - lionR * 0.35f, lionY - lionR * 0.25f), radius = lionR * 0.14f)
-    drawCircle(color = Color.White, center = Offset(lionX + lionR * 0.35f, lionY - lionR * 0.25f), radius = lionR * 0.28f)
-    drawCircle(color = Color(0xFF1D4ED8), center = Offset(lionX + lionR * 0.35f, lionY - lionR * 0.25f), radius = lionR * 0.14f)
-    // Nose & Mouth
-    drawCircle(color = Color(0xFFDC2626), center = Offset(lionX, lionY + lionR * 0.15f), radius = lionR * 0.2f)
-
-    // 5. Cute Black & White Striped Zebra 🦓 (Bottom Left)
-    val zebX = offsetX + fullW * 0.2f
-    val zebY = offsetY + fullH * 0.78f
-    val zebR = fullW * 0.12f
-
-    drawCircle(color = Color.White, center = Offset(zebX, zebY), radius = zebR)
-    // Black Stripes
-    drawRoundRect(color = Color.Black, topLeft = Offset(zebX - zebR * 0.8f, zebY - zebR * 0.5f), size = Size(zebR * 0.5f, zebR * 0.2f), cornerRadius = CornerRadius(6f))
-    drawRoundRect(color = Color.Black, topLeft = Offset(zebX - zebR * 0.8f, zebY + zebR * 0.1f), size = Size(zebR * 0.6f, zebR * 0.2f), cornerRadius = CornerRadius(6f))
-    // Eye
-    drawCircle(color = Color(0xFF2563EB), center = Offset(zebX + zebR * 0.3f, zebY - zebR * 0.3f), radius = zebR * 0.22f)
-
-    // 6. Playful Monkey 🐒 (Top Center hanging)
-    val monX = offsetX + fullW * 0.56f
-    val monY = offsetY + fullH * 0.25f
-    val monR = fullW * 0.08f
-
-    drawCircle(color = Color(0xFF92400E), center = Offset(monX, monY), radius = monR)
-    drawCircle(color = Color(0xFFFDE68A), center = Offset(monX, monY + monR * 0.1f), radius = monR * 0.7f)
-    drawCircle(color = Color.Black, center = Offset(monX - monR * 0.25f, monY - monR * 0.1f), radius = monR * 0.15f)
-    drawCircle(color = Color.Black, center = Offset(monX + monR * 0.25f, monY - monR * 0.1f), radius = monR * 0.15f)
-
-    // 7. Pink Butterfly 🦋
-    drawCircle(color = Color(0xFFF43F5E), center = Offset(offsetX + fullW * 0.18f, offsetY + fullH * 0.22f), radius = fullW * 0.035f)
-    drawCircle(color = Color(0xFFFB7185), center = Offset(offsetX + fullW * 0.22f, offsetY + fullH * 0.22f), radius = fullW * 0.035f)
+    // Pink Tongue Output
+    drawCircle(color = Color(0xFFF43F5E), center = Offset(pupX, pupY + pupR * 0.42f), radius = pupR * 0.18f)
 }
 
-// Draw Classic Dark Interlocking Jigsaw Outline Edges
-fun DrawScope.drawJigsawInterlockingContour(pieceRow: Int, pieceCol: Int, w: Float, h: Float) {
-    val strokeWidth = 3f
-    val contourColor = Color.Black.copy(alpha = 0.5f)
-    val tabR = w * 0.18f
+// 2. JUNGLE SAFARI SCENE 🦁
+fun DrawScope.drawJungleSafariScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
+    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFF34D399), Color(0xFF059669))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
+    drawCircle(color = Color(0xFFA855F7), center = Offset(offsetX + fullW * 0.3f, offsetY + fullH * 0.4f), radius = fullW * 0.18f) // Elephant
+    drawRect(color = Color(0xFFFBBF24), topLeft = Offset(offsetX + fullW * 0.7f, offsetY + fullH * 0.2f), size = Size(fullW * 0.12f, fullH * 0.5f)) // Giraffe
+    drawCircle(color = Color(0xFFB45309), center = Offset(offsetX + fullW * 0.55f, offsetY + fullH * 0.75f), radius = fullW * 0.16f) // Lion Mane
+}
 
-    val path = Path()
+// 3. COSMIC GALAXY SCENE 🚀
+fun DrawScope.drawSpaceGalaxyScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
+    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E1B4B))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
+    drawCircle(color = Color(0xFFF59E0B), center = Offset(offsetX + fullW * 0.75f, offsetY + fullH * 0.3f), radius = fullW * 0.15f) // Saturn
+    drawCircle(color = Color(0xFFEF4444), center = Offset(offsetX + fullW * 0.3f, offsetY + fullH * 0.5f), radius = fullW * 0.1f) // Mars
+    drawCircle(color = Color.White, center = Offset(offsetX + fullW * 0.2f, offsetY + fullH * 0.2f), radius = fullW * 0.02f) // Star
+    drawCircle(color = Color.White, center = Offset(offsetX + fullW * 0.5f, offsetY + fullH * 0.8f), radius = fullW * 0.025f)
+}
 
-    // Outer Piece Rect Outline with Interlocking Tabs & Socket Cutouts
-    path.moveTo(0f, 0f)
+// 4. OCEAN WORLD SCENE 🐠
+fun DrawScope.drawOceanWorldScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
+    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFF38BDF8), Color(0xFF0369A1))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
+    drawCircle(color = Color(0xFFF97316), center = Offset(offsetX + fullW * 0.4f, offsetY + fullH * 0.45f), radius = fullW * 0.12f) // Clownfish
+    drawCircle(color = Color(0xFF10B981), center = Offset(offsetX + fullW * 0.75f, offsetY + fullH * 0.7f), radius = fullW * 0.14f) // Sea Turtle
+}
 
-    // Top Edge
-    if (pieceRow > 0) {
-        val midX = w / 2f
-        path.lineTo(midX - tabR, 0f)
-        if (pieceRow % 2 == 0) {
-            path.cubicTo(midX - tabR, tabR, midX + tabR, tabR, midX + tabR, 0f)
-        } else {
-            path.cubicTo(midX - tabR, -tabR, midX + tabR, -tabR, midX + tabR, 0f)
-        }
-    }
-    path.lineTo(w, 0f)
-
-    // Right Edge
-    if (pieceCol < 3) {
-        val midY = h / 2f
-        path.lineTo(w, midY - tabR)
-        if (pieceCol % 2 == 0) {
-            path.cubicTo(w + tabR, midY - tabR, w + tabR, midY + tabR, w, midY + tabR)
-        } else {
-            path.cubicTo(w - tabR, midY - tabR, w - tabR, midY + tabR, w, midY + tabR)
-        }
-    }
-    path.lineTo(w, h)
-
-    // Bottom Edge
-    if (pieceRow < 3) {
-        val midX = w / 2f
-        path.lineTo(midX + tabR, h)
-        if (pieceRow % 2 == 0) {
-            path.cubicTo(midX + tabR, h + tabR, midX - tabR, h + tabR, midX - tabR, h)
-        } else {
-            path.cubicTo(midX + tabR, h - tabR, midX - tabR, h - tabR, midX - tabR, h)
-        }
-    }
-    path.lineTo(0f, h)
-
-    // Left Edge
-    if (pieceCol > 0) {
-        val midY = h / 2f
-        path.lineTo(0f, midY + tabR)
-        if (pieceCol % 2 == 0) {
-            path.cubicTo(-tabR, midY + tabR, -tabR, midY - tabR, 0f, midY - tabR)
-        } else {
-            path.cubicTo(tabR, midY + tabR, tabR, midY - tabR, 0f, midY - tabR)
-        }
-    }
-    path.lineTo(0f, 0f)
-
-    drawPath(path = path, color = contourColor, style = Stroke(width = strokeWidth))
+// 5. FANTASY CASTLE SCENE 🏰
+fun DrawScope.drawFantasyCastleScene(fullW: Float, fullH: Float, offsetX: Float, offsetY: Float) {
+    drawRect(brush = Brush.verticalGradient(listOf(Color(0xFFF472B6), Color(0xFF8B5CF6))), topLeft = Offset(offsetX, offsetY), size = Size(fullW, fullH))
+    drawRect(color = Color(0xFFE2E8F0), topLeft = Offset(offsetX + fullW * 0.35f, offsetY + fullH * 0.4f), size = Size(fullW * 0.3f, fullH * 0.45f)) // Castle
+    drawRect(color = Color(0xFFEC4899), topLeft = Offset(offsetX + fullW * 0.38f, offsetY + fullH * 0.25f), size = Size(fullW * 0.08f, fullH * 0.15f)) // Spire 1
+    drawRect(color = Color(0xFFEC4899), topLeft = Offset(offsetX + fullW * 0.54f, offsetY + fullH * 0.25f), size = Size(fullW * 0.08f, fullH * 0.15f)) // Spire 2
 }
