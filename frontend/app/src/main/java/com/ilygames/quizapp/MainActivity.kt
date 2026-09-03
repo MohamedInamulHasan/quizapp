@@ -137,6 +137,9 @@ fun AppNavigation() {
                 onNavigateToDotsAndBoxes = {
                     navController.navigate("dots_and_boxes")
                 },
+                onNavigateToGuessWho = {
+                    navController.navigate("guess_who")
+                },
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
@@ -169,6 +172,13 @@ fun AppNavigation() {
 
         composable("dots_and_boxes") {
             com.ilygames.quizapp.ui.screens.DotsAndBoxesScreen(
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("guess_who") {
+            com.ilygames.quizapp.ui.screens.GuessWhoScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() }
             )

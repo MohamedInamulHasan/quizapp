@@ -85,6 +85,7 @@ fun HomeScreen(
     onNavigateToTicTacToe: () -> Unit = {},
     onNavigateToConnectFour: () -> Unit = {},
     onNavigateToDotsAndBoxes: () -> Unit = {},
+    onNavigateToGuessWho: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
@@ -992,6 +993,27 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 onNavigateToDotsAndBoxes()
                             }
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 2 Player Games Grid Row 3: Guess Who?
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        UnifiedEmeraldCard(
+                            title = "Guess Who?",
+                            description = "Secret character deduction game",
+                            icon = Icons.Default.Person,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToGuessWho()
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
