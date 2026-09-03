@@ -731,3 +731,65 @@ fun DrawScope.drawFantasyCastleScene(fullW: Float, fullH: Float, offsetX: Float,
     drawRect(color = Color(0xFFEC4899), topLeft = Offset(offsetX + fullW * 0.38f, offsetY + fullH * 0.25f), size = Size(fullW * 0.08f, fullH * 0.15f)) // Spire 1
     drawRect(color = Color(0xFFEC4899), topLeft = Offset(offsetX + fullW * 0.54f, offsetY + fullH * 0.25f), size = Size(fullW * 0.08f, fullH * 0.15f)) // Spire 2
 }
+
+// Draw Classic Dark Interlocking Jigsaw Outline Edges
+fun DrawScope.drawJigsawInterlockingContour(pieceRow: Int, pieceCol: Int, w: Float, h: Float) {
+    val strokeWidth = 3f
+    val contourColor = Color.Black.copy(alpha = 0.5f)
+    val tabR = w * 0.18f
+
+    val path = Path()
+
+    // Outer Piece Rect Outline with Interlocking Tabs & Socket Cutouts
+    path.moveTo(0f, 0f)
+
+    // Top Edge
+    if (pieceRow > 0) {
+        val midX = w / 2f
+        path.lineTo(midX - tabR, 0f)
+        if (pieceRow % 2 == 0) {
+            path.cubicTo(midX - tabR, tabR, midX + tabR, tabR, midX + tabR, 0f)
+        } else {
+            path.cubicTo(midX - tabR, -tabR, midX + tabR, -tabR, midX + tabR, 0f)
+        }
+    }
+    path.lineTo(w, 0f)
+
+    // Right Edge
+    if (pieceCol < 3) {
+        val midY = h / 2f
+        path.lineTo(w, midY - tabR)
+        if (pieceCol % 2 == 0) {
+            path.cubicTo(w + tabR, midY - tabR, w + tabR, midY + tabR, w, midY + tabR)
+        } else {
+            path.cubicTo(w - tabR, midY - tabR, w - tabR, midY + tabR, w, midY + tabR)
+        }
+    }
+    path.lineTo(w, h)
+
+    // Bottom Edge
+    if (pieceRow < 3) {
+        val midX = w / 2f
+        path.lineTo(midX + tabR, h)
+        if (pieceRow % 2 == 0) {
+            path.cubicTo(midX + tabR, h + tabR, midX - tabR, h + tabR, midX - tabR, h)
+        } else {
+            path.cubicTo(midX + tabR, h - tabR, midX - tabR, h - tabR, midX - tabR, h)
+        }
+    }
+    path.lineTo(0f, h)
+
+    // Left Edge
+    if (pieceCol > 0) {
+        val midY = h / 2f
+        path.lineTo(0f, midY + tabR)
+        if (pieceCol % 2 == 0) {
+            path.cubicTo(-tabR, midY + tabR, -tabR, midY - tabR, 0f, midY - tabR)
+        } else {
+            path.cubicTo(tabR, midY + tabR, tabR, midY - tabR, 0f, midY - tabR)
+        }
+    }
+    path.lineTo(0f, 0f)
+
+    drawPath(path = path, color = contourColor, style = Stroke(width = strokeWidth))
+}
