@@ -134,9 +134,6 @@ fun AppNavigation() {
                 onNavigateToConnectFour = {
                     navController.navigate("connect_four")
                 },
-                onNavigateToJigsawPuzzle = {
-                    navController.navigate("jigsaw_puzzle")
-                },
                 onNavigateToDotsAndBoxes = {
                     navController.navigate("dots_and_boxes")
                 },
@@ -165,13 +162,6 @@ fun AppNavigation() {
 
         composable("connect_four") {
             com.ilygames.quizapp.ui.screens.ConnectFourScreen(
-                authViewModel = authViewModel,
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable("jigsaw_puzzle") {
-            com.ilygames.quizapp.ui.screens.JigsawPuzzleScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() }
             )

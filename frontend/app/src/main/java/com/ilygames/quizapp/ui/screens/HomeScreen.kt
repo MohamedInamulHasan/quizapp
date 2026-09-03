@@ -84,7 +84,6 @@ fun HomeScreen(
     onNavigateToMemoryGame: () -> Unit = {},
     onNavigateToTicTacToe: () -> Unit = {},
     onNavigateToConnectFour: () -> Unit = {},
-    onNavigateToJigsawPuzzle: () -> Unit = {},
     onNavigateToDotsAndBoxes: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
@@ -957,7 +956,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
                     }
 
-                    // 2 Player Games Grid Row 2: Connect 4 & Jigsaw Puzzle
+                    // 2 Player Games Grid Row 2: Connect 4 & Dots & Boxes
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -974,23 +973,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         )
 
                         UnifiedEmeraldCard(
-                            title = "Jigsaw Puzzle",
-                            description = "Drag & drop 20 real image pieces",
-                            icon = Icons.Default.Category,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                SoundManager.playClickSound()
-                                onNavigateToJigsawPuzzle()
-                            }
-                        )
-                    }
-
-                    // 2 Player Games Grid Row 3: Dots & Boxes Territory Showdown
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        UnifiedEmeraldCard(
                             title = "Dots & Boxes",
                             description = "Connect lines & claim boxes to win",
                             icon = Icons.Default.GridOn,
@@ -1000,8 +982,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 onNavigateToDotsAndBoxes()
                             }
                         )
-
-                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
