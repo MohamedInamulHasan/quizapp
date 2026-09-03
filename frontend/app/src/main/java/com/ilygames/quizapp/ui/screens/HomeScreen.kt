@@ -276,7 +276,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp)
+            contentPadding = PaddingValues(top = 20.dp, bottom = 80.dp)
         ) {
             // 1. MINIMALIST TOP HEADER (User Profile & Right-Aligned Small Settings Dropdown)
             item {
@@ -983,6 +983,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
