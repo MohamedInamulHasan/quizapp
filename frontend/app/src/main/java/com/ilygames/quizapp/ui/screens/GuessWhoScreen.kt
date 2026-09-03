@@ -593,35 +593,6 @@ fun GuessWhoScreen(
             }
         }
 
-        // ── FLOATING CIRCULAR EXIT BUTTON AT BOTTOM RIGHT (Exact Match to Screenshot 6) ──
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .shadow(10.dp, CircleShape)
-                    .background(Color.White, CircleShape)
-                    .border(2.dp, Color(0xFFE2E8F0), CircleShape)
-                    .clickable {
-                        SoundManager.playClickSound()
-                        onBack()
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "EXIT",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color(0xFF17181C),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
         // ── TRAIT SELECTION MODAL DIALOGS (Matching Screenshot 4 & 5) ─────────────
         if (activeTraitModal != null) {
             Dialog(
