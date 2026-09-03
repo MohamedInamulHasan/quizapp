@@ -234,6 +234,10 @@ fun MemoryGameScreen(
     var isRestartingAnimation by remember { mutableStateOf(false) }
     var restartTriggerCount by remember { mutableIntStateOf(0) }
 
+    LaunchedEffect(Unit) {
+        SoundManager.playRetrySound()
+    }
+
     // Animated Card Re-deal Handler
     fun triggerAnimatedRestart() {
         if (isRestartingAnimation) return
@@ -452,7 +456,7 @@ fun MemoryGameScreen(
                                 Color.White,
                                 RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
                             )
-                            .padding(vertical = 7.dp, horizontal = 18.dp)
+                            .padding(vertical = 12.dp, horizontal = 20.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -529,7 +533,7 @@ fun MemoryGameScreen(
                                 Color.White,
                                 RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
                             )
-                            .padding(vertical = 7.dp, horizontal = 18.dp)
+                            .padding(vertical = 12.dp, horizontal = 20.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

@@ -912,10 +912,12 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         )
                     }
+                }
+            }
 
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    // ── 🎮 2 PLAYER GAMES SECTION (MATCHING EXPLORE & REWARDS HEADER STYLE) ──
+            // 5. 2 PLAYER GAMES SECTION (MATCHING EXPLORE & REWARDS SPACING)
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
                         text = "2 PLAYER GAMES",
                         style = MaterialTheme.typography.labelSmall,
@@ -923,8 +925,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         color = Color(0xFF255FF4),
                         letterSpacing = 1.sp
                     )
-
-                    Spacer(modifier = Modifier.height(6.dp))
 
                     // 2 Player Games Grid Row: Memory Match & X | O Showdown
                     Row(
@@ -953,8 +953,6 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             }
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(28.dp))
                 }
             }
         }
