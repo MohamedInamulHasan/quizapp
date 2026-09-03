@@ -305,15 +305,15 @@ fun ConnectFourScreen(
                             RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
                         )
                         .border(1.5.dp, Color.White, RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
-                        .padding(vertical = 14.dp, horizontal = 22.dp)
+                        .padding(vertical = 12.dp, horizontal = 20.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
                             text = "PLAYER 1",
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White
                         )
@@ -321,12 +321,12 @@ fun ConnectFourScreen(
                             modifier = Modifier
                                 .shadow(2.dp, RoundedCornerShape(6.dp))
                                 .background(Color.White, RoundedCornerShape(6.dp))
-                                .padding(horizontal = 11.dp, vertical = 3.dp),
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "$p1Wins",
-                                fontSize = 16.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
                                 color = if (isPlayer1Turn) Color(0xFFDC2626) else Color(0xFF334155)
                             )
@@ -433,15 +433,15 @@ fun ConnectFourScreen(
                             RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
                         )
                         .border(1.5.dp, Color.White, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
-                        .padding(vertical = 14.dp, horizontal = 22.dp)
+                        .padding(vertical = 12.dp, horizontal = 20.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
                             text = "PLAYER 2",
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White
                         )
@@ -449,12 +449,12 @@ fun ConnectFourScreen(
                             modifier = Modifier
                                 .shadow(2.dp, RoundedCornerShape(6.dp))
                                 .background(Color.White, RoundedCornerShape(6.dp))
-                                .padding(horizontal = 11.dp, vertical = 3.dp),
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "$p2Wins",
-                                fontSize = 16.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
                                 color = if (!isPlayer1Turn) Color(0xFFD97706) else Color(0xFF334155)
                             )
