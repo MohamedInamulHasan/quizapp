@@ -304,7 +304,6 @@ fun MemoryGameScreen(
                 }
             } else {
                 // No Match ➔ flip back after 800ms and switch turn!
-                SoundManager.playWrongSound()
             }
         }
     }

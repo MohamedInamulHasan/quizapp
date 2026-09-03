@@ -139,7 +139,6 @@ fun TicTacToeScreen(
                 p2Wins++
                 winningPattern = pattern
             } else if (winner == "DRAW") {
-                SoundManager.playWrongSound()
                 draws++
             }
         } else {
