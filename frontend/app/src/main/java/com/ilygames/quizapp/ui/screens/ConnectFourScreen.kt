@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -57,10 +56,6 @@ fun ConnectFourScreen(
     var isRoundComplete by remember { mutableStateOf(false) }
     var showMatchVictoryDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
-
-    // Drop Disc Animation State
-    var activeDroppingCol by remember { mutableStateOf<Int?>(null) }
-    val dropAnimProgress = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
@@ -154,7 +149,7 @@ fun ConnectFourScreen(
     }
 
     fun dropDiscInColumn(col: Int) {
-        if (isRoundComplete || showMatchVictoryDialog || activeDroppingCol != null) return
+        if (isRoundComplete || showMatchVictoryDialog) return
 
         // Find lowest empty row in column col
         var targetRow = -1
@@ -169,37 +164,27 @@ fun ConnectFourScreen(
 
         SoundManager.playPopSound()
 
-        scope.launch {
-            activeDroppingCol = col
-            dropAnimProgress.snapTo(0f)
-            dropAnimProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
-            )
+        val playerDisc = if (isPlayer1Turn) 1 else 2
+        val newBoard = Array(6) { r -> board[r].clone() }
+        newBoard[targetRow][col] = playerDisc
+        board = newBoard
 
-            val playerDisc = if (isPlayer1Turn) 1 else 2
-            val newBoard = Array(6) { r -> board[r].clone() }
-            newBoard[targetRow][col] = playerDisc
-            board = newBoard
-            activeDroppingCol = null
-
-            val (winner, coords) = checkConnectFourWinner(newBoard)
-            if (winner != null) {
-                isRoundComplete = true
-                if (winner == 1) {
-                    SoundManager.playCorrectSound()
-                    p1Wins++
-                    winningCoords = coords
-                } else if (winner == 2) {
-                    SoundManager.playCorrectSound()
-                    p2Wins++
-                    winningCoords = coords
-                } else if (winner == 0) {
-                    draws++
-                }
-            } else {
-                isPlayer1Turn = !isPlayer1Turn
+        val (winner, coords) = checkConnectFourWinner(newBoard)
+        if (winner != null) {
+            isRoundComplete = true
+            if (winner == 1) {
+                SoundManager.playCorrectSound()
+                p1Wins++
+                winningCoords = coords
+            } else if (winner == 2) {
+                SoundManager.playCorrectSound()
+                p2Wins++
+                winningCoords = coords
+            } else if (winner == 0) {
+                draws++
             }
+        } else {
+            isPlayer1Turn = !isPlayer1Turn
         }
     }
 
@@ -423,42 +408,6 @@ fun ConnectFourScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top Drop Indicators
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 26.dp)
-                        .padding(bottom = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    for (c in 0..6) {
-                        val activePlayerColor = if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFFFFD700)
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(38.dp)
-                                .shadow(4.dp, RoundedCornerShape(10.dp))
-                                .background(
-                                    Brush.verticalGradient(
-                                        listOf(activePlayerColor, activePlayerColor.copy(alpha = 0.75f))
-                                    ),
-                                    RoundedCornerShape(10.dp)
-                                )
-                                .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(10.dp))
-                                .clickable { dropDiscInColumn(c) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.ArrowDropDown,
-                                contentDescription = "Drop Column $c",
-                                tint = Color.White,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                }
-
                 // 6x7 Grid Container
                 Box(
                     modifier = Modifier
@@ -489,7 +438,6 @@ fun ConnectFourScreen(
                                     for (c in 0..6) {
                                         val cellVal = board[r][c]
                                         val isWinningDisc = winningCoords?.contains(Pair(r, c)) == true
-                                        val isDroppingInThisCol = activeDroppingCol == c
 
                                         Box(
                                             modifier = Modifier
@@ -519,17 +467,6 @@ fun ConnectFourScreen(
                                                         .clip(CircleShape)
                                                         .background(
                                                             if (cellVal == 1) Color(0xFFEF4444) else Color(0xFFFFD700)
-                                                        )
-                                                )
-                                            } else if (isDroppingInThisCol) {
-                                                val animatedOffsetY = (dropAnimProgress.value * (r + 1) * 35f)
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize(0.85f)
-                                                        .offset(y = (-animatedOffsetY).dp)
-                                                        .clip(CircleShape)
-                                                        .background(
-                                                            if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFFFFD700)
                                                         )
                                                 )
                                             }
