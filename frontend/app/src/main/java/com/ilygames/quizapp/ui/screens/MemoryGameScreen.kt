@@ -438,15 +438,21 @@ fun MemoryGameScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .shadow(8.dp, RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                            .offset(x = (-3).dp)
+                            .shadow(8.dp, RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
                             .background(
                                 Brush.verticalGradient(
                                     if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
                                     else listOf(Color(0xFF475569), Color(0xFF334155))
                                 ),
-                                RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+                                RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
                             )
-                            .padding(vertical = 6.dp, horizontal = 16.dp)
+                            .border(
+                                1.5.dp,
+                                Color.White,
+                                RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                            )
+                            .padding(vertical = 7.dp, horizontal = 18.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -477,7 +483,7 @@ fun MemoryGameScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // ── 4x5 PERFECT SQUARE CARDS GRID ──────────────────────────────
                 key(restartTriggerCount) {
@@ -500,7 +506,7 @@ fun MemoryGameScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // ── BOTTOM: PLAYER 2 CARD ATTACHED TO RIGHT EDGE OF SCREEN ─────
                 Row(
@@ -509,15 +515,21 @@ fun MemoryGameScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .shadow(8.dp, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                            .offset(x = 3.dp)
+                            .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
                             .background(
                                 Brush.verticalGradient(
                                     if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                     else listOf(Color(0xFF475569), Color(0xFF334155))
                                 ),
-                                RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                                RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
                             )
-                            .padding(vertical = 6.dp, horizontal = 16.dp)
+                            .border(
+                                1.5.dp,
+                                Color.White,
+                                RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                            )
+                            .padding(vertical = 7.dp, horizontal = 18.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
