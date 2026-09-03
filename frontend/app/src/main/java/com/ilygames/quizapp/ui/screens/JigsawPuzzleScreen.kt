@@ -26,8 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.theme.ThemeState
+import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
-import com.ilygames.quizapp.viewmodel.AuthViewModel
 
 data class JigsawTile(
     val correctId: Int, // 1 to 9
@@ -476,7 +476,7 @@ fun JigsawPuzzleScreen(
                                     Text("$p1Score pts", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
 
-                                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+                                Divider(color = Color.White.copy(alpha = 0.1f))
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
