@@ -307,7 +307,7 @@ fun ConnectFourScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ── PLAYER CARDS ROW: AT VERY TOP DIRECTLY UNDER HEADER BAR ──────
             Row(

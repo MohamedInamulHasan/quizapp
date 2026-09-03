@@ -211,7 +211,7 @@ fun DotsAndBoxesScreen(
                 }
 
                 Text(
-                    text = "Dots & Boxes 6x6",
+                    text = "Dots & Boxes",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Black,
                     color = textColor
@@ -246,7 +246,7 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ── PLAYER CARDS ROW: AT VERY TOP DIRECTLY UNDER HEADER BAR ──────
             Row(
