@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,7 +33,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -888,7 +891,13 @@ fun GuessWhoCharacterCardItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Stylized Avatar Box
+            // Stylized Avatar Box / Custom Uploaded Image
+            val context = LocalContext.current
+            val drawableName = "avatar_${character.name.lowercase()}"
+            val imageResId = remember(character.name) {
+                context.resources.getIdentifier(drawableName, "drawable", context.packageName)
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -897,37 +906,47 @@ fun GuessWhoCharacterCardItem(
                     .background(character.avatarBgColor.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                // Vector Person Representation with Skin Color & Accessories
-                val hairColorVal = when (character.hairColor) {
-                    HairColor.BLACK -> Color(0xFF17181C)
-                    HairColor.BROWN -> Color(0xFF78350F)
-                    HairColor.BLONDE -> Color(0xFFF59E0B)
-                    HairColor.RED -> Color(0xFFDC2626)
-                    HairColor.GREY -> Color(0xFF9CA3AF)
-                }
+                if (imageResId != 0) {
+                    // Uploaded Avatar Image Found!
+                    Image(
+                        painter = painterResource(id = imageResId),
+                        contentDescription = character.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // Fallback Vector Person Representation
+                    val hairColorVal = when (character.hairColor) {
+                        HairColor.BLACK -> Color(0xFF17181C)
+                        HairColor.BROWN -> Color(0xFF78350F)
+                        HairColor.BLONDE -> Color(0xFFF59E0B)
+                        HairColor.RED -> Color(0xFFDC2626)
+                        HairColor.GREY -> Color(0xFF9CA3AF)
+                    }
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .background(
-                                when (character.skinTone) {
-                                    SkinTone.FAIR -> Color(0xFFFDE68A)
-                                    SkinTone.MEDIUM -> Color(0xFFD97706)
-                                    SkinTone.DARK -> Color(0xFF78350F)
-                                },
-                                CircleShape
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(
+                                    when (character.skinTone) {
+                                        SkinTone.FAIR -> Color(0xFFFDE68A)
+                                        SkinTone.MEDIUM -> Color(0xFFD97706)
+                                        SkinTone.DARK -> Color(0xFF78350F)
+                                    },
+                                    CircleShape
+                                )
+                                .border(1.5.dp, hairColorVal, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (character.accessory == Accessory.GLASSES) "👓"
+                                else if (character.accessory == Accessory.HAT) "🧢"
+                                else if (character.facialHair != FacialHair.NONE) "🧔"
+                                else "👤",
+                                fontSize = 16.sp
                             )
-                            .border(1.5.dp, hairColorVal, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (character.accessory == Accessory.GLASSES) "👓"
-                            else if (character.accessory == Accessory.HAT) "🧢"
-                            else if (character.facialHair != FacialHair.NONE) "🧔"
-                            else "👤",
-                            fontSize = 16.sp
-                        )
+                        }
                     }
                 }
             }
