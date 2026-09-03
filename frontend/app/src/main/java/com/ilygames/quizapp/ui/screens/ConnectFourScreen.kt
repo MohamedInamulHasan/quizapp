@@ -544,6 +544,41 @@ fun ConnectFourScreen(
             val p1Won = p1Wins > p2Wins
             val p2Won = p2Wins > p1Wins
 
+            LaunchedEffect(Unit) {
+                SoundManager.playCorrectSound()
+            }
+
+            var isCardVisible by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                isCardVisible = true
+            }
+
+            val cardScale by animateFloatAsState(
+                targetValue = if (isCardVisible) 1.0f else 0.35f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                ),
+                label = "CardSpringEntrance"
+            )
+
+            val cardAlpha by animateFloatAsState(
+                targetValue = if (isCardVisible) 1.0f else 0.0f,
+                animationSpec = tween(350),
+                label = "CardAlphaEntrance"
+            )
+
+            val infiniteTransition = rememberInfiniteTransition(label = "TrophyPulse")
+            val trophyScale by infiniteTransition.animateFloat(
+                initialValue = 0.94f,
+                targetValue = 1.08f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(900, easing = LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "TrophyScale"
+            )
+
             androidx.compose.ui.window.Dialog(
                 onDismissRequest = {},
                 properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
@@ -552,54 +587,84 @@ fun ConnectFourScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.75f))
-                        .padding(24.dp),
+                        .padding(20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(24.dp, RoundedCornerShape(28.dp))
-                            .background(Color(0xFF1E293B), RoundedCornerShape(28.dp))
-                            .padding(24.dp),
+                            .fillMaxWidth(0.92f)
+                            .scale(cardScale)
+                            .graphicsLayer { alpha = cardAlpha }
+                            .shadow(24.dp, RoundedCornerShape(32.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    if (isDark) listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                                    else listOf(Color.White, Color(0xFFF1F5F9))
+                                ),
+                                RoundedCornerShape(32.dp)
+                            )
+                            .border(
+                                2.5.dp,
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color.White.copy(alpha = if (isDark) 0.8f else 0.95f),
+                                        Color.White.copy(alpha = if (isDark) 0.2f else 0.4f)
+                                    )
+                                ),
+                                RoundedCornerShape(32.dp)
+                            )
+                            .padding(26.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            // 3D Metallic Circular Trophy Badge
                             Box(
                                 modifier = Modifier
-                                    .size(76.dp)
-                                    .shadow(10.dp, CircleShape)
+                                    .size(80.dp)
+                                    .scale(trophyScale)
+                                    .shadow(12.dp, CircleShape)
                                     .background(
                                         Brush.verticalGradient(
                                             if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                                            else if (p2Won) listOf(Color(0xFFF59E0B), Color(0xFFB45309))
+                                            else if (p2Won) listOf(Color(0xFFFFD700), Color(0xFFB45309))
                                             else listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                         ),
                                         CircleShape
                                     )
-                                    .border(2.dp, Color.White, CircleShape),
+                                    .border(2.5.dp, Color.White, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(if (p1Won || p2Won) "🏆" else "🤝", fontSize = 42.sp)
+                                Text(if (p1Won || p2Won) "🏆" else "🤝", fontSize = 44.sp)
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(18.dp))
 
                             Text(
-                                text = if (p1Won) "🎉 Player 1 Wins Match!" else if (p2Won) "🎉 Player 2 Wins Match!" else "🤝 Connect 4 Match Tied!",
+                                text = if (p1Won) "🎉 Player 1 Wins!" else if (p2Won) "🎉 Player 2 Wins!" else "🤝 Match Tied!",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color.White
+                                color = textColor,
+                                textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(18.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
 
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color(0xFF0F172A), RoundedCornerShape(16.dp))
+                                    .shadow(4.dp, RoundedCornerShape(16.dp))
+                                    .background(
+                                        if (isDark) Color(0xFF0F172A) else Color(0xFFF1F5F9),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .border(
+                                        1.dp,
+                                        Color.White.copy(alpha = if (isDark) 0.2f else 0.8f),
+                                        RoundedCornerShape(16.dp)
+                                    )
                                     .padding(14.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
@@ -611,9 +676,9 @@ fun ConnectFourScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Box(modifier = Modifier.size(10.dp).background(Color(0xFFEF4444), CircleShape))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Player 1 Victories", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                                        Text("Player 1 Victories", fontSize = 14.sp, color = textColor)
                                     }
-                                    Text("$p1Wins Wins", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("$p1Wins Wins", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
                                 }
 
                                 Divider(color = Color.White.copy(alpha = 0.1f))
@@ -626,9 +691,9 @@ fun ConnectFourScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Box(modifier = Modifier.size(10.dp).background(Color(0xFFFFD700), CircleShape))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Player 2 Victories", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                                        Text("Player 2 Victories", fontSize = 14.sp, color = textColor)
                                     }
-                                    Text("$p2Wins Wins", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("$p2Wins Wins", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color(0xFFFFD700))
                                 }
                             }
 
@@ -638,18 +703,30 @@ fun ConnectFourScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Button(
-                                    onClick = {
-                                        SoundManager.playClickSound()
-                                        resetFullMatch()
-                                    },
+                                // 3D Metallic Play Again Button
+                                Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(48.dp)
-                                        .shadow(8.dp, RoundedCornerShape(16.dp)),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                                    shape = RoundedCornerShape(16.dp),
-                                    contentPadding = PaddingValues(0.dp)
+                                        .height(52.dp)
+                                        .shadow(10.dp, RoundedCornerShape(18.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
+                                            ),
+                                            RoundedCornerShape(18.dp)
+                                        )
+                                        .border(
+                                            1.5.dp,
+                                            Brush.verticalGradient(
+                                                listOf(Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0.3f))
+                                            ),
+                                            RoundedCornerShape(18.dp)
+                                        )
+                                        .clickable {
+                                            SoundManager.playClickSound()
+                                            resetFullMatch()
+                                        },
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -657,22 +734,35 @@ fun ConnectFourScreen(
                                     ) {
                                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Play Again", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text("PLAY AGAIN", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
                                     }
                                 }
 
-                                Button(
-                                    onClick = {
-                                        SoundManager.playClickSound()
-                                        onBack()
-                                    },
+                                // 3D Metallic Home Button
+                                Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(48.dp)
-                                        .shadow(8.dp, RoundedCornerShape(16.dp)),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF255FF4)),
-                                    shape = RoundedCornerShape(16.dp),
-                                    contentPadding = PaddingValues(0.dp)
+                                        .height(52.dp)
+                                        .shadow(10.dp, RoundedCornerShape(18.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                if (isDark) listOf(Color(0xFF475569), Color(0xFF334155))
+                                                else listOf(Color(0xFF64748B), Color(0xFF475569))
+                                            ),
+                                            RoundedCornerShape(18.dp)
+                                        )
+                                        .border(
+                                            1.5.dp,
+                                            Brush.verticalGradient(
+                                                listOf(Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0.3f))
+                                            ),
+                                            RoundedCornerShape(18.dp)
+                                        )
+                                        .clickable {
+                                            SoundManager.playClickSound()
+                                            onBack()
+                                        },
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -680,7 +770,7 @@ fun ConnectFourScreen(
                                     ) {
                                         Icon(Icons.Default.Home, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Home", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text("HOME", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
                                     }
                                 }
                             }

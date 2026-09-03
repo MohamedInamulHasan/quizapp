@@ -948,6 +948,16 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             title = "X | O Showdown",
                             description = "Classic 2 Player Tic Tac Toe game",
                             icon = Icons.Default.Close,
+                            customIcon = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text("X", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                    Text("|", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 1.dp))
+                                    Text("O", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                }
+                            },
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 SoundManager.playClickSound()
@@ -1997,18 +2007,13 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 }
                             }
                         }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun UnifiedEmeraldCard(
     title: String,
     description: String,
     icon: ImageVector,
+    customIcon: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -2055,7 +2060,11 @@ fun UnifiedEmeraldCard(
                     .border(1.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(24.dp))
+                if (customIcon != null) {
+                    customIcon()
+                } else {
+                    Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(24.dp))
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
