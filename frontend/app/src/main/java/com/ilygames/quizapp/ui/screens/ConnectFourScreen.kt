@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -23,11 +24,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @Composable
 fun ConnectFourScreen(
@@ -37,6 +41,7 @@ fun ConnectFourScreen(
     val context = LocalContext.current
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
+    val scope = rememberCoroutineScope()
 
     // 6 Rows x 7 Columns Connect 4 Grid
     // 0 = Empty, 1 = Red (Player 1), 2 = Yellow (Player 2)
@@ -50,7 +55,10 @@ fun ConnectFourScreen(
     var isRoundComplete by remember { mutableStateOf(false) }
     var showMatchVictoryDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
-    var lastDroppedPos by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+
+    // Drop Disc Animation State
+    var activeDroppingCol by remember { mutableStateOf<Int?>(null) }
+    val dropAnimProgress = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
@@ -127,7 +135,6 @@ fun ConnectFourScreen(
         winningCoords = null
         isRoundComplete = false
         isPlayer1Turn = (currentRound % 2 != 0)
-        lastDroppedPos = null
     }
 
     fun resetFullMatch() {
@@ -141,12 +148,11 @@ fun ConnectFourScreen(
         isRoundComplete = false
         showMatchVictoryDialog = false
         rewardEarned = false
-        lastDroppedPos = null
         SoundManager.playRetrySound()
     }
 
     fun dropDiscInColumn(col: Int) {
-        if (isRoundComplete || showMatchVictoryDialog) return
+        if (isRoundComplete || showMatchVictoryDialog || activeDroppingCol != null) return
 
         // Find lowest empty row in column col
         var targetRow = -1
@@ -161,28 +167,37 @@ fun ConnectFourScreen(
 
         SoundManager.playPopSound()
 
-        val playerDisc = if (isPlayer1Turn) 1 else 2
-        val newBoard = Array(6) { r -> board[r].clone() }
-        newBoard[targetRow][col] = playerDisc
-        board = newBoard
-        lastDroppedPos = Pair(targetRow, col)
+        scope.launch {
+            activeDroppingCol = col
+            dropAnimProgress.snapTo(0f)
+            dropAnimProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+            )
 
-        val (winner, coords) = checkConnectFourWinner(newBoard)
-        if (winner != null) {
-            isRoundComplete = true
-            if (winner == 1) {
-                SoundManager.playCorrectSound()
-                p1Wins++
-                winningCoords = coords
-            } else if (winner == 2) {
-                SoundManager.playCorrectSound()
-                p2Wins++
-                winningCoords = coords
-            } else if (winner == 0) {
-                draws++
+            val playerDisc = if (isPlayer1Turn) 1 else 2
+            val newBoard = Array(6) { r -> board[r].clone() }
+            newBoard[targetRow][col] = playerDisc
+            board = newBoard
+            activeDroppingCol = null
+
+            val (winner, coords) = checkConnectFourWinner(newBoard)
+            if (winner != null) {
+                isRoundComplete = true
+                if (winner == 1) {
+                    SoundManager.playCorrectSound()
+                    p1Wins++
+                    winningCoords = coords
+                } else if (winner == 2) {
+                    SoundManager.playCorrectSound()
+                    p2Wins++
+                    winningCoords = coords
+                } else if (winner == 0) {
+                    draws++
+                }
+            } else {
+                isPlayer1Turn = !isPlayer1Turn
             }
-        } else {
-            isPlayer1Turn = !isPlayer1Turn
         }
     }
 
@@ -215,7 +230,7 @@ fun ConnectFourScreen(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── TOP HEADER BAR ─────────────────────────────────────────────
+            // ── TOP HEADER BAR (3D BUTTONS & ROUND PILL) ───────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -255,7 +270,7 @@ fun ConnectFourScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(22.dp))
                 }
 
-                // Round Counter Pill Badge
+                // Round Badge Pill
                 Box(
                     modifier = Modifier
                         .shadow(6.dp, RoundedCornerShape(16.dp))
@@ -267,7 +282,7 @@ fun ConnectFourScreen(
                         .padding(vertical = 6.dp, horizontal = 18.dp)
                 ) {
                     Text(
-                        text = "ROUND $currentRound / 10",
+                        text = "ROUND $currentRound OF 10",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
@@ -353,7 +368,43 @@ fun ConnectFourScreen(
                 }
             }
 
-            // ── 6x7 CONNECT 4 BOARD (ROYAL BLUE METALLIC CONTAINER WITH SLOTS) ──
+            // ── TOP COLUMN DROP INDICATOR BUTTONS (DISCS ABOVE BOARD) ───────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 26.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                for (c in 0..6) {
+                    val activePlayerColor = if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFFFFD700)
+                    val isDroppingThisCol = activeDroppingCol == c
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(38.dp)
+                            .shadow(4.dp, RoundedCornerShape(10.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(activePlayerColor, activePlayerColor.copy(alpha = 0.75f))
+                                ),
+                                RoundedCornerShape(10.dp)
+                            )
+                            .border(1.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(10.dp))
+                            .clickable { dropDiscInColumn(c) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = "Drop Column $c",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+
+            // ── 6x7 CONNECT 4 BOARD (ROYAL BLUE CONTAINER WITH ANIMATED DROP DISCS) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -383,16 +434,7 @@ fun ConnectFourScreen(
                                 for (c in 0..6) {
                                     val cellVal = board[r][c]
                                     val isWinningDisc = winningCoords?.contains(Pair(r, c)) == true
-                                    val isJustDropped = lastDroppedPos == Pair(r, c)
-
-                                    val discScale by animateFloatAsState(
-                                        targetValue = if (cellVal != 0) 1.0f else 0.85f,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessMedium
-                                        ),
-                                        label = "DiscDropAnim"
-                                    )
+                                    val isDroppingInThisCol = activeDroppingCol == c
 
                                     Box(
                                         modifier = Modifier
@@ -419,10 +461,21 @@ fun ConnectFourScreen(
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize(0.85f)
-                                                    .scale(discScale)
                                                     .clip(CircleShape)
                                                     .background(
                                                         if (cellVal == 1) Color(0xFFEF4444) else Color(0xFFFFD700)
+                                                    )
+                                            )
+                                        } else if (isDroppingInThisCol) {
+                                            // Gravity Drop Animation Disc falling from top to bottom
+                                            val animatedOffsetY = (dropAnimProgress.value * (r + 1) * 35f)
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize(0.85f)
+                                                    .offset(y = (-animatedOffsetY).dp)
+                                                    .clip(CircleShape)
+                                                    .background(
+                                                        if (isPlayer1Turn) Color(0xFFEF4444) else Color(0xFFFFD700)
                                                     )
                                             )
                                         }
@@ -484,10 +537,10 @@ fun ConnectFourScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // ── 10-ROUND MATCH VICTORY MODAL ─────────────────────────────────
+        // ── VICTORY MODAL ────────────────────────────────────────────────
         if (showMatchVictoryDialog) {
-            val p1WonMatch = p1Wins > p2Wins
-            val p2WonMatch = p2Wins > p1Wins
+            val p1Won = p1Wins > p2Wins
+            val p2Won = p2Wins > p1Wins
 
             androidx.compose.ui.window.Dialog(
                 onDismissRequest = {},
@@ -518,8 +571,8 @@ fun ConnectFourScreen(
                                     .shadow(10.dp, CircleShape)
                                     .background(
                                         Brush.verticalGradient(
-                                            if (p1WonMatch) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                                            else if (p2WonMatch) listOf(Color(0xFFF59E0B), Color(0xFFB45309))
+                                            if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
+                                            else if (p2Won) listOf(Color(0xFFF59E0B), Color(0xFFB45309))
                                             else listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
                                         ),
                                         CircleShape
@@ -527,18 +580,13 @@ fun ConnectFourScreen(
                                     .border(2.dp, Color.White, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = if (p1WonMatch || p2WonMatch) "🏆" else "🤝",
-                                    fontSize = 42.sp
-                                )
+                                Text(if (p1Won || p2Won) "🏆" else "🤝", fontSize = 42.sp)
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = if (p1WonMatch) "🎉 Player 1 Wins!"
-                                else if (p2WonMatch) "🎉 Player 2 Wins!"
-                                else "🤝 It's a Draw!",
+                                text = if (p1Won) "🎉 Player 1 Wins Match!" else if (p2Won) "🎉 Player 2 Wins Match!" else "🤝 Connect 4 Match Tied!",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -559,15 +607,11 @@ fun ConnectFourScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(10.dp)
-                                                .background(Color(0xFFEF4444), CircleShape)
-                                        )
+                                        Box(modifier = Modifier.size(10.dp).background(Color(0xFFEF4444), CircleShape))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Player 1 Score", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                                        Text("Player 1 Victories", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
                                     }
-                                    Text("$p1Wins pts", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("$p1Wins Wins", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
 
                                 Divider(color = Color.White.copy(alpha = 0.1f))
@@ -578,15 +622,11 @@ fun ConnectFourScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(10.dp)
-                                                .background(Color(0xFFFFD700), CircleShape)
-                                        )
+                                        Box(modifier = Modifier.size(10.dp).background(Color(0xFFFFD700), CircleShape))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Player 2 Score", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                                        Text("Player 2 Victories", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
                                     }
-                                    Text("$p2Wins pts", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("$p2Wins Wins", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
 

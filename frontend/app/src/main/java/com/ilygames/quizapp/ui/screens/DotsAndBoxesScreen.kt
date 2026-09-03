@@ -320,9 +320,9 @@ fun DotsAndBoxesScreen(
 
                     val stepX = w / 5f
                     val stepY = h / 5f
-                    val dotRadius = 8.5.dp.toPx() // Sleek Smaller 3D Dots
-                    val boldLineStrokeDrawn = 10.dp.toPx() // BOLD Player Drawn Lines
-                    val boldLineStrokeUndrawn = 5.5.dp.toPx() // BOLD Solid White Guide Lines
+                    val dotRadius = 8.5.dp.toPx() // Sleek 3D Glossy White Dots
+                    val boldLineStrokeDrawn = 11.dp.toPx() // BOLD Player Drawn Lines
+                    val boldLineStrokeUndrawn = 7.dp.toPx() // THICK Solid White Guide Lines
 
                     // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Blue P2)
                     for (r in 0..4) {
@@ -340,14 +340,14 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 2. Draw BOLD Horizontal Lines (Solid White for un-drawn, Red P1, Blue P2)
+                    // 2. Draw BOLD Horizontal Lines (Thick Solid White for un-drawn, Red P1, Blue P2)
                     for (r in 0..5) {
                         for (c in 0..4) {
                             val owner = hLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
                                 2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
-                                else -> Color.White.copy(alpha = 0.95f) // Solid White Line in Normal State
+                                else -> Color.White // Thick Solid White Line in Normal State
                             }
                             drawLine(
                                 color = lineColor,
@@ -359,14 +359,14 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 3. Draw BOLD Vertical Lines (Solid White for un-drawn, Red P1, Blue P2)
+                    // 3. Draw BOLD Vertical Lines (Thick Solid White for un-drawn, Red P1, Blue P2)
                     for (r in 0..4) {
                         for (c in 0..5) {
                             val owner = vLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
                                 2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
-                                else -> Color.White.copy(alpha = 0.95f) // Solid White Line in Normal State
+                                else -> Color.White // Thick Solid White Line in Normal State
                             }
                             drawLine(
                                 color = lineColor,
@@ -378,35 +378,35 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY YELLOW DOTS
+                    // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY WHITE DOTS
                     for (r in 0..5) {
                         for (c in 0..5) {
                             val center = Offset(c * stepX, r * stepY)
 
-                            // Drop shadow behind dot
+                            // Drop shadow behind white dot
                             drawCircle(
                                 color = Color.Black.copy(alpha = 0.35f),
                                 center = Offset(center.x + 2.dp.toPx(), center.y + 3.dp.toPx()),
                                 radius = dotRadius
                             )
 
-                            // Base 3D Yellow Sphere
+                            // Base 3D Soft White/Gray Rim
                             drawCircle(
-                                color = Color(0xFFD97706),
+                                color = Color(0xFFCBD5E1),
                                 center = center,
                                 radius = dotRadius
                             )
 
-                            // Glossy Inner Golden Yellow Gradient
+                            // Glossy Inner Pure White Sphere
                             drawCircle(
-                                color = Color(0xFFFFD700),
+                                color = Color.White,
                                 center = center,
                                 radius = dotRadius * 0.85f
                             )
 
                             // Top-Left 3D Shine Highlight
                             drawCircle(
-                                color = Color.White.copy(alpha = 0.9f),
+                                color = Color.White,
                                 center = Offset(center.x - dotRadius * 0.35f, center.y - dotRadius * 0.35f),
                                 radius = dotRadius * 0.35f
                             )
