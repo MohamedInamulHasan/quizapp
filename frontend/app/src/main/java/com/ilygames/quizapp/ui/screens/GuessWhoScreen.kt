@@ -230,6 +230,35 @@ fun GuessWhoScreen(
         }
     }
 
+    // Toggle Card Flip (Tap card to flip face down/up)
+    fun toggleCardFlip(clickedChar: GuessWhoCharacter) {
+        SoundManager.playPopSound()
+
+        val updatedList = boardCharacters.map { char ->
+            if (char.id == clickedChar.id) {
+                char.copy(isEliminated = !char.isEliminated)
+            } else {
+                char
+            }
+        }
+        boardCharacters = updatedList
+
+        // Check if only 1 card remains face-up!
+        val remainingFaceUp = updatedList.filter { !it.isEliminated }
+        if (remainingFaceUp.size == 1) {
+            val lastRemainingChar = remainingFaceUp.first()
+            val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
+
+            if (lastRemainingChar.id == targetSecret.id) {
+                SoundManager.playCorrectSound()
+                if (isPlayer1Turn) p1Wins++ else p2Wins++
+                winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Wins! It's ${targetSecret.name}!"
+                winningPlayer = if (isPlayer1Turn) 1 else 2
+                showWinnerDialog = true
+            }
+        }
+    }
+
     // Direct Guess Character
     fun makeDirectGuess(guessedChar: GuessWhoCharacter) {
         val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
@@ -476,9 +505,7 @@ fun GuessWhoScreen(
                                     character = char,
                                     isSelected = false,
                                     onClick = {
-                                        if (!char.isEliminated) {
-                                            makeDirectGuess(char)
-                                        }
+                                        toggleCardFlip(char)
                                     }
                                 )
                             }
@@ -835,106 +862,134 @@ fun GuessWhoCharacterCardItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val flipRotation by animateFloatAsState(
+        targetValue = if (character.isEliminated) 180f else 0f,
+        animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
+        label = "CardFlipRotation"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .graphicsLayer { alpha = if (character.isEliminated) 0.35f else 1.0f }
+            .graphicsLayer {
+                rotationY = flipRotation
+                cameraDistance = 12f * density
+            }
             .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(14.dp))
-            .background(
-                if (character.isEliminated) Color(0xFF334155) else Color.White,
-                RoundedCornerShape(14.dp)
-            )
+            .background(Color.White, RoundedCornerShape(14.dp))
             .border(
                 if (isSelected) 3.5.dp else 0.dp,
                 if (isSelected) Color(0xFF10B981) else Color.Transparent,
                 RoundedCornerShape(14.dp)
             )
-            .clickable(enabled = !character.isEliminated, onClick = onClick),
-        contentAlignment = Alignment.BottomCenter
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Avatar Box / Custom Uploaded Image
-            val context = LocalContext.current
-            val rawName = character.name.lowercase()
-            val imageResId = remember(character.name) {
-                val nameVariant = if (rawName == "sara") "sora" else rawName
-                var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
-                if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
-                if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
-                if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
-                id
-            }
-
+        if (flipRotation > 90f) {
+            // Flipped Card Back Side (3D Dark Metallic Face-Down Card)
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
-                    .background(character.avatarBgColor.copy(alpha = 0.2f)),
+                    .fillMaxSize()
+                    .graphicsLayer { rotationY = 180f }
+                    .background(
+                        Brush.verticalGradient(listOf(Color(0xFF334155), Color(0xFF1E293B))),
+                        RoundedCornerShape(14.dp)
+                    )
+                    .border(1.5.dp, Color(0xFF475569), RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (imageResId != 0) {
-                    Image(
-                        painter = painterResource(id = imageResId),
-                        contentDescription = character.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    val hairColorVal = when (character.hairColor) {
-                        HairColor.BLACK -> Color(0xFF17181C)
-                        HairColor.BROWN -> Color(0xFF78350F)
-                        HairColor.BLONDE -> Color(0xFFF59E0B)
-                        HairColor.RED -> Color(0xFFDC2626)
-                        HairColor.GREY -> Color(0xFF9CA3AF)
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "❓", fontSize = 28.sp)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "FLIPPED", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF94A3B8))
+                }
+            }
+        } else {
+            // Front Face-Up Side
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Avatar Box / Custom Uploaded Image
+                val context = LocalContext.current
+                val rawName = character.name.lowercase()
+                val imageResId = remember(character.name) {
+                    val nameVariant = if (rawName == "sara") "sora" else rawName
+                    var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
+                    if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
+                    if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
+                    if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
+                    id
+                }
 
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    when (character.skinTone) {
-                                        SkinTone.FAIR -> Color(0xFFFDE68A)
-                                        SkinTone.MEDIUM -> Color(0xFFD97706)
-                                        SkinTone.DARK -> Color(0xFF78350F)
-                                    },
-                                    CircleShape
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                        .background(character.avatarBgColor.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (imageResId != 0) {
+                        Image(
+                            painter = painterResource(id = imageResId),
+                            contentDescription = character.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        val hairColorVal = when (character.hairColor) {
+                            HairColor.BLACK -> Color(0xFF17181C)
+                            HairColor.BROWN -> Color(0xFF78350F)
+                            HairColor.BLONDE -> Color(0xFFF59E0B)
+                            HairColor.RED -> Color(0xFFDC2626)
+                            HairColor.GREY -> Color(0xFF9CA3AF)
+                        }
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(
+                                        when (character.skinTone) {
+                                            SkinTone.FAIR -> Color(0xFFFDE68A)
+                                            SkinTone.MEDIUM -> Color(0xFFD97706)
+                                            SkinTone.DARK -> Color(0xFF78350F)
+                                        },
+                                        CircleShape
+                                    )
+                                    .border(1.5.dp, hairColorVal, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (character.accessory == Accessory.GLASSES) "👓"
+                                    else if (character.accessory == Accessory.HAT) "🧢"
+                                    else if (character.facialHair != FacialHair.NONE) "🧔"
+                                    else "👤",
+                                    fontSize = 18.sp
                                 )
-                                .border(1.5.dp, hairColorVal, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (character.accessory == Accessory.GLASSES) "👓"
-                                else if (character.accessory == Accessory.HAT) "🧢"
-                                else if (character.facialHair != FacialHair.NONE) "🧔"
-                                else "👤",
-                                fontSize = 18.sp
-                            )
+                            }
                         }
                     }
                 }
-            }
 
-            // Name Ribbon
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
-                    .padding(vertical = 3.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = character.name,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White
-                )
+                // Name Ribbon
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+                        .padding(vertical = 3.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = character.name,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
