@@ -83,6 +83,8 @@ fun HomeScreen(
     onNavigateToAiStudio: () -> Unit = {},
     onNavigateToMemoryGame: () -> Unit = {},
     onNavigateToTicTacToe: () -> Unit = {},
+    onNavigateToConnectFour: () -> Unit = {},
+    onNavigateToJigsawPuzzle: () -> Unit = {},
     onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
@@ -926,7 +928,7 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                         letterSpacing = 1.sp
                     )
 
-                    // 2 Player Games Grid Row: Memory Match & X | O Showdown
+                    // 2 Player Games Grid Row 1: Memory Match & X | O Showdown
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -950,6 +952,34 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                             onClick = {
                                 SoundManager.playClickSound()
                                 onNavigateToTicTacToe()
+                            }
+                        )
+                    }
+
+                    // 2 Player Games Grid Row 2: Connect 4 & Jigsaw Puzzle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        UnifiedEmeraldCard(
+                            title = "Connect 4",
+                            description = "Drop discs to connect 4 in a row",
+                            icon = Icons.Default.Lens,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToConnectFour()
+                            }
+                        )
+
+                        UnifiedEmeraldCard(
+                            title = "Jigsaw Puzzle",
+                            description = "Swap 3x3 tiles to solve picture",
+                            icon = Icons.Default.Category,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                SoundManager.playClickSound()
+                                onNavigateToJigsawPuzzle()
                             }
                         )
                     }

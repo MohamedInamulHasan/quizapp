@@ -131,6 +131,12 @@ fun AppNavigation() {
                 onNavigateToTicTacToe = {
                     navController.navigate("tictactoe")
                 },
+                onNavigateToConnectFour = {
+                    navController.navigate("connect_four")
+                },
+                onNavigateToJigsawPuzzle = {
+                    navController.navigate("jigsaw_puzzle")
+                },
                 onNavigateToAdmin = {
                     navController.navigate("admin_panel")
                 },
@@ -149,6 +155,20 @@ fun AppNavigation() {
 
         composable("tictactoe") {
             com.ilygames.quizapp.ui.screens.TicTacToeScreen(
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("connect_four") {
+            com.ilygames.quizapp.ui.screens.ConnectFourScreen(
+                authViewModel = authViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("jigsaw_puzzle") {
+            com.ilygames.quizapp.ui.screens.JigsawPuzzleScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() }
             )

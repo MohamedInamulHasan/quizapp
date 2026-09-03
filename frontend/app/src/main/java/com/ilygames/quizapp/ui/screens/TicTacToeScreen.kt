@@ -305,15 +305,15 @@ fun TicTacToeScreen(
                             Color.White,
                             RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
                         )
-                        .padding(vertical = 7.dp, horizontal = 18.dp)
+                        .padding(vertical = 14.dp, horizontal = 22.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
                             text = "PLAYER 1",
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White
                         )
@@ -322,12 +322,12 @@ fun TicTacToeScreen(
                             modifier = Modifier
                                 .shadow(2.dp, RoundedCornerShape(6.dp))
                                 .background(Color.White, RoundedCornerShape(6.dp))
-                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                                .padding(horizontal = 11.dp, vertical = 3.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "$p1Wins",
-                                fontSize = 14.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 color = if (isXTurn) Color(0xFFDC2626) else Color(0xFF334155)
                             )
@@ -505,15 +505,15 @@ fun TicTacToeScreen(
                             Color.White,
                             RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
                         )
-                        .padding(vertical = 7.dp, horizontal = 18.dp)
+                        .padding(vertical = 14.dp, horizontal = 22.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
                             text = "PLAYER 2",
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White
                         )
@@ -522,12 +522,12 @@ fun TicTacToeScreen(
                             modifier = Modifier
                                 .shadow(2.dp, RoundedCornerShape(6.dp))
                                 .background(Color.White, RoundedCornerShape(6.dp))
-                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                                .padding(horizontal = 11.dp, vertical = 3.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "$p2Wins",
-                                fontSize = 14.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 color = if (!isXTurn) Color(0xFF1D4ED8) else Color(0xFF334155)
                             )
