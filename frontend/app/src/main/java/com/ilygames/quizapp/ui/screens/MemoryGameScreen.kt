@@ -427,7 +427,108 @@ fun MemoryGameScreen(
                 }
             }
 
-            // ── CENTERED GAME CONTAINER: PLAYER 1 CARD + 4x5 GRID + PLAYER 2 CARD ──
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) AT VERY TOP ──────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Player 1 Card (Attached to Left Edge)
+                Box(
+                    modifier = Modifier
+                        .offset(x = (-3).dp)
+                        .shadow(8.dp, RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
+                                else listOf(Color(0xFF475569), Color(0xFF334155))
+                            ),
+                            RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                        )
+                        .border(
+                            1.5.dp,
+                            Color.White,
+                            RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                        )
+                        .padding(vertical = 12.dp, horizontal = 20.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "PLAYER 1",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        Box(
+                            modifier = Modifier
+                                .shadow(2.dp, RoundedCornerShape(6.dp))
+                                .background(Color.White, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$player1Score",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (isPlayer1Turn) Color(0xFFDC2626) else Color(0xFF334155)
+                            )
+                        }
+                    }
+                }
+
+                // Player 2 Card (Attached to Right Edge)
+                Box(
+                    modifier = Modifier
+                        .offset(x = 3.dp)
+                        .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                else listOf(Color(0xFF475569), Color(0xFF334155))
+                            ),
+                            RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                        )
+                        .border(
+                            1.5.dp,
+                            Color.White,
+                            RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                        )
+                        .padding(vertical = 12.dp, horizontal = 20.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "PLAYER 2",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        Box(
+                            modifier = Modifier
+                                .shadow(2.dp, RoundedCornerShape(6.dp))
+                                .background(Color.White, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$player2Score",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (!isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFF334155)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ── CENTERED GAME CONTAINER: 4x5 GRID ──
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -435,104 +536,6 @@ fun MemoryGameScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) ──────
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Player 1 Card (Attached to Left Edge)
-                    Box(
-                        modifier = Modifier
-                            .offset(x = (-3).dp)
-                            .shadow(8.dp, RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    if (isPlayer1Turn) listOf(Color(0xFFEF4444), Color(0xFFDC2626))
-                                    else listOf(Color(0xFF475569), Color(0xFF334155))
-                                ),
-                                RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-                            )
-                            .border(
-                                1.5.dp,
-                                Color.White,
-                                RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-                            )
-                            .padding(vertical = 12.dp, horizontal = 20.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Text(
-                                text = "PLAYER 1",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .shadow(2.dp, RoundedCornerShape(6.dp))
-                                    .background(Color.White, RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 9.dp, vertical = 2.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "$player1Score",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = if (isPlayer1Turn) Color(0xFFDC2626) else Color(0xFF334155)
-                                )
-                            }
-                        }
-                    }
-
-                    // Player 2 Card (Attached to Right Edge)
-                    Box(
-                        modifier = Modifier
-                            .offset(x = 3.dp)
-                            .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    if (!isPlayer1Turn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
-                                    else listOf(Color(0xFF475569), Color(0xFF334155))
-                                ),
-                                RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                            )
-                            .border(
-                                1.5.dp,
-                                Color.White,
-                                RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                            )
-                            .padding(vertical = 12.dp, horizontal = 20.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Text(
-                                text = "PLAYER 2",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .shadow(2.dp, RoundedCornerShape(6.dp))
-                                    .background(Color.White, RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 9.dp, vertical = 2.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "$player2Score",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = if (!isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFF334155)
-                                )
-                            }
-                        }
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 

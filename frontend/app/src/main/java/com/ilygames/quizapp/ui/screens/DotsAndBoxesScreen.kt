@@ -42,14 +42,13 @@ fun DotsAndBoxesScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // 6x6 Dots Grid -> 5x5 Boxes Grid (25 Total Boxes)
-    // Horizontal lines: 6 rows x 5 columns = 30 lines
+    // 6 Rows x 6 Dots Grid (5 Rows x 5 Columns = 25 Claimable Boxes)
+    // 0 = un-drawn/unclaimed, 1 = Player 1 (Red), 2 = Player 2 (Blue)
     var hLinesOwner by remember { mutableStateOf(Array(6) { IntArray(5) { 0 } }) }
-    // Vertical lines: 5 rows x 6 columns = 30 lines
     var vLinesOwner by remember { mutableStateOf(Array(5) { IntArray(6) { 0 } }) }
-    // Box Owners: 5 rows x 5 columns (0 = none, 1 = Red P1, 2 = Yellow P2)
     var boxOwners by remember { mutableStateOf(Array(5) { IntArray(5) { 0 } }) }
 
+    var currentRound by remember { mutableIntStateOf(1) }
     var p1Wins by remember { mutableIntStateOf(0) }
     var p2Wins by remember { mutableIntStateOf(0) }
     var p1BoxCount by remember { mutableIntStateOf(0) }
@@ -61,6 +60,50 @@ fun DotsAndBoxesScreen(
 
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
+    }
+
+    // Check if drawing a line completed any boxes
+    fun checkAndClaimCompletedBoxes(player: Int): Boolean {
+        var claimedNewBox = false
+        val updatedBoxOwners = Array(5) { r -> boxOwners[r].clone() }
+
+        for (r in 0..4) {
+            for (c in 0..4) {
+                if (updatedBoxOwners[r][c] == 0) {
+                    val topDrawn = hLinesOwner[r][c] != 0
+                    val bottomDrawn = hLinesOwner[r + 1][c] != 0
+                    val leftDrawn = vLinesOwner[r][c] != 0
+                    val rightDrawn = vLinesOwner[r][c + 1] != 0
+
+                    if (topDrawn && bottomDrawn && leftDrawn && rightDrawn) {
+                        updatedBoxOwners[r][c] = player
+                        claimedNewBox = true
+                        if (player == 1) p1BoxCount++ else p2BoxCount++
+                    }
+                }
+            }
+        }
+
+        if (claimedNewBox) {
+            boxOwners = updatedBoxOwners
+            SoundManager.playCorrectSound()
+        }
+
+        return claimedNewBox
+    }
+
+    fun checkGameOver() {
+        if (p1BoxCount + p2BoxCount == 25) {
+            if (p1BoxCount > p2BoxCount) p1Wins++
+            else if (p2BoxCount > p1BoxCount) p2Wins++
+
+            if (!rewardEarned) {
+                rewardEarned = true
+                authViewModel.addAdReward(context)
+                Toast.makeText(context, "🪙 +50 Coins Earned for Dots & Boxes!", Toast.LENGTH_SHORT).show()
+            }
+            showWinnerDialog = true
+        }
     }
 
     fun resetMatch() {
@@ -75,79 +118,39 @@ fun DotsAndBoxesScreen(
         SoundManager.playRetrySound()
     }
 
-    fun checkCompletedBoxes(): Boolean {
-        var boxClaimedThisTurn = false
-        val newOwners = Array(5) { r -> boxOwners[r].clone() }
-
-        var countP1 = 0
-        var countP2 = 0
-
-        for (r in 0..4) {
-            for (c in 0..4) {
-                val hasTop = hLinesOwner[r][c] != 0
-                val hasBottom = hLinesOwner[r + 1][c] != 0
-                val hasLeft = vLinesOwner[r][c] != 0
-                val hasRight = vLinesOwner[r][c + 1] != 0
-
-                if (hasTop && hasBottom && hasLeft && hasRight) {
-                    if (newOwners[r][c] == 0) {
-                        newOwners[r][c] = if (isPlayer1Turn) 1 else 2
-                        boxClaimedThisTurn = true
-                        SoundManager.playCorrectSound()
-                    }
-                }
-
-                if (newOwners[r][c] == 1) countP1++
-                else if (newOwners[r][c] == 2) countP2++
-            }
-        }
-
-        boxOwners = newOwners
-        p1BoxCount = countP1
-        p2BoxCount = countP2
-
-        // Check Match Complete (25 boxes)
-        if (countP1 + countP2 == 25) {
-            if (countP1 > countP2) p1Wins++
-            else if (countP2 > countP1) p2Wins++
-
-            SoundManager.playSuccessChime()
-            if (!rewardEarned) {
-                rewardEarned = true
-                authViewModel.addAdReward(context)
-                Toast.makeText(context, "🪙 +50 Coins Earned for 6x6 Dots & Boxes!", Toast.LENGTH_SHORT).show()
-            }
-            showWinnerDialog = true
-        }
-
-        return boxClaimedThisTurn
-    }
-
     fun onHorizontalLineClick(r: Int, c: Int) {
         if (hLinesOwner[r][c] != 0 || showWinnerDialog) return
+
         SoundManager.playPopSound()
 
-        val newHLines = Array(6) { row -> hLinesOwner[row].clone() }
-        newHLines[r][c] = if (isPlayer1Turn) 1 else 2
+        val player = if (isPlayer1Turn) 1 else 2
+        val newHLines = Array(6) { i -> hLinesOwner[i].clone() }
+        newHLines[r][c] = player
         hLinesOwner = newHLines
 
-        val claimed = checkCompletedBoxes()
+        val claimed = checkAndClaimCompletedBoxes(player)
         if (!claimed) {
             isPlayer1Turn = !isPlayer1Turn
+        } else {
+            checkGameOver()
         }
     }
 
     fun onVerticalLineClick(r: Int, c: Int) {
         if (vLinesOwner[r][c] != 0 || showWinnerDialog) return
+
         SoundManager.playPopSound()
 
-        val newVLines = Array(5) { row -> vLinesOwner[row].clone() }
-        newVLines[r][c] = if (isPlayer1Turn) 1 else 2
+        val player = if (isPlayer1Turn) 1 else 2
+        val newVLines = Array(5) { i -> vLinesOwner[i].clone() }
+        newVLines[r][c] = player
         vLinesOwner = newVLines
 
-        val claimed = checkCompletedBoxes()
+        val claimed = checkAndClaimCompletedBoxes(player)
         if (!claimed) {
             isPlayer1Turn = !isPlayer1Turn
+        } else {
+            checkGameOver()
         }
     }
 
@@ -160,10 +163,9 @@ fun DotsAndBoxesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding(),
-            verticalArrangement = Arrangement.SpaceBetween
+                .navigationBarsPadding()
         ) {
-            // ── TOP HEADER BAR (3D BUTTONS & TITLE PILL) ───────────────────
+            // ── TOP HEADER BAR (3D METALLIC BUTTONS) ──────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -203,24 +205,12 @@ fun DotsAndBoxesScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textColor, modifier = Modifier.size(22.dp))
                 }
 
-                // Title Badge Pill
-                Box(
-                    modifier = Modifier
-                        .shadow(6.dp, RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.horizontalGradient(listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))),
-                            RoundedCornerShape(16.dp)
-                        )
-                        .border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                        .padding(vertical = 6.dp, horizontal = 18.dp)
-                ) {
-                    Text(
-                        text = "DOTS & BOXES 6x6",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                }
+                Text(
+                    text = "Dots & Boxes 6x6",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    color = textColor
+                )
 
                 // 3D Retry Button
                 Box(
@@ -244,16 +234,16 @@ fun DotsAndBoxesScreen(
                             ),
                             CircleShape
                         )
-                        .clickable {
-                            resetMatch()
-                        },
+                        .clickable { resetMatch() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset", tint = textColor, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = textColor, modifier = Modifier.size(22.dp))
                 }
             }
 
-            // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) ──────
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ── PLAYER CARDS ROW: AT VERY TOP DIRECTLY UNDER HEADER BAR ──────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -344,7 +334,171 @@ fun DotsAndBoxesScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // ── CENTERED GAME BOARD AREA ──
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 6x6 DOTS CANVAS BOARD (5x5 BOXES GRID)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .padding(horizontal = 16.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            if (isDark) Color(0xFF1E293B).copy(alpha = 0.75f)
+                            else Color.White.copy(alpha = 0.95f)
+                        )
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val w = size.width
+                        val h = size.height
+
+                        val stepX = w / 5f
+                        val stepY = h / 5f
+                        val dotRadius = 8.5.dp.toPx() // Sleek 3D Glossy White Dots
+                        val boldLineStrokeDrawn = 11.dp.toPx() // BOLD Player Drawn Lines
+                        val boldLineStrokeUndrawn = 7.dp.toPx() // THICK Solid White Guide Lines
+
+                        // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Blue P2)
+                        for (r in 0..4) {
+                            for (c in 0..4) {
+                                val owner = boxOwners[r][c]
+                                if (owner != 0) {
+                                    val boxColor = if (owner == 1) Color(0xFFEF4444).copy(alpha = 0.88f) else Color(0xFF255FF4).copy(alpha = 0.88f)
+                                    drawRoundRect(
+                                        color = boxColor,
+                                        topLeft = Offset(c * stepX + 5.dp.toPx(), r * stepY + 5.dp.toPx()),
+                                        size = Size(stepX - 10.dp.toPx(), stepY - 10.dp.toPx()),
+                                        cornerRadius = CornerRadius(8f, 8f)
+                                    )
+                                }
+                            }
+                        }
+
+                        // 2. Draw BOLD Horizontal Lines (Thick Solid White for un-drawn, Red P1, Blue P2)
+                        for (r in 0..5) {
+                            for (c in 0..4) {
+                                val owner = hLinesOwner[r][c]
+                                val lineColor = when (owner) {
+                                    1 -> Color(0xFFEF4444) // BOLD Red for Player 1
+                                    2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
+                                    else -> Color.White // Thick Solid White Line in Normal State
+                                }
+                                drawLine(
+                                    color = lineColor,
+                                    start = Offset(c * stepX, r * stepY),
+                                    end = Offset((c + 1) * stepX, r * stepY),
+                                    strokeWidth = if (owner != 0) boldLineStrokeDrawn else boldLineStrokeUndrawn,
+                                    cap = StrokeCap.Round
+                                )
+                            }
+                        }
+
+                        // 3. Draw BOLD Vertical Lines (Thick Solid White for un-drawn, Red P1, Blue P2)
+                        for (r in 0..4) {
+                            for (c in 0..5) {
+                                val owner = vLinesOwner[r][c]
+                                val lineColor = when (owner) {
+                                    1 -> Color(0xFFEF4444) // BOLD Red for Player 1
+                                    2 -> Color(0xFF255FF4) // BOLD Blue for Player 2
+                                    else -> Color.White // Thick Solid White Line in Normal State
+                                }
+                                drawLine(
+                                    color = lineColor,
+                                    start = Offset(c * stepX, r * stepY),
+                                    end = Offset(c * stepX, (r + 1) * stepY),
+                                    strokeWidth = if (owner != 0) boldLineStrokeDrawn else boldLineStrokeUndrawn,
+                                    cap = StrokeCap.Round
+                                )
+                            }
+                        }
+
+                        // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY WHITE DOTS
+                        for (r in 0..5) {
+                            for (c in 0..5) {
+                                val center = Offset(c * stepX, r * stepY)
+
+                                // Drop shadow behind white dot
+                                drawCircle(
+                                    color = Color.Black.copy(alpha = 0.35f),
+                                    center = Offset(center.x + 2.dp.toPx(), center.y + 3.dp.toPx()),
+                                    radius = dotRadius
+                                )
+
+                                // Base 3D Soft White/Gray Rim
+                                drawCircle(
+                                    color = Color(0xFFCBD5E1),
+                                    center = center,
+                                    radius = dotRadius
+                                )
+
+                                // Glossy Inner Pure White Sphere
+                                drawCircle(
+                                    color = Color.White,
+                                    center = center,
+                                    radius = dotRadius * 0.85f
+                                )
+
+                                // Top-Left 3D Shine Highlight
+                                drawCircle(
+                                    color = Color.White,
+                                    center = Offset(center.x - dotRadius * 0.35f, center.y - dotRadius * 0.35f),
+                                    radius = dotRadius * 0.35f
+                                )
+                            }
+                        }
+                    }
+
+                    // Interactive Line Touch Grid Overlay (6x6 Dots Grid)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        for (r in 0..5) {
+                            // Horizontal Click Strip
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(26.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                for (c in 0..4) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight()
+                                            .clickable { onHorizontalLineClick(r, c) }
+                                    )
+                                }
+                            }
+
+                            if (r < 5) {
+                                // Vertical Click Strip
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    for (c in 0..5) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(26.dp)
+                                                .fillMaxHeight()
+                                                .clickable { onVerticalLineClick(r, c) }
+                                        )
+                                        if (c < 5) Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // ── VICTORY MODAL ────────────────────────────────────────────────
@@ -382,8 +536,8 @@ fun DotsAndBoxesScreen(
                                     .background(
                                         Brush.verticalGradient(
                                             if (p1Won) listOf(Color(0xFFEF4444), Color(0xFF991B1B))
-                                            else if (p2Won) listOf(Color(0xFFF59E0B), Color(0xFFB45309))
-                                            else listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                            else if (p2Won) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                            else listOf(Color(0xFF64748B), Color(0xFF334155))
                                         ),
                                         CircleShape
                                     )
@@ -396,7 +550,7 @@ fun DotsAndBoxesScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = if (p1Won) "🎉 Player 1 Wins!" else if (p2Won) "🎉 Player 2 Wins!" else "🤝 It's a Tie!",
+                                text = if (p1Won) "🎉 Player 1 Wins Match!" else if (p2Won) "🎉 Player 2 Wins Match!" else "🤝 Dots & Boxes Tied!",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White

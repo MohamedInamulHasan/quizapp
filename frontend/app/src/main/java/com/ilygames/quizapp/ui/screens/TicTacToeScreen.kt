@@ -284,11 +284,15 @@ fun TicTacToeScreen(
                 }
             }
 
-            // ── PLAYER 1 CARD ATTACHED TO LEFT EDGE (NO BORDER ON LEFT ATTACHED SIDE) ──
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ── PLAYER CARDS ROW: PLAYER 1 (LEFT) & PLAYER 2 (RIGHT) AT VERY TOP ──────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Player 1 Card (Attached to Left Edge)
                 Box(
                     modifier = Modifier
                         .offset(x = (-3).dp)
@@ -317,7 +321,6 @@ fun TicTacToeScreen(
                             fontWeight = FontWeight.Black,
                             color = Color.White
                         )
-                        // Small White Box displaying score
                         Box(
                             modifier = Modifier
                                 .shadow(2.dp, RoundedCornerShape(6.dp))
@@ -330,6 +333,52 @@ fun TicTacToeScreen(
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
                                 color = if (isXTurn) Color(0xFFDC2626) else Color(0xFF334155)
+                            )
+                        }
+                    }
+                }
+
+                // Player 2 Card (Attached to Right Edge)
+                Box(
+                    modifier = Modifier
+                        .offset(x = 3.dp)
+                        .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                if (!isXTurn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
+                                else listOf(Color(0xFF475569), Color(0xFF334155))
+                            ),
+                            RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                        )
+                        .border(
+                            1.5.dp,
+                            Color.White,
+                            RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                        )
+                        .padding(vertical = 12.dp, horizontal = 20.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "PLAYER 2",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        Box(
+                            modifier = Modifier
+                                .shadow(2.dp, RoundedCornerShape(6.dp))
+                                .background(Color.White, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 9.dp, vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$p2Wins",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (!isXTurn) Color(0xFF1D4ED8) else Color(0xFF334155)
                             )
                         }
                     }
@@ -479,58 +528,6 @@ fun TicTacToeScreen(
                                     }
                                 }
                             }
-                        }
-                    }
-                }
-            }
-
-            // ── PLAYER 2 CARD ATTACHED TO RIGHT EDGE (NO BORDER ON RIGHT ATTACHED SIDE) ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Box(
-                    modifier = Modifier
-                        .offset(x = 3.dp)
-                        .shadow(8.dp, RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                if (!isXTurn) listOf(Color(0xFF255FF4), Color(0xFF1D4ED8))
-                                else listOf(Color(0xFF475569), Color(0xFF334155))
-                            ),
-                            RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                        )
-                        .border(
-                            1.5.dp,
-                            Color.White,
-                            RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                        )
-                        .padding(vertical = 12.dp, horizontal = 20.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text(
-                            text = "PLAYER 2",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White
-                        )
-                        // Small White Box displaying score
-                        Box(
-                            modifier = Modifier
-                                .shadow(2.dp, RoundedCornerShape(6.dp))
-                                .background(Color.White, RoundedCornerShape(6.dp))
-                                .padding(horizontal = 9.dp, vertical = 2.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "$p2Wins",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                color = if (!isXTurn) Color(0xFF1D4ED8) else Color(0xFF334155)
-                            )
                         }
                     }
                 }
