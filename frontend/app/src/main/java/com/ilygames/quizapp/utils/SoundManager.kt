@@ -16,6 +16,8 @@ object SoundManager {
     private var levelUpSoundId: Int = 0
     private var introSoundId: Int = 0
     private var dataSoundId: Int = 0
+    private var popSoundId: Int = 0
+    private var retrySoundId: Int = 0
 
     fun init(context: Context) {
         if (soundPool != null) return
@@ -38,6 +40,8 @@ object SoundManager {
             levelUpSoundId = soundPool?.load(context, R.raw.level_up, 1) ?: 0
             introSoundId = soundPool?.load(context, R.raw.intro, 1) ?: 0
             dataSoundId = soundPool?.load(context, R.raw.data, 1) ?: 0
+            popSoundId = soundPool?.load(context, R.raw.pop, 1) ?: 0
+            retrySoundId = soundPool?.load(context, R.raw.retry, 1) ?: 0
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -98,6 +102,26 @@ object SoundManager {
         }
     }
 
+    // 🎈 Pop sound effect when clicking cards in Memory Match or XO
+    fun playPopSound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || popSoundId == 0) return
+        try {
+            soundPool?.play(popSoundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // 🔄 Retry sound effect when clicking retry icon in game
+    fun playRetrySound() {
+        if (!ThemeState.isSoundEnabled || soundPool == null || retrySoundId == 0) return
+        try {
+            soundPool?.play(retrySoundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     // 💨 Custom Swoosh sound effect when advancing from 2nd question onwards
     fun playWhooshSound() {
         if (!ThemeState.isSoundEnabled || soundPool == null || swooshSoundId == 0) return
@@ -148,5 +172,7 @@ object SoundManager {
     }
 
     fun playClockTick() {}
-    fun playOptionPopSound() {}
+    fun playOptionPopSound() {
+        playPopSound()
+    }
 }

@@ -261,7 +261,7 @@ fun MemoryGameScreen(
         val card = cards[index]
         if (card.isFlipped || card.isMatched) return
 
-        SoundManager.playClickSound()
+        SoundManager.playPopSound()
 
         // Flip card instantly
         cards = cards.toMutableList().also {
@@ -410,6 +410,7 @@ fun MemoryGameScreen(
                             CircleShape
                         )
                         .clickable {
+                            SoundManager.playRetrySound()
                             triggerAnimatedRestart()
                         },
                     contentAlignment = Alignment.Center

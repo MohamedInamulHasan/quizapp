@@ -120,7 +120,7 @@ fun TicTacToeScreen(
     fun onCellClick(index: Int) {
         if (board[index].isNotEmpty() || isRoundComplete || showMatchVictoryDialog) return
 
-        SoundManager.playClickSound()
+        SoundManager.playPopSound()
 
         val mark = if (isXTurn) "X" else "O"
         val newBoard = board.copyOf()
@@ -265,7 +265,7 @@ fun TicTacToeScreen(
                             CircleShape
                         )
                         .clickable {
-                            SoundManager.playClickSound()
+                            SoundManager.playRetrySound()
                             resetFullMatch()
                         },
                     contentAlignment = Alignment.Center
