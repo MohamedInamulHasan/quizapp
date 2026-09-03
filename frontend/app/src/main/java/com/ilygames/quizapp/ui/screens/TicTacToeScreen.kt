@@ -61,9 +61,19 @@ fun TicTacToeScreen(
     // Alternating Starting Chance per Round
     var isXTurn by remember { mutableStateOf(true) }
     var winningPattern by remember { mutableStateOf<List<Int>?>(null) }
-    var isRoundComplete by remember { mutableStateOf(false) }
     var showMatchVictoryDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
+
+    // Grid Line Entrance Animation & Sound Trigger on Every Match/Round Start
+    val gridLineAnim = remember { Animatable(0f) }
+    LaunchedEffect(currentRound, showMatchVictoryDialog) {
+        SoundManager.playRetrySound()
+        gridLineAnim.snapTo(0f)
+        gridLineAnim.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+        )
+    }
 
     val winPatterns = listOf(
         listOf(0, 1, 2), listOf(3, 4, 5), listOf(6, 7, 8), // Rows
@@ -340,34 +350,36 @@ fun TicTacToeScreen(
                     val rowHeight = height / 3f
                     val strokeWidth = 8.dp.toPx()
 
-                    // Vertical White Cross Lines
+                    val lineProgress = gridLineAnim.value
+
+                    // Vertical White Cross Lines (Animated Entrance)
                     drawLine(
                         color = Color.White,
                         start = Offset(colWidth, 0f),
-                        end = Offset(colWidth, height),
+                        end = Offset(colWidth, height * lineProgress),
                         strokeWidth = strokeWidth,
                         cap = StrokeCap.Round
                     )
                     drawLine(
                         color = Color.White,
                         start = Offset(colWidth * 2, 0f),
-                        end = Offset(colWidth * 2, height),
+                        end = Offset(colWidth * 2, height * lineProgress),
                         strokeWidth = strokeWidth,
                         cap = StrokeCap.Round
                     )
 
-                    // Horizontal White Cross Lines
+                    // Horizontal White Cross Lines (Animated Entrance)
                     drawLine(
                         color = Color.White,
                         start = Offset(0f, rowHeight),
-                        end = Offset(width, rowHeight),
+                        end = Offset(width * lineProgress, rowHeight),
                         strokeWidth = strokeWidth,
                         cap = StrokeCap.Round
                     )
                     drawLine(
                         color = Color.White,
                         start = Offset(0f, rowHeight * 2),
-                        end = Offset(width, rowHeight * 2),
+                        end = Offset(width * lineProgress, rowHeight * 2),
                         strokeWidth = strokeWidth,
                         cap = StrokeCap.Round
                     )
