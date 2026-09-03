@@ -320,9 +320,9 @@ fun DotsAndBoxesScreen(
 
                     val stepX = w / 5f
                     val stepY = h / 5f
-                    val dotRadius = 12.dp.toPx() // 3D Glossy Spherical Dots
-                    val boldLineStrokeDrawn = 10.dp.toPx() // BOLD Drawn Lines
-                    val boldLineStrokeUndrawn = 5.5.dp.toPx() // BOLD White Guide Lines
+                    val dotRadius = 8.5.dp.toPx() // Sleek Smaller 3D Dots
+                    val boldLineStrokeDrawn = 10.dp.toPx() // BOLD Player Drawn Lines
+                    val boldLineStrokeUndrawn = 5.5.dp.toPx() // BOLD Solid White Guide Lines
 
                     // 1. Draw THICK SOLID Claimed Box Fill Colors (Red P1 vs Yellow P2)
                     for (r in 0..4) {
@@ -340,14 +340,14 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 2. Draw BOLD Horizontal Lines (6 Rows x 5 Columns)
+                    // 2. Draw BOLD Horizontal Lines (Solid White for un-drawn)
                     for (r in 0..5) {
                         for (c in 0..4) {
                             val owner = hLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
                                 2 -> Color(0xFFFFD700) // BOLD Yellow for Player 2
-                                else -> Color.White.copy(alpha = if (isDark) 0.45f else 0.9f) // BOLD White Line
+                                else -> Color.White.copy(alpha = 0.95f) // Solid White Line in Normal State
                             }
                             drawLine(
                                 color = lineColor,
@@ -359,14 +359,14 @@ fun DotsAndBoxesScreen(
                         }
                     }
 
-                    // 3. Draw BOLD Vertical Lines (5 Rows x 6 Columns)
+                    // 3. Draw BOLD Vertical Lines (Solid White for un-drawn)
                     for (r in 0..4) {
                         for (c in 0..5) {
                             val owner = vLinesOwner[r][c]
                             val lineColor = when (owner) {
                                 1 -> Color(0xFFEF4444) // BOLD Red for Player 1
                                 2 -> Color(0xFFFFD700) // BOLD Yellow for Player 2
-                                else -> Color.White.copy(alpha = if (isDark) 0.45f else 0.9f) // BOLD White Line
+                                else -> Color.White.copy(alpha = 0.95f) // Solid White Line in Normal State
                             }
                             drawLine(
                                 color = lineColor,
