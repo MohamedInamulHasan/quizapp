@@ -8,6 +8,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -39,14 +43,13 @@ import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
 import kotlin.math.roundToInt
 
-// 2x2 Interlocking Jigsaw Piece Model
-data class DragJigsawPiece(
-    val id: Int, // 0 = TopLeft, 1 = TopRight, 2 = BottomLeft, 3 = BottomRight
-    val name: String,
-    val pieceColor: Color,
-    val outlineColor: Color = Color(0xFF1E293B),
-    var isSnapped: Boolean = false,
-    var currentOffset: Offset = Offset.Zero
+// 16-Piece Jigsaw Piece Data Model (4x4 Grid)
+data class ImageJigsawPiece(
+    val id: Int, // 0 to 15
+    val correctRow: Int, // 0 to 3
+    val correctCol: Int, // 0 to 3
+    val emoji: String,
+    val pieceColor: Color
 )
 
 @Composable
@@ -58,29 +61,45 @@ fun JigsawPuzzleScreen(
     val isDark = ThemeState.isDarkMode
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
-    // 4 Interlocking Jigsaw Pieces matching screenshot pastel colors
-    // Top-Left: Pastel Lavender Purple (Color(0xFFB4ACE3))
-    // Top-Right: Warm Pastel Orange (Color(0xFFF3B852))
-    // Bottom-Left: Soft Pastel Green (Color(0xFFC7E294))
-    // Bottom-Right: Cream Yellow (Color(0xFFF7F4D5))
-    val defaultPieces = remember {
-        listOf(
-            DragJigsawPiece(0, "Top-Left", Color(0xFFB4ACE3)),
-            DragJigsawPiece(1, "Top-Right", Color(0xFFF3B852)),
-            DragJigsawPiece(2, "Bottom-Left", Color(0xFFC7E294)),
-            DragJigsawPiece(3, "Bottom-Right", Color(0xFFF7F4D5))
+    // Vibrant 16 Jigsaw Pieces (4x4 Grid)
+    val allPieces = remember {
+        val colors = listOf(
+            Color(0xFFEF4444), Color(0xFFF59E0B), Color(0xFF10B981), Color(0xFF06B6D4),
+            Color(0xFF255FF4), Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFFF43F5E),
+            Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFFF59E0B), Color(0xFF8B5CF6),
+            Color(0xFFEC4899), Color(0xFF06B6D4), Color(0xFFEF4444), Color(0xFFFFD700)
         )
+        val emojis = listOf(
+            "🚀", "⚡", "⭐", "💎",
+            "🏆", "🔥", "🎨", "🎮",
+            "👑", "🌈", "🦁", "🦄",
+            "🧩", "🔮", "🛸", "🎯"
+        )
+        List(16) { index ->
+            ImageJigsawPiece(
+                id = index,
+                correctRow = index / 4,
+                correctCol = index % 4,
+                emoji = emojis[index],
+                pieceColor = colors[index]
+            )
+        }
     }
 
-    var pieces by remember { mutableStateOf(defaultPieces.map { it.copy() }) }
+    // State for board slots: array of 16 (holds pieceId or null)
+    var boardSlots by remember { mutableStateOf(Array<Int?>(16) { null }) }
+    // State for tray pieces (unplaced piece IDs)
+    var trayPieceIds by remember { mutableStateOf(allPieces.map { it.id }.shuffled()) }
+    // Currently selected piece for tap/drag placement
+    var selectedPieceId by remember { mutableStateOf<Int?>(null) }
+
     var p1Score by remember { mutableIntStateOf(0) }
     var p2Score by remember { mutableIntStateOf(0) }
     var isPlayer1Turn by remember { mutableStateOf(true) }
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
-    var draggedPieceId by remember { mutableStateOf<Int?>(null) }
 
-    // Board slot position bounds on root screen
+    // Board position bounds for exact drop detection
     var boardBounds by remember { mutableStateOf(Rect.Zero) }
 
     LaunchedEffect(Unit) {
@@ -88,27 +107,49 @@ fun JigsawPuzzleScreen(
     }
 
     fun resetPuzzle() {
-        pieces = defaultPieces.map { it.copy() }
+        boardSlots = Array(16) { null }
+        trayPieceIds = allPieces.map { it.id }.shuffled()
+        selectedPieceId = null
         p1Score = 0
         p2Score = 0
         isPlayer1Turn = true
         showWinnerDialog = false
         rewardEarned = false
-        draggedPieceId = null
         SoundManager.playRetrySound()
     }
 
-    // Check if all pieces are snapped into place
     fun checkSolved() {
-        if (pieces.all { it.isSnapped }) {
+        if (boardSlots.all { it != null }) {
             SoundManager.playSuccessChime()
             if (!rewardEarned) {
                 rewardEarned = true
                 authViewModel.addAdReward(context)
-                Toast.makeText(context, "🪙 +50 Coins Earned for Jigsaw Puzzle!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "🪙 +50 Coins Earned for 16-Piece Jigsaw!", Toast.LENGTH_SHORT).show()
             }
             showWinnerDialog = true
         }
+    }
+
+    fun placePieceInSlot(pieceId: Int, slotIndex: Int) {
+        if (boardSlots[slotIndex] != null) return // Slot already occupied
+
+        SoundManager.playPopSound()
+        val newSlots = boardSlots.clone()
+        newSlots[slotIndex] = pieceId
+        boardSlots = newSlots
+        trayPieceIds = trayPieceIds.filter { it != pieceId }
+        selectedPieceId = null
+
+        // Bonus score if placed in correct slot!
+        if (pieceId == slotIndex) {
+            SoundManager.playCorrectSound()
+            if (isPlayer1Turn) p1Score += 15 else p2Score += 15
+        } else {
+            if (isPlayer1Turn) p1Score += 5 else p2Score += 5
+        }
+
+        isPlayer1Turn = !isPlayer1Turn
+        checkSolved()
     }
 
     Box(
@@ -123,7 +164,7 @@ fun JigsawPuzzleScreen(
                 .navigationBarsPadding(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // ── TOP HEADER BAR (3D BUTTONS & PILL) ─────────────────────────
+            // ── TOP HEADER BAR ─────────────────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,7 +216,7 @@ fun JigsawPuzzleScreen(
                         .padding(vertical = 6.dp, horizontal = 18.dp)
                 ) {
                     Text(
-                        text = "JIGSAW PUZZLE 2P",
+                        text = "JIGSAW 16 PIECES",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
@@ -260,119 +301,111 @@ fun JigsawPuzzleScreen(
                 }
             }
 
-            // ── MAIN INTERLOCKING PUZZLE TARGET BOARD (CENTER SCREEN) ────────
+            // ── 4x4 INTERLOCKING JIGSAW TARGET BOARD (16 SLOTS) ───────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 20.dp)
                     .onGloballyPositioned { coords ->
                         boardBounds = coords.boundsInRoot()
                     }
-                    .shadow(16.dp, RoundedCornerShape(24.dp))
-                    .background(Color(0xFF0F172A), RoundedCornerShape(24.dp))
-                    .border(2.5.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
-                    .padding(14.dp),
+                    .shadow(16.dp, RoundedCornerShape(20.dp))
+                    .background(Color(0xFF0F172A), RoundedCornerShape(20.dp))
+                    .border(2.5.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(20.dp))
+                    .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Background Guidelines Canvas for 2x2 Interlocking Puzzle
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val w = size.width
-                    val h = size.height
-                    val halfW = w / 2f
-                    val halfH = h / 2f
-
-                    // Draw 4 Slot Dotted Outlines
-                    val stroke = Stroke(width = 3f, pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f))
-
-                    drawRect(color = Color.White.copy(alpha = 0.15f), topLeft = Offset(0f, 0f), size = androidx.compose.ui.geometry.Size(halfW, halfH), style = stroke)
-                    drawRect(color = Color.White.copy(alpha = 0.15f), topLeft = Offset(halfW, 0f), size = androidx.compose.ui.geometry.Size(halfW, halfH), style = stroke)
-                    drawRect(color = Color.White.copy(alpha = 0.15f), topLeft = Offset(0f, halfH), size = androidx.compose.ui.geometry.Size(halfW, halfH), style = stroke)
-                    drawRect(color = Color.White.copy(alpha = 0.15f), topLeft = Offset(halfW, halfH), size = androidx.compose.ui.geometry.Size(halfW, halfH), style = stroke)
-                }
-
-                // Render Snapped Pieces inside Board
-                for (p in pieces) {
-                    if (p.isSnapped) {
-                        Box(
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    for (r in 0..3) {
+                        Row(
                             modifier = Modifier
-                                .fillMaxSize(),
-                            contentAlignment = when (p.id) {
-                                0 -> Alignment.TopStart
-                                1 -> Alignment.TopEnd
-                                2 -> Alignment.BottomStart
-                                else -> Alignment.BottomEnd
-                            }
+                                .fillMaxWidth()
+                                .weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(0.5f)
-                                    .padding(4.dp)
-                            ) {
-                                InterlockingJigsawPieceCanvas(piece = p)
+                            for (c in 0..3) {
+                                val slotIndex = r * 4 + c
+                                val placedPieceId = boardSlots[slotIndex]
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .background(
+                                            if (placedPieceId != null) Color.Transparent
+                                            else Color.White.copy(alpha = 0.08f),
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .border(
+                                            1.dp,
+                                            if (selectedPieceId != null && placedPieceId == null) Color.Yellow
+                                            else Color.White.copy(alpha = 0.2f),
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable {
+                                            selectedPieceId?.let { pId ->
+                                                placePieceInSlot(pId, slotIndex)
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (placedPieceId != null) {
+                                        val piece = allPieces[placedPieceId]
+                                        JigsawTileCard(piece = piece, isSelected = false)
+                                    } else {
+                                        Text(
+                                            text = "${slotIndex + 1}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White.copy(alpha = 0.3f)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // ── DRAGGABLE PUZZLE PIECES CONTAINER (BOTTOM TRAY) ──────────────
-            Row(
+            // ── 16 PIECES TRAY (TAP OR DRAG PIECE TO BOARD) ──────────────────
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .height(110.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 16.dp)
+                    .height(130.dp),
+                verticalArrangement = Arrangement.Center
             ) {
-                for (p in pieces) {
-                    if (!p.isSnapped) {
+                Text(
+                    text = if (selectedPieceId != null) "✨ Tap any target slot to drop piece!" else "👇 Tap or Drag a piece to place on board:",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(8),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(trayPieceIds) { pieceId ->
+                        val piece = allPieces[pieceId]
+                        val isSelected = selectedPieceId == pieceId
+
                         Box(
                             modifier = Modifier
-                                .size(90.dp)
-                                .offset {
-                                    IntOffset(
-                                        p.currentOffset.x.roundToInt(),
-                                        p.currentOffset.y.roundToInt()
-                                    )
+                                .aspectRatio(1f)
+                                .clickable {
+                                    SoundManager.playPopSound()
+                                    selectedPieceId = if (isSelected) null else pieceId
                                 }
-                                .pointerInput(p.id) {
-                                    detectDragGestures(
-                                        onDragStart = {
-                                            draggedPieceId = p.id
-                                            SoundManager.playPopSound()
-                                        },
-                                        onDrag = { change, dragAmount ->
-                                            change.consume()
-                                            pieces = pieces.map { item ->
-                                                if (item.id == p.id) {
-                                                    item.copy(currentOffset = item.currentOffset + dragAmount)
-                                                } else item
-                                            }
-                                        },
-                                        onDragEnd = {
-                                            draggedPieceId = null
-                                            // Check drop target proximity (if dragged upward toward puzzle board)
-                                            if (p.currentOffset.y < -150f) {
-                                                SoundManager.playPopSound()
-                                                pieces = pieces.map { item ->
-                                                    if (item.id == p.id) item.copy(isSnapped = true) else item
-                                                }
-                                                if (isPlayer1Turn) p1Score += 10 else p2Score += 10
-                                                isPlayer1Turn = !isPlayer1Turn
-                                                checkSolved()
-                                            } else {
-                                                // Reset offset back to tray if missed
-                                                pieces = pieces.map { item ->
-                                                    if (item.id == p.id) item.copy(currentOffset = Offset.Zero) else item
-                                                }
-                                            }
-                                        }
-                                    )
-                                },
-                            contentAlignment = Alignment.Center
                         ) {
-                            InterlockingJigsawPieceCanvas(piece = p)
+                            JigsawTileCard(piece = piece, isSelected = isSelected)
                         }
                     }
                 }
@@ -425,7 +458,7 @@ fun JigsawPuzzleScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         // ── VICTORY MODAL ────────────────────────────────────────────────
@@ -581,80 +614,42 @@ fun JigsawPuzzleScreen(
     }
 }
 
-// ── CUSTOM INTERLOCKING JIGSAW PIECE CANVAS DRAWING (MATCHING USER SCREENSHOT) ──
+// ── 16-PIECE INTERLOCKING JIGSAW TILE CARD ────────────────────────────────
 @Composable
-fun InterlockingJigsawPieceCanvas(piece: DragJigsawPiece) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val path = Path()
+fun JigsawTileCard(piece: ImageJigsawPiece, isSelected: Boolean) {
+    val scaleAnim by animateFloatAsState(
+        targetValue = if (isSelected) 1.12f else 1.0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "TileScale"
+    )
 
-        val tabRadius = w * 0.16f
-
-        // Draw Interlocking Jigsaw Piece Paths with Knob Tabs & Socket Holes
-        when (piece.id) {
-            0 -> {
-                // Top-Left Piece (Lavender Purple)
-                path.moveTo(0f, 0f)
-                path.lineTo(w, 0f)
-                // Right Edge: Socket Hole dipping left
-                path.lineTo(w, h * 0.35f)
-                path.cubicTo(w - tabRadius, h * 0.35f, w - tabRadius, h * 0.65f, w, h * 0.65f)
-                path.lineTo(w, h)
-                // Bottom Edge: Knob Tab sticking down
-                path.lineTo(w * 0.65f, h)
-                path.cubicTo(w * 0.65f, h + tabRadius, w * 0.35f, h + tabRadius, w * 0.35f, h)
-                path.lineTo(0f, h)
-                path.close()
-            }
-            1 -> {
-                // Top-Right Piece (Warm Orange)
-                path.moveTo(0f, 0f)
-                path.lineTo(w, 0f)
-                path.lineTo(w, h)
-                // Bottom Edge: Socket Hole dipping up
-                path.lineTo(w * 0.65f, h)
-                path.cubicTo(w * 0.65f, h - tabRadius, w * 0.35f, h - tabRadius, w * 0.35f, h)
-                path.lineTo(0f, h)
-                // Left Edge: Knob Tab sticking left
-                path.lineTo(0f, h * 0.65f)
-                path.cubicTo(-tabRadius, h * 0.65f, -tabRadius, h * 0.35f, 0f, h * 0.35f)
-                path.close()
-            }
-            2 -> {
-                // Bottom-Left Piece (Soft Pastel Green)
-                path.moveTo(0f, 0f)
-                // Top Edge: Socket Hole dipping down
-                path.lineTo(w * 0.35f, 0f)
-                path.cubicTo(w * 0.35f, tabRadius, w * 0.65f, tabRadius, w * 0.65f, 0f)
-                path.lineTo(w, 0f)
-                // Right Edge: Knob Tab sticking right
-                path.lineTo(w, h * 0.35f)
-                path.cubicTo(w + tabRadius, h * 0.35f, w + tabRadius, h * 0.65f, w, h * 0.65f)
-                path.lineTo(w, h)
-                path.lineTo(0f, h)
-                path.close()
-            }
-            3 -> {
-                // Bottom-Right Piece (Cream Yellow)
-                path.moveTo(0f, 0f)
-                // Top Edge: Knob Tab sticking up
-                path.lineTo(w * 0.35f, 0f)
-                path.cubicTo(w * 0.35f, -tabRadius, w * 0.65f, -tabRadius, w * 0.65f, 0f)
-                path.lineTo(w, 0f)
-                path.lineTo(w, h)
-                path.lineTo(0f, h)
-                // Left Edge: Socket Hole dipping right
-                path.lineTo(0f, h * 0.65f)
-                path.cubicTo(tabRadius, h * 0.65f, tabRadius, h * 0.35f, 0f, h * 0.35f)
-                path.close()
-            }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .scale(scaleAnim)
+            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(10.dp))
+            .background(
+                Brush.verticalGradient(listOf(piece.pieceColor, piece.pieceColor.copy(alpha = 0.85f))),
+                RoundedCornerShape(10.dp)
+            )
+            .border(
+                if (isSelected) 3.dp else 1.dp,
+                if (isSelected) Color.Yellow else Color.White.copy(alpha = 0.5f),
+                RoundedCornerShape(10.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = piece.emoji, fontSize = 20.sp)
+            Text(
+                text = "${piece.id + 1}",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.White.copy(alpha = 0.9f)
+            )
         }
-
-        // Fill Piece with Pastel Color
-        drawPath(path = path, color = piece.pieceColor)
-
-        // Draw Dark Outer Border Outline (Matching Screenshot 3D Contour)
-        drawPath(path = path, color = piece.outlineColor, style = Stroke(width = 5f))
     }
 }
