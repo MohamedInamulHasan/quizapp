@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
@@ -116,18 +117,17 @@ fun GuessWhoScreen(
 ) {
     val context = LocalContext.current
     val isDark = ThemeState.isDarkMode
-    val textColor = Color.White
 
     // Match & Phase States
     var currentRound by remember { mutableIntStateOf(1) }
     var p1Wins by remember { mutableIntStateOf(0) }
     var p2Wins by remember { mutableIntStateOf(0) }
     var isPlayer1Turn by remember { mutableStateOf(true) }
+    var actionTakenThisTurn by remember { mutableStateOf(false) }
 
     // Game Phases & Selection Steps
     var gamePhase by remember { mutableStateOf("SELECTION") } // "SELECTION" or "PLAYING"
     var selectionStep by remember { mutableStateOf("P1") } // "P1", "P2", "COUNTDOWN", "DONE"
-    var countdownValue by remember { mutableIntStateOf(3) }
     var countdownText by remember { mutableStateOf("3") }
 
     var p1SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
@@ -155,6 +155,8 @@ fun GuessWhoScreen(
     fun setupNewRound() {
         gamePhase = "SELECTION"
         selectionStep = "P1"
+        isPlayer1Turn = true
+        actionTakenThisTurn = false
         p1SecretCharacter = null
         p2SecretCharacter = null
         selectedCharacterForChoice = null
@@ -197,12 +199,43 @@ fun GuessWhoScreen(
         SoundManager.playRetrySound()
     }
 
+    // Toggle Card Flip (Tap card to flip face down/up)
+    fun toggleCardFlip(clickedChar: GuessWhoCharacter) {
+        SoundManager.playPopSound()
+        actionTakenThisTurn = true
+
+        val updatedList = boardCharacters.map { char ->
+            if (char.id == clickedChar.id) {
+                char.copy(isEliminated = !char.isEliminated)
+            } else {
+                char
+            }
+        }
+        boardCharacters = updatedList
+
+        // Check if only 1 card remains face-up!
+        val remainingFaceUp = updatedList.filter { !it.isEliminated }
+        if (remainingFaceUp.size == 1) {
+            val lastRemainingChar = remainingFaceUp.first()
+            val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
+
+            if (lastRemainingChar.id == targetSecret.id) {
+                SoundManager.playCorrectSound()
+                if (isPlayer1Turn) p1Wins++ else p2Wins++
+                winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Wins! It's ${targetSecret.name}!"
+                winningPlayer = if (isPlayer1Turn) 1 else 2
+                showWinnerDialog = true
+            }
+        }
+    }
+
     // Question Filter Eliminator
     fun applyQuestionFilter(questionText: String, matchingCondition: (GuessWhoCharacter) -> Boolean) {
         val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
         val isYes = matchingCondition(targetSecret)
 
         SoundManager.playPopSound()
+        actionTakenThisTurn = true
 
         lastAskedQuestion = questionText
         lastQuestionAnswer = isYes
@@ -230,57 +263,13 @@ fun GuessWhoScreen(
         }
     }
 
-    // Toggle Card Flip (Tap card to flip face down/up)
-    fun toggleCardFlip(clickedChar: GuessWhoCharacter) {
-        SoundManager.playPopSound()
-
-        val updatedList = boardCharacters.map { char ->
-            if (char.id == clickedChar.id) {
-                char.copy(isEliminated = !char.isEliminated)
-            } else {
-                char
-            }
-        }
-        boardCharacters = updatedList
-
-        // Check if only 1 card remains face-up!
-        val remainingFaceUp = updatedList.filter { !it.isEliminated }
-        if (remainingFaceUp.size == 1) {
-            val lastRemainingChar = remainingFaceUp.first()
-            val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
-
-            if (lastRemainingChar.id == targetSecret.id) {
-                SoundManager.playCorrectSound()
-                if (isPlayer1Turn) p1Wins++ else p2Wins++
-                winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Wins! It's ${targetSecret.name}!"
-                winningPlayer = if (isPlayer1Turn) 1 else 2
-                showWinnerDialog = true
-            }
-        }
-    }
-
-    // Direct Guess Character
-    fun makeDirectGuess(guessedChar: GuessWhoCharacter) {
-        val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
-        if (guessedChar.id == targetSecret.id) {
-            SoundManager.playCorrectSound()
-            if (isPlayer1Turn) p1Wins++ else p2Wins++
-            winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Wins!"
-            winningPlayer = if (isPlayer1Turn) 1 else 2
-            showWinnerDialog = true
-        } else {
-            SoundManager.playWrongSound()
-            Toast.makeText(context, "❌ Wrong Guess! It is not ${guessedChar.name}!", Toast.LENGTH_SHORT).show()
-            isPlayer1Turn = !isPlayer1Turn
-        }
-    }
-
     // Determine Background Color
     val currentBgColor = when {
         gamePhase == "SELECTION" && selectionStep == "P1" -> Color(0xFF2563EB) // Blue for Player 1
         gamePhase == "SELECTION" && selectionStep == "P2" -> Color(0xFFDC2626) // Red for Player 2
         gamePhase == "SELECTION" && selectionStep == "COUNTDOWN" -> Color(0xFF1E293B) // Slate Dark during countdown
-        else -> Color(0xFFFA8B73) // Warm Salmon for Game Phase
+        gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF1D4ED8) // Player 1 Turn Theme (Blue)
+        else -> Color(0xFFB91C1C) // Player 2 Turn Theme (Red)
     }
 
     Box(
@@ -300,15 +289,15 @@ fun GuessWhoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(top = 14.dp),
+                    .padding(top = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // 3D Back Button
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
-                        .shadow(8.dp, CircleShape)
+                        .size(42.dp)
+                        .shadow(6.dp, CircleShape)
                         .background(
                             Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
                             CircleShape
@@ -323,10 +312,10 @@ fun GuessWhoScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF0F172A), modifier = Modifier.size(20.dp))
                 }
 
-                // Title
+                // Title Banner with Current Turn Indicator
                 Text(
-                    text = "Guess Who?",
-                    fontSize = 22.sp,
+                    text = if (gamePhase == "PLAYING") (if (isPlayer1Turn) "PLAYER 1 TURN" else "PLAYER 2 TURN") else "Guess Who?",
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
@@ -334,8 +323,8 @@ fun GuessWhoScreen(
                 // 3D Retry Button
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
-                        .shadow(8.dp, CircleShape)
+                        .size(42.dp)
+                        .shadow(6.dp, CircleShape)
                         .background(
                             Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
                             CircleShape
@@ -347,11 +336,11 @@ fun GuessWhoScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = Color(0xFF0F172A), modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = Color(0xFF0F172A), modifier = Modifier.size(20.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // ── PHASE 1: CHARACTER SELECTION SCREEN (Blue P1 -> Red P2 -> Countdown) ──
             if (gamePhase == "SELECTION") {
@@ -394,47 +383,42 @@ fun GuessWhoScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .padding(horizontal = 14.dp),
+                            .padding(horizontal = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = if (selectionStep == "P1") "Player 1: Select your character!" else "Player 2: Select your character!",
-                            fontSize = 22.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(bottom = 10.dp)
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
 
-                        // 5 Columns x 6 Rows Grid Container (Card height increased, white line removed)
-                        Box(
+                        // 5 Columns x 6 Rows Grid Container (Filling sides, non-scrollable, square cards)
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(5),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            userScrollEnabled = false,
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .weight(1f)
-                                .shadow(12.dp, RoundedCornerShape(24.dp))
-                                .background(Color(0xFF9E654E), RoundedCornerShape(24.dp))
-                                .padding(8.dp)
                         ) {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(5),
-                                verticalArrangement = Arrangement.spacedBy(6.dp),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                items(ALL_CHARACTERS) { char ->
-                                    val isSelected = selectedCharacterForChoice?.id == char.id
-                                    GuessWhoCharacterCardItem(
-                                        character = char,
-                                        isSelected = isSelected,
-                                        onClick = {
-                                            SoundManager.playPopSound()
-                                            selectedCharacterForChoice = char
-                                        }
-                                    )
-                                }
+                            items(ALL_CHARACTERS) { char ->
+                                val isSelected = selectedCharacterForChoice?.id == char.id
+                                GuessWhoCharacterCardItem(
+                                    character = char,
+                                    isSelected = isSelected,
+                                    onClick = {
+                                        SoundManager.playPopSound()
+                                        selectedCharacterForChoice = char
+                                    }
+                                )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         // CONFIRM BUTTON
                         Button(
@@ -459,8 +443,8 @@ fun GuessWhoScreen(
                             contentPadding = PaddingValues(0.dp),
                             enabled = selectedCharacterForChoice != null,
                             modifier = Modifier
-                                .fillMaxWidth(0.6f)
-                                .height(50.dp)
+                                .fillMaxWidth(0.65f)
+                                .height(48.dp)
                                 .shadow(8.dp, RoundedCornerShape(16.dp))
                                 .background(
                                     Brush.verticalGradient(
@@ -474,120 +458,112 @@ fun GuessWhoScreen(
                             Text("CONFIRM", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
                         }
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                 }
             } else {
-                // ── PHASE 2: DEDUCTION BOARD & QUESTION RESULT BANNER ──
+                // ── PHASE 2: DEDUCTION BOARD & PASS TURN CONTROL ──
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(horizontal = 14.dp),
+                        .padding(horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // 5x6 Roster Grid
+                    // 5x6 Roster Grid (Square Cards, filling sides, non-scrollable)
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(5),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        userScrollEnabled = false,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        items(boardCharacters) { char ->
+                            GuessWhoCharacterCardItem(
+                                character = char,
+                                isSelected = false,
+                                onClick = {
+                                    toggleCardFlip(char)
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // ── PASS CHANCE BUTTON TO SWITCH TURN ──
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .shadow(12.dp, RoundedCornerShape(24.dp))
-                            .background(Color(0xFF9E654E), RoundedCornerShape(24.dp))
-                            .padding(8.dp)
+                            .fillMaxWidth(0.85f)
+                            .height(48.dp)
+                            .shadow(10.dp, RoundedCornerShape(18.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
+                                    else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
+                                ),
+                                RoundedCornerShape(18.dp)
+                            )
+                            .border(1.5.dp, Color.White, RoundedCornerShape(18.dp))
+                            .clickable {
+                                SoundManager.playClickSound()
+                                isPlayer1Turn = !isPlayer1Turn
+                                actionTakenThisTurn = false
+                                Toast.makeText(
+                                    context,
+                                    if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(5),
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.fillMaxSize()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            items(boardCharacters) { char ->
-                                GuessWhoCharacterCardItem(
-                                    character = char,
-                                    isSelected = false,
-                                    onClick = {
-                                        toggleCardFlip(char)
-                                    }
-                                )
-                            }
+                            Text(
+                                text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(18.dp))
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // WHITE QUESTION & RESULT BANNER
-                    if (lastAskedQuestion != null) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(8.dp, RoundedCornerShape(22.dp))
-                                .background(Color.White, RoundedCornerShape(22.dp))
-                                .border(1.5.dp, Color(0xFFE2E8F0), RoundedCornerShape(22.dp))
-                                .padding(vertical = 14.dp, horizontal = 18.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = lastAskedQuestion!!,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF17181C),
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = if (lastQuestionAnswer == true) "👤✅ Yes!" else "👤❌ No!",
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // FOOTER HELP TEXT
-                        Text(
-                            text = "HELP: Tap the cards to remove candidates that do not match the question's trait.",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-                    } else {
-                        // BOTTOM TRAIT FILTER BUTTONS ROW
-                        Column(
+                    // BOTTOM TRAIT FILTER BUTTONS ROW
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        // Row 1: GENDER, EYE COLOR, HAIR, HAIR COLOR
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            // Row 1: GENDER, EYE COLOR, HAIR, HAIR COLOR
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                TraitCategoryButton(label = "GENDER", icon = "👫", modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
-                                TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1.1f)) { activeTraitModal = "EYE_COLOR" }
-                                TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(0.9f)) { activeTraitModal = "HAIR" }
-                                TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1.1f)) { activeTraitModal = "HAIR_COLOR" }
-                            }
-
-                            // Row 2: SKIN TONE, ACCESSORIES, FACIAL HAIR
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                TraitCategoryButton(label = "SKIN TONE", icon = "🏽", modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
-                                TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1.2f)) { activeTraitModal = "ACCESSORY" }
-                                TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1.2f)) { activeTraitModal = "FACIAL_HAIR" }
-                            }
+                            TraitCategoryButton(label = "GENDER", icon = "👫", modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
+                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1.1f)) { activeTraitModal = "EYE_COLOR" }
+                            TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(0.9f)) { activeTraitModal = "HAIR" }
+                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1.1f)) { activeTraitModal = "HAIR_COLOR" }
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        // Row 2: SKIN TONE, ACCESSORIES, FACIAL HAIR
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            TraitCategoryButton(label = "SKIN TONE", icon = "🏽", modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
+                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1.2f)) { activeTraitModal = "ACCESSORY" }
+                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1.2f)) { activeTraitModal = "FACIAL_HAIR" }
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
             }
         }
@@ -855,7 +831,7 @@ fun GuessWhoScreen(
     }
 }
 
-// ── CHARACTER CARD COMPONENT ─────────────────────────────────────────────
+// ── CHARACTER CARD COMPONENT (SQUARE ASPECT RATIO 1:1) ────────────────────
 @Composable
 fun GuessWhoCharacterCardItem(
     character: GuessWhoCharacter,
@@ -871,17 +847,17 @@ fun GuessWhoCharacterCardItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .aspectRatio(1f) // Perfect Square Card
             .graphicsLayer {
                 rotationY = flipRotation
                 cameraDistance = 12f * density
             }
-            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(14.dp))
-            .background(Color.White, RoundedCornerShape(14.dp))
+            .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp))
+            .background(Color.White, RoundedCornerShape(12.dp))
             .border(
                 if (isSelected) 3.5.dp else 0.dp,
                 if (isSelected) Color(0xFF10B981) else Color.Transparent,
-                RoundedCornerShape(14.dp)
+                RoundedCornerShape(12.dp)
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -894,7 +870,7 @@ fun GuessWhoCharacterCardItem(
                     .graphicsLayer { rotationY = 180f }
                     .background(
                         Color(0xFF334155),
-                        RoundedCornerShape(14.dp)
+                        RoundedCornerShape(12.dp)
                     )
             )
         } else {
@@ -920,7 +896,7 @@ fun GuessWhoCharacterCardItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                         .background(character.avatarBgColor.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -943,7 +919,7 @@ fun GuessWhoCharacterCardItem(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(30.dp)
                                     .background(
                                         when (character.skinTone) {
                                             SkinTone.FAIR -> Color(0xFFFDE68A)
@@ -960,7 +936,7 @@ fun GuessWhoCharacterCardItem(
                                     else if (character.accessory == Accessory.HAT) "🧢"
                                     else if (character.facialHair != FacialHair.NONE) "🧔"
                                     else "👤",
-                                    fontSize = 18.sp
+                                    fontSize = 15.sp
                                 )
                             }
                         }
@@ -971,20 +947,20 @@ fun GuessWhoCharacterCardItem(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
-                        .padding(vertical = 3.dp),
+                        .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                        .padding(vertical = 2.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = character.name,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                }
+                Text(
+                    text = character.name,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
             }
         }
     }
+}
 }
 
 // ── TRAIT CATEGORY BUTTON COMPONENT ───────────────────────────────────────
@@ -997,7 +973,7 @@ fun TraitCategoryButton(
 ) {
     Box(
         modifier = modifier
-            .height(44.dp)
+            .height(42.dp)
             .shadow(4.dp, RoundedCornerShape(12.dp))
             .background(Color.White, RoundedCornerShape(12.dp))
             .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(12.dp))
@@ -1008,7 +984,7 @@ fun TraitCategoryButton(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = icon, fontSize = 14.sp)
+            Text(text = icon, fontSize = 13.sp)
             Text(text = label, fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF0F172A))
         }
     }
