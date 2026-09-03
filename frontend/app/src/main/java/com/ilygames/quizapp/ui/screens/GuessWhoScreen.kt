@@ -49,7 +49,7 @@ enum class EyeColor { BLUE, GREEN, BROWN, BLACK }
 enum class HairColor { BLACK, BROWN, BLONDE, RED, GREY }
 enum class HairStyle { SHORT, LONG, BALD }
 enum class SkinTone { FAIR, MEDIUM, DARK }
-enum class Accessory { GLASSES, HAT, EARRINGS, NONE }
+enum class Accessory { GLASSES, HAT, EARRINGS, JEWELS, NONE }
 enum class FacialHair { BEARD, MUSTACHE, NONE }
 
 data class GuessWhoCharacter(
@@ -696,10 +696,11 @@ fun GuessWhoScreen(
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                             TraitOptionCard("NONE", "🚫") { applyQuestionFilter("Does the person have no accessories?") { it.accessory == Accessory.NONE } }
                                             TraitOptionCard("GLASSES", "👓") { applyQuestionFilter("Is the person wearing glasses?") { it.accessory == Accessory.GLASSES } }
+                                            TraitOptionCard("HAT", "🧢") { applyQuestionFilter("Is the person wearing a hat?") { it.accessory == Accessory.HAT } }
                                         }
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            TraitOptionCard("HAT", "🧢") { applyQuestionFilter("Is the person wearing a hat?") { it.accessory == Accessory.HAT } }
-                                            TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS } }
+                                            TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS } }
+                                            TraitOptionCard("JEWELS", "💍") { applyQuestionFilter("Is the person wearing jewels?") { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS } }
                                         }
                                     }
                                 }
