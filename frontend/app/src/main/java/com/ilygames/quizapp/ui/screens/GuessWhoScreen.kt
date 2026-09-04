@@ -161,6 +161,7 @@ fun GuessWhoScreen(
     var cardsTappedThisTurn by remember { mutableStateOf(false) }
     var hasAskedQuestionThisTurn by remember { mutableStateOf(false) }
     var showAskQuestionWarning by remember { mutableStateOf(false) }
+    var showHelpCard by remember { mutableStateOf(false) }
     var selectedGuessCharacterId by remember { mutableStateOf<String?>(null) }
 
     // Map of tested traits per player: key = "CATEGORY:OPTION" -> value = true (Yes) / false (No)
@@ -293,15 +294,10 @@ fun GuessWhoScreen(
         val remainingFaceUp = updatedList.filter { !it.isEliminated }
         if (remainingFaceUp.size == 1) {
             val lastRemainingChar = remainingFaceUp.first()
-            val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
-
-            if (lastRemainingChar.id == targetSecret.id) {
-                SoundManager.playCorrectSound()
-                if (isPlayer1Turn) p1Wins++ else p2Wins++
-                winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Wins! It's ${targetSecret.name}!"
-                winningPlayer = if (isPlayer1Turn) 1 else 2
-                showWinnerDialog = true
-            }
+            selectedGuessCharacterId = lastRemainingChar.id
+            activeBoardCharacterIndex = 0
+        } else {
+            selectedGuessCharacterId = null
         }
     }
 
@@ -324,6 +320,7 @@ fun GuessWhoScreen(
 
         lastAskedQuestion = questionText
         lastQuestionAnswer = isYes
+        showHelpCard = true
 
         // Update tested traits for current active player
         if (isPlayer1Turn) {
@@ -673,7 +670,7 @@ fun GuessWhoScreen(
                                     textAlign = TextAlign.Center
                                 )
                             }
-                        } else {
+                        } else if (showHelpCard && lastAskedQuestion != null) {
                             Box(
                                 modifier = Modifier
                                     .shadow(6.dp, RoundedCornerShape(14.dp))
@@ -714,7 +711,6 @@ fun GuessWhoScreen(
                                 .border(2.dp, Color.White, CircleShape)
                                 .clickable {
                                     SoundManager.playPopSound()
-                                    selectedGuessCharacterId = null
                                     activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
                                 },
                             contentAlignment = Alignment.Center
@@ -732,18 +728,8 @@ fun GuessWhoScreen(
                             character = currentDeductionChar,
                             isSelected = (selectedGuessCharacterId == currentDeductionChar.id),
                             onClick = {
-                                if (currentDeductionChar.isEliminated) {
-                                    toggleCardFlip(currentDeductionChar)
-                                    selectedGuessCharacterId = null
-                                } else {
-                                    if (selectedGuessCharacterId == currentDeductionChar.id) {
-                                        selectedGuessCharacterId = null
-                                    } else {
-                                        SoundManager.playPopSound()
-                                        selectedGuessCharacterId = currentDeductionChar.id
-                                        showAskQuestionWarning = false
-                                    }
-                                }
+                                showHelpCard = false
+                                toggleCardFlip(currentDeductionChar)
                             }
                         )
 
@@ -1414,7 +1400,7 @@ fun SingleBig3DCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(Color.White, RoundedCornerShape(24.dp))
             .border(
-                3.5.dp,
+                1.5.dp,
                 if (isSelected) Color(0xFF10B981) else Color.White,
                 RoundedCornerShape(24.dp)
             )
@@ -1534,7 +1520,7 @@ fun SingleBigDeductionCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(if (isHidden) Color(0xFF1E293B) else Color.White, RoundedCornerShape(24.dp))
             .border(
-                if (isSelected) 3.5.dp else 3.5.dp,
+                1.5.dp,
                 if (isSelected) Color(0xFF10B981) else if (isHidden) Color(0xFF64748B) else Color.White,
                 RoundedCornerShape(24.dp)
             )
