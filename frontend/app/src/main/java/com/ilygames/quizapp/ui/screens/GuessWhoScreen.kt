@@ -54,7 +54,7 @@ enum class EyeColor { BLUE, GREEN, BROWN, BLACK }
 enum class HairColor { BLACK, BROWN, BLONDE, RED, GREY }
 enum class HairStyle { SHORT, LONG, BALD }
 enum class SkinTone { FAIR, MEDIUM, DARK }
-enum class Accessory { GLASSES, HAT, EARRINGS, JEWELS, NONE }
+enum class Accessory { GLASSES, HAT, EARRINGS, JEWELS, NECKLACE, NONE }
 enum class FacialHair { BEARD, MUSTACHE, NONE }
 
 data class GuessWhoCharacter(
@@ -673,7 +673,8 @@ fun GuessWhoScreen(
                                         }
                                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                             TraitOptionCard("EARRINGS", "💎") { applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS } }
-                                            TraitOptionCard("JEWELS", "💍") { applyQuestionFilter("Is the person wearing jewels?") { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS } }
+                                            TraitOptionCard("JEWELS", "💍") { applyQuestionFilter("Is the person wearing jewels?") { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS || it.accessory == Accessory.NECKLACE } }
+                                            TraitOptionCard("NECKLACE", "📿") { applyQuestionFilter("Is the person wearing a necklace?") { it.accessory == Accessory.NECKLACE || it.accessory == Accessory.JEWELS } }
                                         }
                                     }
                                 }
