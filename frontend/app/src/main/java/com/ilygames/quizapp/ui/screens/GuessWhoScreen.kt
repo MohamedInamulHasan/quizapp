@@ -282,7 +282,7 @@ fun GuessWhoScreen(
             } else {
                 char
             }
-        }.sortedBy { it.isEliminated }
+        }
 
         if (isPlayer1Turn) {
             p1BoardCharacters = updatedList
@@ -892,11 +892,17 @@ fun GuessWhoScreen(
                             Button(
                                 onClick = {
                                     SoundManager.playClickSound()
+                                    if (isPlayer1Turn) {
+                                        p1BoardCharacters = p1BoardCharacters.sortedBy { it.isEliminated }
+                                    } else {
+                                        p2BoardCharacters = p2BoardCharacters.sortedBy { it.isEliminated }
+                                    }
                                     isPlayer1Turn = !isPlayer1Turn
                                     actionTakenThisTurn = false
                                     cardsTappedThisTurn = false
                                     hasAskedQuestionThisTurn = false
                                     showAskQuestionWarning = false
+                                    showHelpCard = false
                                     selectedGuessCharacterId = null
                                     lastAskedQuestion = null
                                     lastQuestionAnswer = null
@@ -1469,7 +1475,7 @@ fun SingleBig3DCharacterCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.5.dp)
-                    .background(Color.White)
+                    .background(if (isSelected) Color(0xFF10B981) else Color.White)
             )
 
             // Big Character Name Ribbon AT THE BOTTOM (Below Image)
@@ -1602,12 +1608,16 @@ fun SingleBigDeductionCharacterCard(
                 }
             }
 
-            // Horizontal White Line above name pallet
+            // Horizontal Line above name pallet (Green when selected, Grey when hidden, White normal)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.5.dp)
-                    .background(Color.White)
+                    .background(
+                        if (isSelected) Color(0xFF10B981)
+                        else if (isHidden) Color(0xFF64748B)
+                        else Color.White
+                    )
             )
 
             // Big Character Name Ribbon AT THE BOTTOM (Below Image with X symbol next to name if hidden, Green when selected)
@@ -1632,7 +1642,7 @@ fun SingleBigDeductionCharacterCard(
                                 .size(24.dp)
                                 .shadow(4.dp, CircleShape)
                                 .background(
-                                    Brush.verticalGradient(listOf(Color(0xFFEF4444), Color(0xFFDC2626))),
+                                    Brush.verticalGradient(listOf(Color(0xFF64748B), Color(0xFF475569))),
                                     CircleShape
                                 ),
                             contentAlignment = Alignment.Center
