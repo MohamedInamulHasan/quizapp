@@ -176,17 +176,23 @@ fun GuessWhoScreen(
         if (testedVal == true) return TraitStatus.TICK
         if (testedVal == false) return TraitStatus.CROSS
 
-        // Check if all OTHER keys in this category were tested FALSE (cross)
+        // Check if all OTHER keys in this category were tested FALSE (cross) -> auto-tick remaining 1 option
         val otherKeys = categoryKeys.filter { it != optionKey }
         if (otherKeys.isNotEmpty() && otherKeys.all { currentTested[it] == false }) {
             return TraitStatus.TICK
+        }
+
+        // Check if ANY key in this category was tested TRUE (tick) -> auto-cross all other options
+        val anyTrue = categoryKeys.any { currentTested[it] == true }
+        if (anyTrue) {
+            return TraitStatus.CROSS
         }
 
         return TraitStatus.NONE
     }
 
     fun isCategoryResolved(categoryKeys: List<String>): Boolean {
-        return categoryKeys.any { getOptionStatus(it, categoryKeys) == TraitStatus.TICK }
+        return categoryKeys.all { getOptionStatus(it, categoryKeys) != TraitStatus.NONE }
     }
 
     LaunchedEffect(Unit) {
@@ -1645,13 +1651,14 @@ fun TraitOptionCard(
 ) {
     val isCross = status == TraitStatus.CROSS
     val isTick = status == TraitStatus.TICK
+    val isResolved = isCross || isTick
 
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .shadow(if (isCross) 3.dp else 8.dp, RoundedCornerShape(18.dp))
+            .shadow(if (isResolved) 3.dp else 8.dp, RoundedCornerShape(18.dp))
             .background(
-                if (isCross) Brush.verticalGradient(listOf(Color(0xFF475569), Color(0xFF334155)))
+                if (isResolved) Brush.verticalGradient(listOf(Color(0xFF475569), Color(0xFF334155)))
                 else Brush.verticalGradient(listOf(Color.White, Color(0xFFF1F5F9))),
                 RoundedCornerShape(18.dp)
             )
@@ -1660,7 +1667,7 @@ fun TraitOptionCard(
                 if (isTick) Color(0xFF10B981) else if (isCross) Color(0xFF64748B) else Color(0xFFCBD5E1),
                 RoundedCornerShape(18.dp)
             )
-            .clickable(enabled = !isCross, onClick = onClick),
+            .clickable(enabled = !isResolved, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -1674,7 +1681,7 @@ fun TraitOptionCard(
                         .size(28.dp)
                         .shadow(4.dp, RoundedCornerShape(8.dp))
                         .background(
-                            if (isCross) colorSwatch.copy(alpha = 0.4f) else colorSwatch,
+                            if (isResolved) colorSwatch.copy(alpha = 0.4f) else colorSwatch,
                             RoundedCornerShape(8.dp)
                         )
                         .border(1.5.dp, Color.White, RoundedCornerShape(8.dp))
@@ -1683,7 +1690,7 @@ fun TraitOptionCard(
                 Text(
                     text = icon,
                     fontSize = 22.sp,
-                    modifier = Modifier.graphicsLayer { alpha = if (isCross) 0.5f else 1.0f }
+                    modifier = Modifier.graphicsLayer { alpha = if (isResolved) 0.5f else 1.0f }
                 )
             }
             Spacer(modifier = Modifier.height(2.dp))
@@ -1691,7 +1698,7 @@ fun TraitOptionCard(
                 text = label,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
-                color = if (isCross) Color.White.copy(alpha = 0.7f) else Color(0xFF0F172A),
+                color = if (isResolved) Color.White.copy(alpha = 0.75f) else Color(0xFF0F172A),
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )
