@@ -281,7 +281,8 @@ fun GuessWhoScreen(
             } else {
                 char
             }
-        }
+        }.sortedBy { it.isEliminated }
+
         if (isPlayer1Turn) {
             p1BoardCharacters = updatedList
         } else {
@@ -795,7 +796,7 @@ fun GuessWhoScreen(
                                     } else {
                                         SoundManager.playWrongSound()
                                         if (isPlayer1Turn) p2Wins++ else p1Wins++
-                                        winnerMessage = if (isPlayer1Turn) "❌ Wrong Guess! Player ${if (isPlayer1Turn) 2 else 1} Wins! It was ${targetSecret.name}."
+                                        winnerMessage = if (isPlayer1Turn) "❌ Wrong Guess! Player 2 Wins! It was ${targetSecret.name}." else "❌ Wrong Guess! Player 1 Wins! It was ${targetSecret.name}."
                                         winningPlayer = if (isPlayer1Turn) 2 else 1
                                     }
                                     showWinnerDialog = true
