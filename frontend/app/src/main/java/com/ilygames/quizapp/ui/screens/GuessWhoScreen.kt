@@ -269,7 +269,8 @@ fun GuessWhoScreen(
 
     // Determine Background Color
     val currentBgColor = when {
-        gamePhase == "SELECTION" -> Color(0xFF0D1424) // Deep Dark Slate Theme
+        gamePhase == "SELECTION" && selectionStep == "P2" -> Color(0xFF5C0F1B) // Dark Red BG for Player 2 Selection
+        gamePhase == "SELECTION" -> Color(0xFF0D1B36) // Dark Blue BG for Player 1 Selection
         gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF1D4ED8) // Player 1 Turn Theme (Blue)
         else -> Color(0xFFB91C1C) // Player 2 Turn Theme (Red)
     }
@@ -277,7 +278,7 @@ fun GuessWhoScreen(
     // ── STEP 1 INTRO SCREEN & STEP 3 PASS SCREEN OVERLAYS ──
     if (gamePhase == "SELECTION" && selectionStep == "P1_INTRO") {
         PassMessageScreen(
-            bgColor = Color(0xFF0F2B5C), // Dark Blue Theme matching user request
+            bgColor = Color(0xFF0D1B36), // Dark Blue Theme
             messageText = "Hide the screen\nfrom your friend\nand choose your\ncharacter",
             onOkClick = {
                 SoundManager.playClickSound()
@@ -289,7 +290,7 @@ fun GuessWhoScreen(
 
     if (gamePhase == "SELECTION" && selectionStep == "P2_PASS") {
         PassMessageScreen(
-            bgColor = Color(0xFFDC2626), // Red Theme matching user request
+            bgColor = Color(0xFF5C0F1B), // Dark Red Theme
             messageText = "Pass the screen\nto your friend\nand don't look",
             onOkClick = {
                 SoundManager.playClickSound()
@@ -340,10 +341,16 @@ fun GuessWhoScreen(
                     )
                 }
 
-                // Title Banner
+                // Title Banner (Plain Text PLAYER 1 / PLAYER 2 without box)
                 Text(
-                    text = if (gamePhase == "PLAYING") (if (isPlayer1Turn) "PLAYER 1 TURN" else "PLAYER 2 TURN") else "Guess Who?",
-                    fontSize = 22.sp,
+                    text = when {
+                        gamePhase == "SELECTION" && selectionStep == "P1" -> "PLAYER 1"
+                        gamePhase == "SELECTION" && selectionStep == "P2" -> "PLAYER 2"
+                        gamePhase == "PLAYING" && isPlayer1Turn -> "PLAYER 1 TURN"
+                        gamePhase == "PLAYING" && !isPlayer1Turn -> "PLAYER 2 TURN"
+                        else -> "Guess Who?"
+                    },
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
@@ -1050,32 +1057,26 @@ fun PassMessageScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            // Bottom White Card with Green OK Button (Matching screenshots 1 & 2)
-            Box(
+            // Small Green 3D OK Button directly below text (Without white outer box)
+            Button(
+                onClick = onOkClick,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                shape = RoundedCornerShape(22.dp),
+                contentPadding = PaddingValues(0.dp),
                 modifier = Modifier
-                    .fillMaxWidth(0.72f)
-                    .shadow(12.dp, RoundedCornerShape(28.dp))
-                    .background(Color.White, RoundedCornerShape(28.dp))
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
+                    .width(180.dp)
+                    .height(50.dp)
+                    .shadow(10.dp, RoundedCornerShape(22.dp))
+                    .background(
+                        Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                        RoundedCornerShape(22.dp)
+                    )
+                    .border(2.dp, Color.White, RoundedCornerShape(22.dp))
             ) {
-                Button(
-                    onClick = onOkClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    shape = RoundedCornerShape(16.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .shadow(6.dp, RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
-                            RoundedCornerShape(16.dp)
-                        )
-                ) {
-                    Text("OK", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
-                }
+                Text("OK", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
             }
+            
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
