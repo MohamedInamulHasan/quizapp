@@ -149,10 +149,39 @@ fun GuessWhoScreen(
     var winnerMessage by remember { mutableStateOf("") }
     var winningPlayer by remember { mutableIntStateOf(1) }
 
-    // Question Filter State
-    var lastAskedQuestion by remember { mutableStateOf<String?>(null) }
-    var lastQuestionAnswer by remember { mutableStateOf<Boolean?>(null) }
-    var cardsTappedThisTurn by remember { mutableStateOf(false) }
+    enum class TraitStatus { NONE, TICK, CROSS }
+
+    // Map of tested traits per player: key = "CATEGORY:OPTION" -> value = true (Yes) / false (No)
+    var p1TestedTraits by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
+    var p2TestedTraits by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
+
+    // Category Keys Definitions
+    val genderKeys = remember { listOf("GENDER:MALE", "GENDER:FEMALE") }
+    val eyeColorKeys = remember { listOf("EYE_COLOR:BLUE", "EYE_COLOR:GREEN", "EYE_COLOR:BROWN", "EYE_COLOR:BLACK") }
+    val hairKeys = remember { listOf("HAIR:SHORT", "HAIR:LONG", "HAIR:BALD") }
+    val hairColorKeys = remember { listOf("HAIR_COLOR:BLACK", "HAIR_COLOR:BROWN", "HAIR_COLOR:BLONDE", "HAIR_COLOR:GRAY", "HAIR_COLOR:RED") }
+    val skinToneKeys = remember { listOf("SKIN_TONE:FAIR", "SKIN_TONE:MEDIUM", "SKIN_TONE:DARK") }
+    val accessoryKeys = remember { listOf("ACCESSORY:NONE", "ACCESSORY:GLASSES", "ACCESSORY:HAT", "ACCESSORY:EARRINGS", "ACCESSORY:JEWELS", "ACCESSORY:NECKLACE") }
+    val facialHairKeys = remember { listOf("FACIAL_HAIR:NONE", "FACIAL_HAIR:MUSTACHE", "FACIAL_HAIR:BEARD") }
+
+    fun getOptionStatus(optionKey: String, categoryKeys: List<String>): TraitStatus {
+        val currentTested = if (isPlayer1Turn) p1TestedTraits else p2TestedTraits
+        val testedVal = currentTested[optionKey]
+        if (testedVal == true) return TraitStatus.TICK
+        if (testedVal == false) return TraitStatus.CROSS
+
+        // Check if all OTHER keys in this category were tested FALSE (cross)
+        val otherKeys = categoryKeys.filter { it != optionKey }
+        if (otherKeys.isNotEmpty() && otherKeys.all { currentTested[it] == false }) {
+            return TraitStatus.TICK
+        }
+
+        return TraitStatus.NONE
+    }
+
+    fun isCategoryResolved(categoryKeys: List<String>): Boolean {
+        return categoryKeys.any { getOptionStatus(it, categoryKeys) == TraitStatus.TICK }
+    }
 
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
@@ -168,6 +197,8 @@ fun GuessWhoScreen(
         selectedCharacterIndex = 0
         p1SecretCharacter = null
         p2SecretCharacter = null
+        p1TestedTraits = emptyMap()
+        p2TestedTraits = emptyMap()
         boardCharacters = ALL_CHARACTERS.map { it.copy(isEliminated = false) }
         lastAskedQuestion = null
         lastQuestionAnswer = null
@@ -238,8 +269,13 @@ fun GuessWhoScreen(
         }
     }
 
-    // Question Filter Eliminator
-    fun applyQuestionFilter(questionText: String, matchingCondition: (GuessWhoCharacter) -> Boolean) {
+    // Question Filter Eliminator (With Trait Status Recording)
+    fun applyQuestionFilter(
+        questionText: String,
+        traitKey: String,
+        categoryKeys: List<String>,
+        matchingCondition: (GuessWhoCharacter) -> Boolean
+    ) {
         val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
         val isYes = matchingCondition(targetSecret)
 
@@ -249,6 +285,23 @@ fun GuessWhoScreen(
 
         lastAskedQuestion = questionText
         lastQuestionAnswer = isYes
+
+        // Update tested traits for current active player
+        if (isPlayer1Turn) {
+            val updated = p1TestedTraits.toMutableMap()
+            updated[traitKey] = isYes
+            if (isYes) {
+                categoryKeys.filter { it != traitKey }.forEach { updated[it] = false }
+            }
+            p1TestedTraits = updated
+        } else {
+            val updated = p2TestedTraits.toMutableMap()
+            updated[traitKey] = isYes
+            if (isYes) {
+                categoryKeys.filter { it != traitKey }.forEach { updated[it] = false }
+            }
+            p2TestedTraits = updated
+        }
 
         boardCharacters = boardCharacters.map { char ->
             val matchesFilter = matchingCondition(char)
@@ -642,7 +695,7 @@ fun GuessWhoScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - All Same Size)
+                    // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - All Same Size, Darkened when Resolved)
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -652,10 +705,10 @@ fun GuessWhoScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            TraitCategoryButton(label = "GENDER", icon = "👫", modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
-                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1f)) { activeTraitModal = "EYE_COLOR" }
-                            TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR" }
-                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR_COLOR" }
+                            TraitCategoryButton(label = "GENDER", icon = "👫", isResolved = isCategoryResolved(genderKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
+                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", isResolved = isCategoryResolved(eyeColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "EYE_COLOR" }
+                            TraitCategoryButton(label = "HAIR", icon = "💇", isResolved = isCategoryResolved(hairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR" }
+                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", isResolved = isCategoryResolved(hairColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR_COLOR" }
                         }
 
                         // Row 2: 3 Cards (SKIN TONE, ACCESSORIES, FACIAL HAIR) - Equal Weight (1f)
@@ -663,9 +716,9 @@ fun GuessWhoScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            TraitCategoryButton(label = "SKIN TONE", icon = "🏽", modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
-                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
-                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
+                            TraitCategoryButton(label = "SKIN TONE", icon = "🏽", isResolved = isCategoryResolved(skinToneKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
+                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", isResolved = isCategoryResolved(accessoryKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
+                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", isResolved = isCategoryResolved(facialHairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
                         }
                     }
 
@@ -747,11 +800,11 @@ fun GuessWhoScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        TraitOptionCard("MALE", icon = "👨", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Is the person male?") { it.gender == Gender.MALE }
+                                        TraitOptionCard("MALE", icon = "👨", status = getOptionStatus("GENDER:MALE", genderKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Is the person male?", "GENDER:MALE", genderKeys) { it.gender == Gender.MALE }
                                         }
-                                        TraitOptionCard("FEMALE", icon = "👩", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Is the person female?") { it.gender == Gender.FEMALE }
+                                        TraitOptionCard("FEMALE", icon = "👩", status = getOptionStatus("GENDER:FEMALE", genderKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Is the person female?", "GENDER:FEMALE", genderKeys) { it.gender == Gender.FEMALE }
                                         }
                                     }
                                 }
@@ -764,22 +817,22 @@ fun GuessWhoScreen(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            TraitOptionCard("BLUE", colorSwatch = Color(0xFF2563EB), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have blue eyes?") { it.eyeColor == EyeColor.BLUE }
+                                            TraitOptionCard("BLUE", colorSwatch = Color(0xFF2563EB), status = getOptionStatus("EYE_COLOR:BLUE", eyeColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have blue eyes?", "EYE_COLOR:BLUE", eyeColorKeys) { it.eyeColor == EyeColor.BLUE }
                                             }
-                                            TraitOptionCard("GREEN", colorSwatch = Color(0xFF16A34A), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have green eyes?") { it.eyeColor == EyeColor.GREEN }
+                                            TraitOptionCard("GREEN", colorSwatch = Color(0xFF16A34A), status = getOptionStatus("EYE_COLOR:GREEN", eyeColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have green eyes?", "EYE_COLOR:GREEN", eyeColorKeys) { it.eyeColor == EyeColor.GREEN }
                                             }
                                         }
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            TraitOptionCard("BROWN", colorSwatch = Color(0xFF92400E), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have brown eyes?") { it.eyeColor == EyeColor.BROWN }
+                                            TraitOptionCard("BROWN", colorSwatch = Color(0xFF92400E), status = getOptionStatus("EYE_COLOR:BROWN", eyeColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have brown eyes?", "EYE_COLOR:BROWN", eyeColorKeys) { it.eyeColor == EyeColor.BROWN }
                                             }
-                                            TraitOptionCard("BLACK", colorSwatch = Color(0xFF1F2937), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have black eyes?") { it.eyeColor == EyeColor.BLACK }
+                                            TraitOptionCard("BLACK", colorSwatch = Color(0xFF1F2937), status = getOptionStatus("EYE_COLOR:BLACK", eyeColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have black eyes?", "EYE_COLOR:BLACK", eyeColorKeys) { it.eyeColor == EyeColor.BLACK }
                                             }
                                         }
                                     }
@@ -789,14 +842,14 @@ fun GuessWhoScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        TraitOptionCard("SHORT", icon = "👨‍🦱", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have short hair?") { it.hairStyle == HairStyle.SHORT }
+                                        TraitOptionCard("SHORT", icon = "👨‍🦱", status = getOptionStatus("HAIR:SHORT", hairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have short hair?", "HAIR:SHORT", hairKeys) { it.hairStyle == HairStyle.SHORT }
                                         }
-                                        TraitOptionCard("LONG", icon = "👩‍🦰", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have long hair?") { it.hairStyle == HairStyle.LONG }
+                                        TraitOptionCard("LONG", icon = "👩‍🦰", status = getOptionStatus("HAIR:LONG", hairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have long hair?", "HAIR:LONG", hairKeys) { it.hairStyle == HairStyle.LONG }
                                         }
-                                        TraitOptionCard("BALD", icon = "👨‍🦲", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Is the person bald?") { it.hairStyle == HairStyle.BALD }
+                                        TraitOptionCard("BALD", icon = "👨‍🦲", status = getOptionStatus("HAIR:BALD", hairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Is the person bald?", "HAIR:BALD", hairKeys) { it.hairStyle == HairStyle.BALD }
                                         }
                                     }
                                 }
@@ -809,25 +862,25 @@ fun GuessWhoScreen(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            TraitOptionCard("BROWN", colorSwatch = Color(0xFF92400E), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have brown hair?") { it.hairColor == HairColor.BROWN }
+                                            TraitOptionCard("BROWN", colorSwatch = Color(0xFF92400E), status = getOptionStatus("HAIR_COLOR:BROWN", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have brown hair?", "HAIR_COLOR:BROWN", hairColorKeys) { it.hairColor == HairColor.BROWN }
                                             }
-                                            TraitOptionCard("BLACK", colorSwatch = Color(0xFF1F2937), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have black hair?") { it.hairColor == HairColor.BLACK }
+                                            TraitOptionCard("BLACK", colorSwatch = Color(0xFF1F2937), status = getOptionStatus("HAIR_COLOR:BLACK", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have black hair?", "HAIR_COLOR:BLACK", hairColorKeys) { it.hairColor == HairColor.BLACK }
                                             }
-                                            TraitOptionCard("BLONDE", colorSwatch = Color(0xFFF59E0B), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have blonde hair?") { it.hairColor == HairColor.BLONDE }
+                                            TraitOptionCard("BLONDE", colorSwatch = Color(0xFFF59E0B), status = getOptionStatus("HAIR_COLOR:BLONDE", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have blonde hair?", "HAIR_COLOR:BLONDE", hairColorKeys) { it.hairColor == HairColor.BLONDE }
                                             }
                                         }
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            TraitOptionCard("GRAY", icon = "👵", modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have gray hair?") { it.hairColor == HairColor.GREY }
+                                            TraitOptionCard("GRAY", icon = "👵", status = getOptionStatus("HAIR_COLOR:GRAY", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have gray hair?", "HAIR_COLOR:GRAY", hairColorKeys) { it.hairColor == HairColor.GREY }
                                             }
-                                            TraitOptionCard("RED", colorSwatch = Color(0xFFDC2626), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have red hair?") { it.hairColor == HairColor.RED }
+                                            TraitOptionCard("RED", colorSwatch = Color(0xFFDC2626), status = getOptionStatus("HAIR_COLOR:RED", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have red hair?", "HAIR_COLOR:RED", hairColorKeys) { it.hairColor == HairColor.RED }
                                             }
                                         }
                                     }
@@ -837,14 +890,14 @@ fun GuessWhoScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        TraitOptionCard("FAIR", colorSwatch = Color(0xFFFDE68A), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have fair skin?") { it.skinTone == SkinTone.FAIR }
+                                        TraitOptionCard("FAIR", colorSwatch = Color(0xFFFDE68A), status = getOptionStatus("SKIN_TONE:FAIR", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have fair skin?", "SKIN_TONE:FAIR", skinToneKeys) { it.skinTone == SkinTone.FAIR }
                                         }
-                                        TraitOptionCard("MEDIUM", colorSwatch = Color(0xFFD97706), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have medium skin?") { it.skinTone == SkinTone.MEDIUM }
+                                        TraitOptionCard("MEDIUM", colorSwatch = Color(0xFFD97706), status = getOptionStatus("SKIN_TONE:MEDIUM", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have medium skin?", "SKIN_TONE:MEDIUM", skinToneKeys) { it.skinTone == SkinTone.MEDIUM }
                                         }
-                                        TraitOptionCard("DARK", colorSwatch = Color(0xFF78350F), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have dark skin?") { it.skinTone == SkinTone.DARK }
+                                        TraitOptionCard("DARK", colorSwatch = Color(0xFF78350F), status = getOptionStatus("SKIN_TONE:DARK", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have dark skin?", "SKIN_TONE:DARK", skinToneKeys) { it.skinTone == SkinTone.DARK }
                                         }
                                     }
                                 }
@@ -857,28 +910,28 @@ fun GuessWhoScreen(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            TraitOptionCard("NONE", icon = "🚫", modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have no accessories?") { it.accessory == Accessory.NONE }
+                                            TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("ACCESSORY:NONE", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have no accessories?", "ACCESSORY:NONE", accessoryKeys) { it.accessory == Accessory.NONE }
                                             }
-                                            TraitOptionCard("GLASSES", icon = "👓", modifier = Modifier.weight(1.1f)) {
-                                                applyQuestionFilter("Is the person wearing glasses?") { it.accessory == Accessory.GLASSES }
+                                            TraitOptionCard("GLASSES", icon = "👓", status = getOptionStatus("ACCESSORY:GLASSES", accessoryKeys), modifier = Modifier.weight(1.1f)) {
+                                                applyQuestionFilter("Is the person wearing glasses?", "ACCESSORY:GLASSES", accessoryKeys) { it.accessory == Accessory.GLASSES }
                                             }
-                                            TraitOptionCard("HAT", icon = "🧢", modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing a hat?") { it.accessory == Accessory.HAT }
+                                            TraitOptionCard("HAT", icon = "🧢", status = getOptionStatus("ACCESSORY:HAT", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person wearing a hat?", "ACCESSORY:HAT", accessoryKeys) { it.accessory == Accessory.HAT }
                                             }
                                         }
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            TraitOptionCard("EARRINGS", icon = "💎", modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing earrings?") { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS }
+                                            TraitOptionCard("EARRINGS", icon = "💎", status = getOptionStatus("ACCESSORY:EARRINGS", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person wearing earrings?", "ACCESSORY:EARRINGS", accessoryKeys) { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS }
                                             }
-                                            TraitOptionCard("JEWELS", icon = "💍", modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing jewels?") { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS || it.accessory == Accessory.NECKLACE }
+                                            TraitOptionCard("JEWELS", icon = "💍", status = getOptionStatus("ACCESSORY:JEWELS", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person wearing jewels?", "ACCESSORY:JEWELS", accessoryKeys) { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS || it.accessory == Accessory.NECKLACE }
                                             }
-                                            TraitOptionCard("NECKLACE", icon = "📿", modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing a necklace?") { it.accessory == Accessory.NECKLACE || it.accessory == Accessory.JEWELS }
+                                            TraitOptionCard("NECKLACE", icon = "📿", status = getOptionStatus("ACCESSORY:NECKLACE", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person wearing a necklace?", "ACCESSORY:NECKLACE", accessoryKeys) { it.accessory == Accessory.NECKLACE || it.accessory == Accessory.JEWELS }
                                             }
                                         }
                                     }
@@ -888,14 +941,14 @@ fun GuessWhoScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        TraitOptionCard("NONE", icon = "🚫", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have no facial hair?") { it.facialHair == FacialHair.NONE }
+                                        TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("FACIAL_HAIR:NONE", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have no facial hair?", "FACIAL_HAIR:NONE", facialHairKeys) { it.facialHair == FacialHair.NONE }
                                         }
-                                        TraitOptionCard("MUSTACHE", icon = "👨‍🦰", modifier = Modifier.weight(1.1f)) {
-                                            applyQuestionFilter("Does the person have a mustache?") { it.facialHair == FacialHair.MUSTACHE }
+                                        TraitOptionCard("MUSTACHE", icon = "👨‍🦰", status = getOptionStatus("FACIAL_HAIR:MUSTACHE", facialHairKeys), modifier = Modifier.weight(1.1f)) {
+                                            applyQuestionFilter("Does the person have a mustache?", "FACIAL_HAIR:MUSTACHE", facialHairKeys) { it.facialHair == FacialHair.MUSTACHE }
                                         }
-                                        TraitOptionCard("BEARD", icon = "🧔", modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have a beard?") { it.facialHair == FacialHair.BEARD }
+                                        TraitOptionCard("BEARD", icon = "🧔", status = getOptionStatus("FACIAL_HAIR:BEARD", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have a beard?", "FACIAL_HAIR:BEARD", facialHairKeys) { it.facialHair == FacialHair.BEARD }
                                         }
                                     }
                                 }
@@ -1349,49 +1402,89 @@ fun GuessWhoCharacterCardItem(
     }
 }
 
-// ── TRAIT CATEGORY BUTTON COMPONENT ───────────────────────────────────────
+// ── TRAIT CATEGORY BUTTON COMPONENT (DARKENED WITH CHECKMARK BADGE WHEN RESOLVED) ───────
 @Composable
 fun TraitCategoryButton(
     label: String,
     icon: String,
+    isResolved: Boolean = false,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
-            .height(42.dp)
-            .shadow(4.dp, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
-            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(12.dp))
+            .height(50.dp)
+            .shadow(4.dp, RoundedCornerShape(14.dp))
+            .background(
+                if (isResolved) Color(0xFF475569) else Color.White,
+                RoundedCornerShape(14.dp)
+            )
+            .border(
+                1.5.dp,
+                if (isResolved) Color(0xFF10B981) else Color(0xFFCBD5E1),
+                RoundedCornerShape(14.dp)
+            )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
         ) {
             Text(text = icon, fontSize = 13.sp)
-            Text(text = label, fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFF0F172A))
+            Spacer(modifier = Modifier.height(1.dp))
+            Text(
+                text = label,
+                fontSize = 8.5.sp,
+                fontWeight = FontWeight.Black,
+                color = if (isResolved) Color.White else Color(0xFF0F172A),
+                maxLines = 1,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        if (isResolved) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 4.dp, y = (-4).dp)
+                    .size(18.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "✔️", fontSize = 12.sp)
+            }
         }
     }
 }
 
-// ── TRAIT OPTION CARD COMPONENT (EQUAL WEIGHT & FLEXIBLE ICON/SWATCH) ─────
+// ── TRAIT OPTION CARD COMPONENT (WITH GREEN TICK AND RED CROSS BADGES) ─────
 @Composable
 fun TraitOptionCard(
     label: String,
     icon: String? = null,
     colorSwatch: Color? = null,
+    status: GuessWhoScreenKt.TraitStatus = GuessWhoScreenKt.TraitStatus.NONE,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val isCross = status == GuessWhoScreenKt.TraitStatus.CROSS
+    val isTick = status == GuessWhoScreenKt.TraitStatus.TICK
+
     Box(
         modifier = modifier
             .height(84.dp)
-            .shadow(6.dp, RoundedCornerShape(18.dp))
-            .background(Color(0xFFF8FAFC), RoundedCornerShape(18.dp))
-            .border(2.dp, Color(0xFFCBD5E1), RoundedCornerShape(18.dp))
-            .clickable(onClick = onClick),
+            .shadow(if (isCross) 2.dp else 6.dp, RoundedCornerShape(18.dp))
+            .background(
+                if (isCross) Color(0xFF64748B) else Color(0xFFF8FAFC),
+                RoundedCornerShape(18.dp)
+            )
+            .border(
+                if (isTick) 2.5.dp else 1.5.dp,
+                if (isTick) Color(0xFF10B981) else Color(0xFFCBD5E1),
+                RoundedCornerShape(18.dp)
+            )
+            .clickable(enabled = !isCross, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -1400,25 +1493,54 @@ fun TraitOptionCard(
             modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp)
         ) {
             if (colorSwatch != null) {
-                // 3D Color Swatch Box
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(34.dp)
                         .shadow(4.dp, RoundedCornerShape(8.dp))
-                        .background(colorSwatch, RoundedCornerShape(8.dp))
+                        .background(
+                            if (isCross) colorSwatch.copy(alpha = 0.4f) else colorSwatch,
+                            RoundedCornerShape(8.dp)
+                        )
                         .border(1.5.dp, Color.White, RoundedCornerShape(8.dp))
                 )
             } else if (icon != null) {
-                Text(text = icon, fontSize = 28.sp)
+                Text(
+                    text = icon,
+                    fontSize = 26.sp,
+                    modifier = Modifier.graphicsLayer { alpha = if (isCross) 0.5f else 1.0f }
+                )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Black,
-                color = Color(0xFF0F172A),
+                color = if (isCross) Color.White.copy(alpha = 0.7f) else Color(0xFF0F172A),
                 textAlign = TextAlign.Center
             )
+        }
+
+        // Top-Right Badge: Green Tick (✔️) or Red Cross (❌)
+        if (isTick) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 6.dp, y = (-6).dp)
+                    .size(26.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "✔️", fontSize = 18.sp)
+            }
+        } else if (isCross) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 6.dp, y = (-6).dp)
+                    .size(26.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "❌", fontSize = 18.sp)
+            }
         }
     }
 }
