@@ -398,12 +398,16 @@ fun GuessWhoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // White 3D Back Button with BLACK Icon
+                // 3D Black Back Button with WHITE Icon
                 Box(
                     modifier = Modifier
                         .size(44.dp)
-                        .shadow(6.dp, CircleShape)
-                        .background(Color.White, CircleShape)
+                        .shadow(8.dp, CircleShape)
+                        .background(
+                            Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))),
+                            CircleShape
+                        )
+                        .border(1.5.dp, Color.White, CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
@@ -413,7 +417,7 @@ fun GuessWhoScreen(
                     Icon(
                         Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.Black,
+                        tint = Color.White,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -432,12 +436,16 @@ fun GuessWhoScreen(
                     color = Color.White
                 )
 
-                // White 3D Retry Button with BLACK Icon
+                // 3D Black Retry Button with WHITE Icon
                 Box(
                     modifier = Modifier
                         .size(44.dp)
-                        .shadow(6.dp, CircleShape)
-                        .background(Color.White, CircleShape)
+                        .shadow(8.dp, CircleShape)
+                        .background(
+                            Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))),
+                            CircleShape
+                        )
+                        .border(1.5.dp, Color.White, CircleShape)
                         .clickable {
                             SoundManager.playRetrySound()
                             resetFullMatch()
@@ -447,7 +455,7 @@ fun GuessWhoScreen(
                     Icon(
                         Icons.Default.Refresh,
                         contentDescription = "Reset Match",
-                        tint = Color.Black,
+                        tint = Color.White,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -889,7 +897,7 @@ fun GuessWhoScreen(
                             .fillMaxWidth(modalWidthFraction)
                             .shadow(20.dp, RoundedCornerShape(24.dp))
                             .background(Color(0xFF1E293B), RoundedCornerShape(24.dp))
-                            .border(2.5.dp, Color.White, RoundedCornerShape(24.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.85f), RoundedCornerShape(24.dp))
                             .padding(top = 16.dp, bottom = 20.dp, start = 16.dp, end = 16.dp)
                     ) {
                         Column(
@@ -909,7 +917,7 @@ fun GuessWhoScreen(
                                     textAlign = TextAlign.Center
                                 )
 
-                                // 3D Red Floating Close Button
+                                // 3D Red Floating Close Button (Without White Outline)
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.CenterEnd)
@@ -920,7 +928,6 @@ fun GuessWhoScreen(
                                             Brush.verticalGradient(listOf(Color(0xFFEF4444), Color(0xFFDC2626))),
                                             CircleShape
                                         )
-                                        .border(2.dp, Color.White, CircleShape)
                                         .clickable {
                                             SoundManager.playClickSound()
                                             activeTraitModal = null
@@ -1335,7 +1342,7 @@ fun SingleBig3DCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(Color.White, RoundedCornerShape(24.dp))
             .border(
-                3.5.dp,
+                1.5.dp,
                 if (isSelected) Color(0xFF10B981) else Color.White,
                 RoundedCornerShape(24.dp)
             )
@@ -1446,7 +1453,7 @@ fun SingleBigDeductionCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(if (isHidden) Color(0xFF1E293B) else Color.White, RoundedCornerShape(24.dp))
             .border(
-                3.5.dp,
+                1.5.dp,
                 if (isHidden) Color(0xFF64748B) else Color.White,
                 RoundedCornerShape(24.dp)
             )
@@ -1551,8 +1558,7 @@ fun SingleBigDeductionCharacterCard(
                                 .background(
                                     Brush.verticalGradient(listOf(Color(0xFFEF4444), Color(0xFFDC2626))),
                                     CircleShape
-                                )
-                                .border(1.5.dp, Color.White, CircleShape),
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
