@@ -173,21 +173,21 @@ fun GuessWhoScreen(
         setupNewRound()
     }
 
-    // Countdown animation handler
+    // Countdown animation handler (Faster snappy countdown)
     LaunchedEffect(selectionStep) {
         if (selectionStep == "COUNTDOWN") {
             countdownText = "3"
             SoundManager.playPopSound()
-            delay(750)
+            delay(450)
             countdownText = "2"
             SoundManager.playPopSound()
-            delay(750)
+            delay(450)
             countdownText = "1"
             SoundManager.playPopSound()
-            delay(750)
+            delay(450)
             countdownText = "START!"
             SoundManager.playCorrectSound()
-            delay(600)
+            delay(400)
             selectionStep = "DONE"
             gamePhase = "PLAYING"
         }
@@ -269,9 +269,7 @@ fun GuessWhoScreen(
 
     // Determine Background Color
     val currentBgColor = when {
-        gamePhase == "SELECTION" && selectionStep == "P1" -> Color(0xFF2563EB) // Blue for Player 1
-        gamePhase == "SELECTION" && selectionStep == "P2" -> Color(0xFFDC2626) // Red for Player 2
-        gamePhase == "SELECTION" && selectionStep == "COUNTDOWN" -> Color(0xFF1E293B) // Slate Dark during countdown
+        gamePhase == "SELECTION" -> Color(0xFF0F172A) // Dark Slate Theme during Selection (no full-screen blue/red effect)
         gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF1D4ED8) // Player 1 Turn Theme (Blue)
         else -> Color(0xFFB91C1C) // Player 2 Turn Theme (Red)
     }
@@ -349,36 +347,29 @@ fun GuessWhoScreen(
             // ── PHASE 1: SINGLE BIG 3D CARD CHARACTER SELECTION (Blue P1 -> Red P2 -> Countdown) ──
             if (gamePhase == "SELECTION") {
                 if (selectionStep == "COUNTDOWN") {
-                    // Fullscreen Animated Countdown View
+                    // Dark Overlay with Big White Number 1 2 3 Countdown
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.75f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "GET READY!",
-                                fontSize = 26.sp,
+                                fontSize = 28.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color.White
+                                color = Color.White.copy(alpha = 0.85f),
+                                letterSpacing = 2.sp
                             )
-                            Spacer(modifier = Modifier.height(18.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(130.dp)
-                                    .shadow(16.dp, CircleShape)
-                                    .background(Color.White, CircleShape)
-                                    .border(4.dp, Color(0xFF10B981), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = countdownText,
-                                    fontSize = if (countdownText.length > 2) 28.sp else 64.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = if (countdownText.length > 2) Color(0xFF10B981) else Color(0xFF1E293B)
-                                )
-                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = countdownText,
+                                fontSize = if (countdownText.length > 2) 48.sp else 110.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 } else {
@@ -393,14 +384,54 @@ fun GuessWhoScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        // Title Banner
-                        Text(
-                            text = if (selectionStep == "P1") "Player 1: Select your character!" else "Player 2: Select your character!",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
+                        // Full-width Outer Box with White Outline (Left to Right) above Character Image
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(10.dp, RoundedCornerShape(18.dp))
+                                .background(Color(0xFF1E293B), RoundedCornerShape(18.dp))
+                                .border(2.dp, Color.White, RoundedCornerShape(18.dp))
+                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                // Centered Blue Box (PLAYER 1) or Red Box (PLAYER 2)
+                                Box(
+                                    modifier = Modifier
+                                        .shadow(6.dp, RoundedCornerShape(12.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                if (selectionStep == "P1") listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
+                                                else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
+                                            ),
+                                            RoundedCornerShape(12.dp)
+                                        )
+                                        .border(1.5.dp, Color.White, RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 32.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (selectionStep == "P1") "PLAYER 1" else "PLAYER 2",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = Color.White
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // Below text: "select your character"
+                                Text(
+                                    text = "select your character",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            }
+                        }
 
                         // Single Big 3D Card flanked by Left & Right 3D Arrows
                         Row(
