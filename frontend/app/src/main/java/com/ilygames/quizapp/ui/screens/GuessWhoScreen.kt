@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
@@ -130,9 +132,11 @@ fun GuessWhoScreen(
     var selectionStep by remember { mutableStateOf("P1") } // "P1", "P2", "COUNTDOWN", "DONE"
     var countdownText by remember { mutableStateOf("3") }
 
+    // Character Carousel Selection State for Phase 1
+    var selectedCharacterIndex by remember { mutableIntStateOf(0) }
+
     var p1SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
     var p2SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
-    var selectedCharacterForChoice by remember { mutableStateOf<GuessWhoCharacter?>(null) }
 
     // Roster Board State
     var boardCharacters by remember { mutableStateOf(ALL_CHARACTERS) }
@@ -157,9 +161,9 @@ fun GuessWhoScreen(
         selectionStep = "P1"
         isPlayer1Turn = true
         actionTakenThisTurn = false
+        selectedCharacterIndex = 0
         p1SecretCharacter = null
         p2SecretCharacter = null
-        selectedCharacterForChoice = null
         boardCharacters = ALL_CHARACTERS.map { it.copy(isEliminated = false) }
         lastAskedQuestion = null
         lastQuestionAnswer = null
@@ -342,7 +346,7 @@ fun GuessWhoScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // ── PHASE 1: CHARACTER SELECTION SCREEN (Blue P1 -> Red P2 -> Countdown) ──
+            // ── PHASE 1: SINGLE BIG 3D CARD CHARACTER SELECTION (Blue P1 -> Red P2 -> Countdown) ──
             if (gamePhase == "SELECTION") {
                 if (selectionStep == "COUNTDOWN") {
                     // Fullscreen Animated Countdown View
@@ -378,84 +382,129 @@ fun GuessWhoScreen(
                         }
                     }
                 } else {
-                    // P1 (Blue) or P2 (Red) Selection Step
+                    // P1 (Blue) or P2 (Red) Selection Step with Single Big 3D Card & Side Arrows
+                    val currentChar = ALL_CHARACTERS[selectedCharacterIndex]
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .padding(horizontal = 6.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.SpaceEvenly
                     ) {
+                        // Title Banner
                         Text(
                             text = if (selectionStep == "P1") "Player 1: Select your character!" else "Player 2: Select your character!",
-                            fontSize = 20.sp,
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            textAlign = TextAlign.Center
                         )
 
-                        // 5 Columns x 6 Rows Grid Container (Filling sides, non-scrollable, square cards)
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(5),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            userScrollEnabled = false,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
+                        // Single Big 3D Card flanked by Left & Right 3D Arrows
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            items(ALL_CHARACTERS) { char ->
-                                val isSelected = selectedCharacterForChoice?.id == char.id
-                                GuessWhoCharacterCardItem(
-                                    character = char,
-                                    isSelected = isSelected,
-                                    onClick = {
+                            // 3D LEFT ARROW BUTTON (◀)
+                            Box(
+                                modifier = Modifier
+                                    .size(54.dp)
+                                    .shadow(10.dp, CircleShape)
+                                    .background(
+                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                        CircleShape
+                                    )
+                                    .border(2.dp, Color.White, CircleShape)
+                                    .clickable {
                                         SoundManager.playPopSound()
-                                        selectedCharacterForChoice = char
-                                    }
+                                        selectedCharacterIndex = (selectedCharacterIndex - 1 + ALL_CHARACTERS.size) % ALL_CHARACTERS.size
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.ChevronLeft,
+                                    contentDescription = "Previous Character",
+                                    tint = Color(0xFF0F172A),
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+
+                            // SINGLE BIG 3D CHARACTER CARD
+                            SingleBig3DCharacterCard(character = currentChar)
+
+                            // 3D RIGHT ARROW BUTTON (▶)
+                            Box(
+                                modifier = Modifier
+                                    .size(54.dp)
+                                    .shadow(10.dp, CircleShape)
+                                    .background(
+                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                        CircleShape
+                                    )
+                                    .border(2.dp, Color.White, CircleShape)
+                                    .clickable {
+                                        SoundManager.playPopSound()
+                                        selectedCharacterIndex = (selectedCharacterIndex + 1) % ALL_CHARACTERS.size
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.ChevronRight,
+                                    contentDescription = "Next Character",
+                                    tint = Color(0xFF0F172A),
+                                    modifier = Modifier.size(36.dp)
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        // Character Index Badge (e.g. "1 of 30")
+                        Box(
+                            modifier = Modifier
+                                .shadow(4.dp, RoundedCornerShape(12.dp))
+                                .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 14.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Character ${selectedCharacterIndex + 1} of ${ALL_CHARACTERS.size}",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
 
-                        // CONFIRM BUTTON
+                        // 3D GREEN CONFIRM BUTTON BELOW
                         Button(
                             onClick = {
-                                if (selectedCharacterForChoice != null) {
-                                    SoundManager.playClickSound()
-                                    if (selectionStep == "P1") {
-                                        p1SecretCharacter = selectedCharacterForChoice
-                                        selectedCharacterForChoice = null
-                                        selectionStep = "P2"
-                                    } else {
-                                        p2SecretCharacter = selectedCharacterForChoice
-                                        selectedCharacterForChoice = null
-                                        selectionStep = "COUNTDOWN"
-                                    }
+                                SoundManager.playClickSound()
+                                if (selectionStep == "P1") {
+                                    p1SecretCharacter = currentChar
+                                    selectedCharacterIndex = 0
+                                    selectionStep = "P2"
                                 } else {
-                                    Toast.makeText(context, "Please select your character first!", Toast.LENGTH_SHORT).show()
+                                    p2SecretCharacter = currentChar
+                                    selectedCharacterIndex = 0
+                                    selectionStep = "COUNTDOWN"
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(20.dp),
                             contentPadding = PaddingValues(0.dp),
-                            enabled = selectedCharacterForChoice != null,
                             modifier = Modifier
-                                .fillMaxWidth(0.65f)
-                                .height(48.dp)
-                                .shadow(8.dp, RoundedCornerShape(16.dp))
+                                .fillMaxWidth(0.75f)
+                                .height(54.dp)
+                                .shadow(12.dp, RoundedCornerShape(20.dp))
                                 .background(
-                                    Brush.verticalGradient(
-                                        if (selectedCharacterForChoice != null) listOf(Color(0xFF10B981), Color(0xFF059669))
-                                        else listOf(Color(0xFF9CA3AF), Color(0xFF6B7280))
-                                    ),
-                                    RoundedCornerShape(16.dp)
+                                    Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                                    RoundedCornerShape(20.dp)
                                 )
-                                .border(1.5.dp, Color.White, RoundedCornerShape(16.dp))
+                                .border(2.dp, Color.White, RoundedCornerShape(20.dp))
                         ) {
-                            Text("CONFIRM", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                            Text("CONFIRM", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -832,7 +881,110 @@ fun GuessWhoScreen(
     }
 }
 
-// ── CHARACTER CARD COMPONENT (SQUARE ASPECT RATIO 1:1) ────────────────────
+// ── SINGLE BIG 3D CHARACTER CARD FOR PHASE 1 SELECTION ───────────────────
+@Composable
+fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
+    val context = LocalContext.current
+    val rawName = character.name.lowercase()
+    val imageResId = remember(character.name) {
+        val nameVariant = if (rawName == "sara") "sora" else rawName
+        var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
+        if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
+        if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
+        if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
+        id
+    }
+
+    Box(
+        modifier = Modifier
+            .width(230.dp)
+            .height(310.dp)
+            .shadow(16.dp, RoundedCornerShape(24.dp))
+            .background(Color.White, RoundedCornerShape(24.dp))
+            .border(
+                3.5.dp,
+                Brush.verticalGradient(listOf(Color(0xFFF59E0B), Color(0xFFFBBF24), Color(0xFFD97706))),
+                RoundedCornerShape(24.dp)
+            ),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Main Big Avatar Image Container
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .background(character.avatarBgColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (imageResId != 0) {
+                    Image(
+                        painter = painterResource(id = imageResId),
+                        contentDescription = character.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    val hairColorVal = when (character.hairColor) {
+                        HairColor.BLACK -> Color(0xFF17181C)
+                        HairColor.BROWN -> Color(0xFF78350F)
+                        HairColor.BLONDE -> Color(0xFFF59E0B)
+                        HairColor.RED -> Color(0xFFDC2626)
+                        HairColor.GREY -> Color(0xFF9CA3AF)
+                    }
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(90.dp)
+                                .background(
+                                    when (character.skinTone) {
+                                        SkinTone.FAIR -> Color(0xFFFDE68A)
+                                        SkinTone.MEDIUM -> Color(0xFFD97706)
+                                        SkinTone.DARK -> Color(0xFF78350F)
+                                    },
+                                    CircleShape
+                                )
+                                .border(3.dp, hairColorVal, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (character.accessory == Accessory.GLASSES) "👓"
+                                else if (character.accessory == Accessory.HAT) "🧢"
+                                else if (character.facialHair != FacialHair.NONE) "🧔"
+                                else "👤",
+                                fontSize = 48.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Big Character Name Ribbon
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = character.name,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+// ── CHARACTER CARD COMPONENT (SQUARE ASPECT RATIO 1:1 FOR PHASE 2) ───────
 @Composable
 fun GuessWhoCharacterCardItem(
     character: GuessWhoCharacter,
@@ -848,7 +1000,7 @@ fun GuessWhoCharacterCardItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f) // Perfect Square Card
+            .aspectRatio(1f)
             .graphicsLayer {
                 rotationY = flipRotation
                 cameraDistance = 12f * density
@@ -952,16 +1104,16 @@ fun GuessWhoCharacterCardItem(
                         .padding(vertical = 2.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                Text(
-                    text = character.name,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White
-                )
+                    Text(
+                        text = character.name,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
-}
 }
 
 // ── TRAIT CATEGORY BUTTON COMPONENT ───────────────────────────────────────
