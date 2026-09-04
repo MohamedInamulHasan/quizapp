@@ -573,7 +573,7 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        // Rectangular Rounded-Corner 3D CONFIRM Button directly below image (Grey unselected, Green selected)
+                        // Rectangular Rounded-Corner 3D CONFIRM Button directly below image (Grey when unselected, White when selected)
                         Button(
                             onClick = {
                                 if (!isCharacterSelected) return@Button
@@ -602,9 +602,14 @@ fun GuessWhoScreen(
                                 .shadow(if (isCharacterSelected) 10.dp else 2.dp, RoundedCornerShape(14.dp))
                                 .background(
                                     if (isCharacterSelected)
-                                        Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669)))
+                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0)))
                                     else
                                         Brush.verticalGradient(listOf(Color(0xFF64748B), Color(0xFF475569))),
+                                    RoundedCornerShape(14.dp)
+                                )
+                                .border(
+                                    if (isCharacterSelected) 2.dp else 0.dp,
+                                    if (isCharacterSelected) Color.White else Color.Transparent,
                                     RoundedCornerShape(14.dp)
                                 )
                         ) {
@@ -612,7 +617,7 @@ fun GuessWhoScreen(
                                 "CONFIRM",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
-                                color = if (isCharacterSelected) Color.White else Color(0xFFCBD5E1)
+                                color = if (isCharacterSelected) Color(0xFF0F172A) else Color(0xFFCBD5E1)
                             )
                         }
 
