@@ -631,52 +631,50 @@ fun GuessWhoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // White 3D Box Help Message or Blue/Red Warning Pill ABOVE single character card image (Fixed height 54.dp so image position never jumps)
+                    // Rectangular Rounded-Corner Help/Warning Card right above image (Fixed height 46.dp, Blue for P1, Red for P2, White Text)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(54.dp),
-                        contentAlignment = Alignment.Center
+                            .height(46.dp),
+                        contentAlignment = Alignment.BottomCenter
                     ) {
                         if (showAskQuestionWarning) {
-                            // Rounded Pill Warning Popup matching screenshot (Blue for Player 1, Red for Player 2)
                             Box(
                                 modifier = Modifier
-                                    .shadow(8.dp, RoundedCornerShape(30.dp))
+                                    .shadow(6.dp, RoundedCornerShape(14.dp))
                                     .background(
                                         if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
-                                        RoundedCornerShape(30.dp)
+                                        RoundedCornerShape(14.dp)
                                     )
-                                    .border(
-                                        3.dp,
-                                        if (isPlayer1Turn) Color(0xFF60A5FA) else Color(0xFFFCA5A5),
-                                        RoundedCornerShape(30.dp)
-                                    )
-                                    .padding(horizontal = 20.dp, vertical = 6.dp),
+                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+                                    .padding(horizontal = 16.dp, vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Press a button below\nto ask a question!",
-                                    fontSize = 14.sp,
+                                    text = "Press a button below to ask a question!",
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
                                     color = Color.White,
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = 16.sp
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         } else if (!cardsTappedThisTurn) {
                             Box(
                                 modifier = Modifier
-                                    .shadow(6.dp, CircleShape)
-                                    .background(Color.White, CircleShape)
+                                    .shadow(6.dp, RoundedCornerShape(14.dp))
+                                    .background(
+                                        if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
+                                        RoundedCornerShape(14.dp)
+                                    )
+                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
                                     .padding(horizontal = 16.dp, vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "HELP: Tap image to hide or unhide candidate",
-                                    fontSize = 12.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0F172A),
+                                    color = Color.White,
                                     textAlign = TextAlign.Center
                                 )
                             }
