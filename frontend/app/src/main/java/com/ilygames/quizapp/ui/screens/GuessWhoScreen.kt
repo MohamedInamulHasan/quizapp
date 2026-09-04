@@ -568,20 +568,20 @@ fun GuessWhoScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // ── PASS CHANCE BUTTON TO SWITCH TURN ──
+                    // ── PASS CHANCE BUTTON TO SWITCH TURN (Pill shape with white outline) ──
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.85f)
+                            .fillMaxWidth(0.92f)
                             .height(48.dp)
-                            .shadow(10.dp, RoundedCornerShape(18.dp))
+                            .shadow(8.dp, CircleShape)
                             .background(
                                 Brush.verticalGradient(
                                     if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
                                     else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
                                 ),
-                                RoundedCornerShape(18.dp)
+                                CircleShape
                             )
-                            .border(1.5.dp, Color.White, RoundedCornerShape(18.dp))
+                            .border(2.dp, Color.White, CircleShape)
                             .clickable {
                                 SoundManager.playClickSound()
                                 isPlayer1Turn = !isPlayer1Turn
@@ -600,41 +600,41 @@ fun GuessWhoScreen(
                         ) {
                             Text(
                                 text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // BOTTOM TRAIT FILTER BUTTONS ROW
+                    // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - All Same Size)
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        // Row 1: GENDER, EYE COLOR, HAIR, HAIR COLOR
+                        // Row 1: 4 Cards (GENDER, EYE COLOR, HAIR, HAIR COLOR) - Equal Weight (1f)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             TraitCategoryButton(label = "GENDER", icon = "👫", modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
-                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1.1f)) { activeTraitModal = "EYE_COLOR" }
-                            TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(0.9f)) { activeTraitModal = "HAIR" }
-                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1.1f)) { activeTraitModal = "HAIR_COLOR" }
+                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", modifier = Modifier.weight(1f)) { activeTraitModal = "EYE_COLOR" }
+                            TraitCategoryButton(label = "HAIR", icon = "💇", modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR" }
+                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR_COLOR" }
                         }
 
-                        // Row 2: SKIN TONE, ACCESSORIES, FACIAL HAIR
+                        // Row 2: 3 Cards (SKIN TONE, ACCESSORIES, FACIAL HAIR) - Equal Weight (1f)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             TraitCategoryButton(label = "SKIN TONE", icon = "🏽", modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
-                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1.2f)) { activeTraitModal = "ACCESSORY" }
-                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1.2f)) { activeTraitModal = "FACIAL_HAIR" }
+                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
+                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
                         }
                     }
 
