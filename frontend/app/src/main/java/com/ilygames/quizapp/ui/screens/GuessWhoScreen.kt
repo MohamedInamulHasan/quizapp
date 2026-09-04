@@ -60,6 +60,7 @@ enum class HairStyle { SHORT, LONG, BALD }
 enum class SkinTone { FAIR, MEDIUM, DARK }
 enum class Accessory { GLASSES, HAT, EARRINGS, JEWELS, NECKLACE, NONE }
 enum class FacialHair { BEARD, MUSTACHE, NONE }
+enum class TraitStatus { NONE, TICK, CROSS }
 
 data class GuessWhoCharacter(
     val id: String,
@@ -149,7 +150,10 @@ fun GuessWhoScreen(
     var winnerMessage by remember { mutableStateOf("") }
     var winningPlayer by remember { mutableIntStateOf(1) }
 
-    enum class TraitStatus { NONE, TICK, CROSS }
+    // Question Filter State
+    var lastAskedQuestion by remember { mutableStateOf<String?>(null) }
+    var lastQuestionAnswer by remember { mutableStateOf<Boolean?>(null) }
+    var cardsTappedThisTurn by remember { mutableStateOf(false) }
 
     // Map of tested traits per player: key = "CATEGORY:OPTION" -> value = true (Yes) / false (No)
     var p1TestedTraits by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
@@ -1464,12 +1468,12 @@ fun TraitOptionCard(
     label: String,
     icon: String? = null,
     colorSwatch: Color? = null,
-    status: GuessWhoScreenKt.TraitStatus = GuessWhoScreenKt.TraitStatus.NONE,
+    status: TraitStatus = TraitStatus.NONE,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val isCross = status == GuessWhoScreenKt.TraitStatus.CROSS
-    val isTick = status == GuessWhoScreenKt.TraitStatus.TICK
+    val isCross = status == TraitStatus.CROSS
+    val isTick = status == TraitStatus.TICK
 
     Box(
         modifier = modifier
