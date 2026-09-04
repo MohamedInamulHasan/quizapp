@@ -401,7 +401,7 @@ fun GuessWhoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // 3D Black Back Button with WHITE Icon
+                // 3D Black Back Button with WHITE Icon (No outline effect)
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -410,7 +410,6 @@ fun GuessWhoScreen(
                             Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))),
                             CircleShape
                         )
-                        .border(1.5.dp, Color.White, CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
@@ -439,7 +438,7 @@ fun GuessWhoScreen(
                     color = Color.White
                 )
 
-                // 3D Black Retry Button with WHITE Icon
+                // 3D Black Retry Button with WHITE Icon (No outline effect)
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -448,7 +447,6 @@ fun GuessWhoScreen(
                             Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))),
                             CircleShape
                         )
-                        .border(1.5.dp, Color.White, CircleShape)
                         .clickable {
                             SoundManager.playRetrySound()
                             resetFullMatch()
@@ -674,7 +672,7 @@ fun GuessWhoScreen(
                                     textAlign = TextAlign.Center
                                 )
                             }
-                        } else if (!cardsTappedThisTurn) {
+                        } else {
                             Box(
                                 modifier = Modifier
                                     .shadow(6.dp, RoundedCornerShape(14.dp))
@@ -840,7 +838,6 @@ fun GuessWhoScreen(
                                 .fillMaxWidth(0.92f)
                                 .shadow(10.dp, RoundedCornerShape(22.dp))
                                 .background(Color.White, RoundedCornerShape(22.dp))
-                                .border(3.dp, Color(0xFF2563EB), RoundedCornerShape(22.dp))
                                 .padding(vertical = 14.dp, horizontal = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -1417,7 +1414,7 @@ fun SingleBig3DCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(Color.White, RoundedCornerShape(24.dp))
             .border(
-                1.5.dp,
+                3.5.dp,
                 if (isSelected) Color(0xFF10B981) else Color.White,
                 RoundedCornerShape(24.dp)
             )
@@ -1481,6 +1478,14 @@ fun SingleBig3DCharacterCard(
                 }
             }
 
+            // Horizontal White Line above name pallet
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.5.dp)
+                    .background(Color.White)
+            )
+
             // Big Character Name Ribbon AT THE BOTTOM (Below Image)
             Box(
                 modifier = Modifier
@@ -1529,7 +1534,7 @@ fun SingleBigDeductionCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(if (isHidden) Color(0xFF1E293B) else Color.White, RoundedCornerShape(24.dp))
             .border(
-                if (isSelected) 3.5.dp else 1.5.dp,
+                if (isSelected) 3.5.dp else 3.5.dp,
                 if (isSelected) Color(0xFF10B981) else if (isHidden) Color(0xFF64748B) else Color.White,
                 RoundedCornerShape(24.dp)
             )
@@ -1610,6 +1615,14 @@ fun SingleBigDeductionCharacterCard(
                     )
                 }
             }
+
+            // Horizontal White Line above name pallet
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.5.dp)
+                    .background(Color.White)
+            )
 
             // Big Character Name Ribbon AT THE BOTTOM (Below Image with X symbol next to name if hidden, Green when selected)
             Box(
