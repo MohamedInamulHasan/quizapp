@@ -172,7 +172,7 @@ fun GuessWhoScreen(
     val hairKeys = remember { listOf("HAIR:SHORT", "HAIR:LONG", "HAIR:BALD") }
     val hairColorKeys = remember { listOf("HAIR_COLOR:BLACK", "HAIR_COLOR:BROWN", "HAIR_COLOR:BLONDE", "HAIR_COLOR:GRAY", "HAIR_COLOR:RED") }
     val skinToneKeys = remember { listOf("SKIN_TONE:FAIR", "SKIN_TONE:MEDIUM", "SKIN_TONE:DARK") }
-    val accessoryKeys = remember { listOf("ACCESSORY:NONE", "ACCESSORY:GLASSES", "ACCESSORY:HAT", "ACCESSORY:EARRINGS", "ACCESSORY:JEWELS", "ACCESSORY:NECKLACE") }
+    val accessoryKeys = remember { listOf("ACCESSORY:NONE", "ACCESSORY:GLASSES", "ACCESSORY:HAT", "ACCESSORY:EARRINGS", "ACCESSORY:JEWELS") }
     val facialHairKeys = remember { listOf("FACIAL_HAIR:NONE", "FACIAL_HAIR:MUSTACHE", "FACIAL_HAIR:BEARD") }
 
     fun getOptionStatus(optionKey: String, categoryKeys: List<String>): TraitStatus {
@@ -866,6 +866,13 @@ fun GuessWhoScreen(
 
         // ── TRAIT SELECTION MODAL DIALOGS ─────────────
         if (activeTraitModal != null) {
+            val modalWidthFraction = when (activeTraitModal) {
+                "GENDER" -> 0.70f
+                "EYE_COLOR" -> 0.78f
+                "HAIR", "SKIN_TONE", "FACIAL_HAIR" -> 0.85f
+                else -> 0.88f
+            }
+
             Dialog(
                 onDismissRequest = { activeTraitModal = null },
                 properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -879,7 +886,7 @@ fun GuessWhoScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.92f)
+                            .fillMaxWidth(modalWidthFraction)
                             .shadow(20.dp, RoundedCornerShape(24.dp))
                             .background(Color(0xFF1E293B), RoundedCornerShape(24.dp))
                             .border(2.5.dp, Color.White, RoundedCornerShape(24.dp))
@@ -929,24 +936,19 @@ fun GuessWhoScreen(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(18.dp))
 
                             when (activeTraitModal) {
                                 "GENDER" -> {
-                                    Box(
+                                    Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(0.65f),
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                        ) {
-                                            TraitOptionCard("MALE", icon = "👨", status = getOptionStatus("GENDER:MALE", genderKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person male?", "GENDER:MALE", genderKeys) { it.gender == Gender.MALE }
-                                            }
-                                            TraitOptionCard("FEMALE", icon = "👩", status = getOptionStatus("GENDER:FEMALE", genderKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person female?", "GENDER:FEMALE", genderKeys) { it.gender == Gender.FEMALE }
-                                            }
+                                        TraitOptionCard("MALE", icon = "👨", status = getOptionStatus("GENDER:MALE", genderKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Is the person male?", "GENDER:MALE", genderKeys) { it.gender == Gender.MALE }
+                                        }
+                                        TraitOptionCard("FEMALE", icon = "👩", status = getOptionStatus("GENDER:FEMALE", genderKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Is the person female?", "GENDER:FEMALE", genderKeys) { it.gender == Gender.FEMALE }
                                         }
                                     }
                                 }
@@ -980,34 +982,30 @@ fun GuessWhoScreen(
                                     }
                                 }
                                 "HAIR" -> {
-                                    Box(
+                                    Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(0.85f),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            TraitOptionCard("SHORT", icon = "👨‍🦱", status = getOptionStatus("HAIR:SHORT", hairKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have short hair?", "HAIR:SHORT", hairKeys) { it.hairStyle == HairStyle.SHORT }
-                                            }
-                                            TraitOptionCard("LONG", icon = "👩‍🦰", status = getOptionStatus("HAIR:LONG", hairKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have long hair?", "HAIR:LONG", hairKeys) { it.hairStyle == HairStyle.LONG }
-                                            }
-                                            TraitOptionCard("BALD", icon = "👨‍🦲", status = getOptionStatus("HAIR:BALD", hairKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person bald?", "HAIR:BALD", hairKeys) { it.hairStyle == HairStyle.BALD }
-                                            }
+                                        TraitOptionCard("SHORT", icon = "👨‍🦱", status = getOptionStatus("HAIR:SHORT", hairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have short hair?", "HAIR:SHORT", hairKeys) { it.hairStyle == HairStyle.SHORT }
+                                        }
+                                        TraitOptionCard("LONG", icon = "👩‍🦰", status = getOptionStatus("HAIR:LONG", hairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have long hair?", "HAIR:LONG", hairKeys) { it.hairStyle == HairStyle.LONG }
+                                        }
+                                        TraitOptionCard("BALD", icon = "👨‍🦲", status = getOptionStatus("HAIR:BALD", hairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Is the person bald?", "HAIR:BALD", hairKeys) { it.hairStyle == HairStyle.BALD }
                                         }
                                     }
                                 }
                                 "HAIR_COLOR" -> {
                                     Column(
                                         modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             TraitOptionCard("BROWN", colorSwatch = Color(0xFF92400E), status = getOptionStatus("HAIR_COLOR:BROWN", hairColorKeys), modifier = Modifier.weight(1f)) {
                                                 applyQuestionFilter("Does the person have brown hair?", "HAIR_COLOR:BROWN", hairColorKeys) { it.hairColor == HairColor.BROWN }
@@ -1019,48 +1017,49 @@ fun GuessWhoScreen(
                                                 applyQuestionFilter("Does the person have blonde hair?", "HAIR_COLOR:BLONDE", hairColorKeys) { it.hairColor == HairColor.BLONDE }
                                             }
                                         }
-                                        Row(
+                                        Box(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            contentAlignment = Alignment.Center
                                         ) {
-                                            TraitOptionCard("GRAY", icon = "👵", status = getOptionStatus("HAIR_COLOR:GRAY", hairColorKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have gray hair?", "HAIR_COLOR:GRAY", hairColorKeys) { it.hairColor == HairColor.GREY }
-                                            }
-                                            TraitOptionCard("RED", colorSwatch = Color(0xFFDC2626), status = getOptionStatus("HAIR_COLOR:RED", hairColorKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have red hair?", "HAIR_COLOR:RED", hairColorKeys) { it.hairColor == HairColor.RED }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(0.66f),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                TraitOptionCard("GRAY", colorSwatch = Color(0xFF9CA3AF), status = getOptionStatus("HAIR_COLOR:GRAY", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                    applyQuestionFilter("Does the person have gray hair?", "HAIR_COLOR:GRAY", hairColorKeys) { it.hairColor == HairColor.GREY }
+                                                }
+                                                TraitOptionCard("RED", colorSwatch = Color(0xFFDC2626), status = getOptionStatus("HAIR_COLOR:RED", hairColorKeys), modifier = Modifier.weight(1f)) {
+                                                    applyQuestionFilter("Does the person have red hair?", "HAIR_COLOR:RED", hairColorKeys) { it.hairColor == HairColor.RED }
+                                                }
                                             }
                                         }
                                     }
                                 }
                                 "SKIN_TONE" -> {
-                                    Box(
+                                    Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(0.85f),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            TraitOptionCard("FAIR", colorSwatch = Color(0xFFFDE68A), status = getOptionStatus("SKIN_TONE:FAIR", skinToneKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have fair skin?", "SKIN_TONE:FAIR", skinToneKeys) { it.skinTone == SkinTone.FAIR }
-                                            }
-                                            TraitOptionCard("MEDIUM", colorSwatch = Color(0xFFD97706), status = getOptionStatus("SKIN_TONE:MEDIUM", skinToneKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have medium skin?", "SKIN_TONE:MEDIUM", skinToneKeys) { it.skinTone == SkinTone.MEDIUM }
-                                            }
-                                            TraitOptionCard("DARK", colorSwatch = Color(0xFF78350F), status = getOptionStatus("SKIN_TONE:DARK", skinToneKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have dark skin?", "SKIN_TONE:DARK", skinToneKeys) { it.skinTone == SkinTone.DARK }
-                                            }
+                                        TraitOptionCard("FAIR", colorSwatch = Color(0xFFFDE68A), status = getOptionStatus("SKIN_TONE:FAIR", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have fair skin?", "SKIN_TONE:FAIR", skinToneKeys) { it.skinTone == SkinTone.FAIR }
+                                        }
+                                        TraitOptionCard("MEDIUM", colorSwatch = Color(0xFFD97706), status = getOptionStatus("SKIN_TONE:MEDIUM", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have medium skin?", "SKIN_TONE:MEDIUM", skinToneKeys) { it.skinTone == SkinTone.MEDIUM }
+                                        }
+                                        TraitOptionCard("DARK", colorSwatch = Color(0xFF78350F), status = getOptionStatus("SKIN_TONE:DARK", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have dark skin?", "SKIN_TONE:DARK", skinToneKeys) { it.skinTone == SkinTone.DARK }
                                         }
                                     }
                                 }
                                 "ACCESSORY" -> {
                                     Column(
                                         modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("ACCESSORY:NONE", accessoryKeys), modifier = Modifier.weight(1f)) {
                                                 applyQuestionFilter("Does the person have no accessories?", "ACCESSORY:NONE", accessoryKeys) { it.accessory == Accessory.NONE }
@@ -1072,40 +1071,37 @@ fun GuessWhoScreen(
                                                 applyQuestionFilter("Is the person wearing a hat?", "ACCESSORY:HAT", accessoryKeys) { it.accessory == Accessory.HAT }
                                             }
                                         }
-                                        Row(
+                                        Box(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            contentAlignment = Alignment.Center
                                         ) {
-                                            TraitOptionCard("EARRINGS", icon = "💎", status = getOptionStatus("ACCESSORY:EARRINGS", accessoryKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing earrings?", "ACCESSORY:EARRINGS", accessoryKeys) { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS }
-                                            }
-                                            TraitOptionCard("JEWELS", icon = "💍", status = getOptionStatus("ACCESSORY:JEWELS", accessoryKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing jewels?", "ACCESSORY:JEWELS", accessoryKeys) { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS || it.accessory == Accessory.NECKLACE }
-                                            }
-                                            TraitOptionCard("NECKLACE", icon = "📿", status = getOptionStatus("ACCESSORY:NECKLACE", accessoryKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Is the person wearing a necklace?", "ACCESSORY:NECKLACE", accessoryKeys) { it.accessory == Accessory.NECKLACE || it.accessory == Accessory.JEWELS }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(0.66f),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                TraitOptionCard("EARRINGS", icon = "💎", status = getOptionStatus("ACCESSORY:EARRINGS", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                    applyQuestionFilter("Is the person wearing earrings?", "ACCESSORY:EARRINGS", accessoryKeys) { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS }
+                                                }
+                                                TraitOptionCard("JEWELS", icon = "💍", status = getOptionStatus("ACCESSORY:JEWELS", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                    applyQuestionFilter("Is the person wearing jewels?", "ACCESSORY:JEWELS", accessoryKeys) { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS }
+                                                }
                                             }
                                         }
                                     }
                                 }
                                 "FACIAL_HAIR" -> {
-                                    Box(
+                                    Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(0.85f),
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("FACIAL_HAIR:NONE", facialHairKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have no facial hair?", "FACIAL_HAIR:NONE", facialHairKeys) { it.facialHair == FacialHair.NONE }
-                                            }
-                                            TraitOptionCard("MUSTACHE", icon = "👨‍🦰", status = getOptionStatus("FACIAL_HAIR:MUSTACHE", facialHairKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have a mustache?", "FACIAL_HAIR:MUSTACHE", facialHairKeys) { it.facialHair == FacialHair.MUSTACHE }
-                                            }
-                                            TraitOptionCard("BEARD", icon = "🧔", status = getOptionStatus("FACIAL_HAIR:BEARD", facialHairKeys), modifier = Modifier.weight(1f)) {
-                                                applyQuestionFilter("Does the person have a beard?", "FACIAL_HAIR:BEARD", facialHairKeys) { it.facialHair == FacialHair.BEARD }
-                                            }
+                                        TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("FACIAL_HAIR:NONE", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have no facial hair?", "FACIAL_HAIR:NONE", facialHairKeys) { it.facialHair == FacialHair.NONE }
+                                        }
+                                        TraitOptionCard("MUSTACHE", icon = "🥸", status = getOptionStatus("FACIAL_HAIR:MUSTACHE", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have a mustache?", "FACIAL_HAIR:MUSTACHE", facialHairKeys) { it.facialHair == FacialHair.MUSTACHE }
+                                        }
+                                        TraitOptionCard("BEARD", icon = "🧔", status = getOptionStatus("FACIAL_HAIR:BEARD", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                            applyQuestionFilter("Does the person have a beard?", "FACIAL_HAIR:BEARD", facialHairKeys) { it.facialHair == FacialHair.BEARD }
                                         }
                                     }
                                 }
@@ -1777,17 +1773,17 @@ fun TraitOptionCard(
 
     Box(
         modifier = modifier
-            .aspectRatio(1f)
-            .shadow(if (isResolved) 3.dp else 8.dp, RoundedCornerShape(18.dp))
+            .height(76.dp)
+            .shadow(if (isResolved) 2.dp else 6.dp, RoundedCornerShape(16.dp))
             .background(
                 if (isResolved) Brush.verticalGradient(listOf(Color(0xFF475569), Color(0xFF334155)))
                 else Brush.verticalGradient(listOf(Color.White, Color(0xFFF1F5F9))),
-                RoundedCornerShape(18.dp)
+                RoundedCornerShape(16.dp)
             )
             .border(
                 if (isTick) 2.5.dp else 1.5.dp,
                 if (isTick) Color(0xFF10B981) else if (isCross) Color(0xFF64748B) else Color(0xFFCBD5E1),
-                RoundedCornerShape(18.dp)
+                RoundedCornerShape(16.dp)
             )
             .clickable(enabled = !isResolved, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -1795,13 +1791,13 @@ fun TraitOptionCard(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(4.dp)
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)
         ) {
             if (colorSwatch != null) {
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
-                        .shadow(4.dp, RoundedCornerShape(8.dp))
+                        .size(26.dp)
+                        .shadow(3.dp, RoundedCornerShape(8.dp))
                         .background(
                             if (isResolved) colorSwatch.copy(alpha = 0.4f) else colorSwatch,
                             RoundedCornerShape(8.dp)
@@ -1811,14 +1807,14 @@ fun TraitOptionCard(
             } else if (icon != null) {
                 Text(
                     text = icon,
-                    fontSize = 22.sp,
+                    fontSize = 24.sp,
                     modifier = Modifier.graphicsLayer { alpha = if (isResolved) 0.5f else 1.0f }
                 )
             }
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Black,
                 color = if (isResolved) Color.White.copy(alpha = 0.75f) else Color(0xFF0F172A),
                 textAlign = TextAlign.Center,
@@ -1832,7 +1828,7 @@ fun TraitOptionCard(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 4.dp, end = 4.dp)
-                    .size(22.dp)
+                    .size(20.dp)
                     .shadow(4.dp, CircleShape)
                     .background(Color.White, CircleShape)
                     .border(1.5.dp, Color(0xFF10B981), CircleShape),
@@ -1842,7 +1838,7 @@ fun TraitOptionCard(
                     Icons.Default.Check,
                     contentDescription = "Correct",
                     tint = Color(0xFF10B981),
-                    modifier = Modifier.size(15.dp)
+                    modifier = Modifier.size(13.dp)
                 )
             }
         } else if (isCross) {
@@ -1850,7 +1846,7 @@ fun TraitOptionCard(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 4.dp, end = 4.dp)
-                    .size(22.dp)
+                    .size(20.dp)
                     .shadow(4.dp, CircleShape)
                     .background(Color.White, CircleShape)
                     .border(1.5.dp, Color(0xFFEF4444), CircleShape),
@@ -1860,7 +1856,7 @@ fun TraitOptionCard(
                     Icons.Default.Close,
                     contentDescription = "Incorrect",
                     tint = Color(0xFFEF4444),
-                    modifier = Modifier.size(15.dp)
+                    modifier = Modifier.size(13.dp)
                 )
             }
         }
