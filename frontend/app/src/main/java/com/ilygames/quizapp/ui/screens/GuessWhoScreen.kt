@@ -136,8 +136,9 @@ fun GuessWhoScreen(
     var selectionStep by remember { mutableStateOf("P1_INTRO") } // "P1_INTRO", "P1", "P2_PASS", "P2", "COUNTDOWN", "DONE"
     var countdownText by remember { mutableStateOf("3") }
 
-    // Character Carousel Selection State for Phase 1
+    // Character Carousel Selection State for Phase 1 & Phase 2
     var selectedCharacterIndex by remember { mutableIntStateOf(0) }
+    var activeBoardCharacterIndex by remember { mutableIntStateOf(0) }
 
     var p1SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
     var p2SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
@@ -200,6 +201,7 @@ fun GuessWhoScreen(
         actionTakenThisTurn = false
         cardsTappedThisTurn = false
         selectedCharacterIndex = 0
+        activeBoardCharacterIndex = 0
         p1SecretCharacter = null
         p2SecretCharacter = null
         p1TestedTraits = emptyMap()
@@ -565,39 +567,82 @@ fun GuessWhoScreen(
                     }
                 }
             } else {
-                // ── PHASE 2: DEDUCTION BOARD & PASS TURN CONTROL ──
+                // ── PHASE 2: DEDUCTION BOARD (SINGLE BIG CARD WITH LEFT/RIGHT ARROWS) ──
+                val currentDeductionChar = boardCharacters[activeBoardCharacterIndex]
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(horizontal = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(horizontal = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // 5x6 Roster Grid (Square Cards, filling sides, non-scrollable)
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(5),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        userScrollEnabled = false,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
+                    // Single Big Character Card flanked by Left & Right 3D Arrow Buttons to Skip Candidates
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        items(boardCharacters) { char ->
-                            GuessWhoCharacterCardItem(
-                                character = char,
-                                isSelected = false,
-                                onClick = {
-                                    toggleCardFlip(char)
-                                }
+                        // 3D LEFT ARROW BUTTON (◀)
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .shadow(10.dp, CircleShape)
+                                .background(
+                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                    CircleShape
+                                )
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    SoundManager.playPopSound()
+                                    activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ChevronLeft,
+                                contentDescription = "Previous Candidate",
+                                tint = Color(0xFF0F172A),
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+
+                        // SINGLE BIG 3D DEDUCTION CARD (Tap to Hide/Unhide with Black & White filter)
+                        SingleBigDeductionCharacterCard(
+                            character = currentDeductionChar,
+                            onClick = {
+                                toggleCardFlip(currentDeductionChar)
+                            }
+                        )
+
+                        // 3D RIGHT ARROW BUTTON (▶)
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .shadow(10.dp, CircleShape)
+                                .background(
+                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                    CircleShape
+                                )
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    SoundManager.playPopSound()
+                                    activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = "Next Candidate",
+                                tint = Color(0xFF0F172A),
+                                modifier = Modifier.size(36.dp)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     if (lastAskedQuestion != null && !cardsTappedThisTurn) {
-                        // ── QUESTION RESULT BANNER CARD BELOW GRID (MATCHING ATTACHED IMAGE 2) ──
+                        // ── QUESTION RESULT BANNER CARD BELOW IMAGE ──
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.92f)
@@ -625,7 +670,7 @@ fun GuessWhoScreen(
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "HELP: Tap the cards to remove candidates that do not match the question's trait.",
+                                    text = "HELP: Tap the character image to hide or unhide this candidate.",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF64748B),
@@ -655,6 +700,7 @@ fun GuessWhoScreen(
                                     cardsTappedThisTurn = false
                                     lastAskedQuestion = null
                                     lastQuestionAnswer = null
+                                    activeBoardCharacterIndex = 0
                                     Toast.makeText(
                                         context,
                                         if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
@@ -678,8 +724,6 @@ fun GuessWhoScreen(
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(10.dp))
 
                     // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - All Same Size, Darkened when Resolved)
                     Column(
@@ -1246,7 +1290,143 @@ fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
     }
 }
 
-// ── CHARACTER CARD COMPONENT (WITH BLACK & WHITE GRAYSCALE ELIMINATION FILTER) ───────
+// ── SINGLE BIG DEDUCTION CHARACTER CARD FOR PHASE 2 ────────────────────
+@Composable
+fun SingleBigDeductionCharacterCard(
+    character: GuessWhoCharacter,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val rawName = character.name.lowercase()
+    val imageResId = remember(character.name) {
+        val nameVariant = if (rawName == "sara") "sora" else rawName
+        var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
+        if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
+        if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
+        if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
+        id
+    }
+    val isHidden = character.isEliminated
+
+    Box(
+        modifier = Modifier
+            .width(230.dp)
+            .height(310.dp)
+            .shadow(16.dp, RoundedCornerShape(24.dp))
+            .background(if (isHidden) Color(0xFF1E293B) else Color.White, RoundedCornerShape(24.dp))
+            .border(
+                3.5.dp,
+                if (isHidden) Color(0xFF64748B) else Color.White,
+                RoundedCornerShape(24.dp)
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Big Character Name Ribbon AT THE TOP (Above Image)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
+                        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                    )
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = character.name,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isHidden) Color(0xFF94A3B8) else Color.White
+                )
+            }
+
+            // Main Big Avatar Image Container BELOW Name
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .background(
+                        if (isHidden) Color(0xFF0F172A)
+                        else character.avatarBgColor.copy(alpha = 0.2f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (imageResId != 0) {
+                    Image(
+                        painter = painterResource(id = imageResId),
+                        contentDescription = character.name,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = if (isHidden) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { alpha = if (isHidden) 0.45f else 1.0f }
+                    )
+                } else {
+                    val hairColorVal = when (character.hairColor) {
+                        HairColor.BLACK -> Color(0xFF17181C)
+                        HairColor.BROWN -> Color(0xFF78350F)
+                        HairColor.BLONDE -> Color(0xFFF59E0B)
+                        HairColor.RED -> Color(0xFFDC2626)
+                        HairColor.GREY -> Color(0xFF9CA3AF)
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.graphicsLayer { alpha = if (isHidden) 0.45f else 1.0f }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(90.dp)
+                                .background(
+                                    if (isHidden) Color(0xFF64748B) else when (character.skinTone) {
+                                        SkinTone.FAIR -> Color(0xFFFDE68A)
+                                        SkinTone.MEDIUM -> Color(0xFFD97706)
+                                        SkinTone.DARK -> Color(0xFF78350F)
+                                    },
+                                    CircleShape
+                                )
+                                .border(3.dp, if (isHidden) Color.DarkGray else hairColorVal, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (character.accessory == Accessory.GLASSES) "👓"
+                                else if (character.accessory == Accessory.HAT) "🧢"
+                                else if (character.facialHair != FacialHair.NONE) "🧔"
+                                else "👤",
+                                fontSize = 48.sp
+                            )
+                        }
+                    }
+                }
+
+                // Dark cross overlay if eliminated
+                if (isHidden) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.35f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Eliminated",
+                            tint = Color.White.copy(alpha = 0.85f),
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun GuessWhoCharacterCardItem(
     character: GuessWhoCharacter,
