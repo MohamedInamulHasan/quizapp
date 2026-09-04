@@ -143,8 +143,10 @@ fun GuessWhoScreen(
     var p1SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
     var p2SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
 
-    // Roster Board State
-    var boardCharacters by remember { mutableStateOf(ALL_CHARACTERS) }
+    // Roster Board States (Separate for Player 1 and Player 2!)
+    var p1BoardCharacters by remember { mutableStateOf(ALL_CHARACTERS) }
+    var p2BoardCharacters by remember { mutableStateOf(ALL_CHARACTERS) }
+    val boardCharacters = if (isPlayer1Turn) p1BoardCharacters else p2BoardCharacters
 
     // Filter Dialog Modals
     var activeTraitModal by remember { mutableStateOf<String?>(null) }
@@ -212,7 +214,8 @@ fun GuessWhoScreen(
         p2SecretCharacter = null
         p1TestedTraits = emptyMap()
         p2TestedTraits = emptyMap()
-        boardCharacters = ALL_CHARACTERS.map { it.copy(isEliminated = false) }
+        p1BoardCharacters = ALL_CHARACTERS.map { it.copy(isEliminated = false) }
+        p2BoardCharacters = ALL_CHARACTERS.map { it.copy(isEliminated = false) }
         lastAskedQuestion = null
         lastQuestionAnswer = null
     }
@@ -257,14 +260,19 @@ fun GuessWhoScreen(
         actionTakenThisTurn = true
         cardsTappedThisTurn = true
 
-        val updatedList = boardCharacters.map { char ->
+        val currentList = if (isPlayer1Turn) p1BoardCharacters else p2BoardCharacters
+        val updatedList = currentList.map { char ->
             if (char.id == clickedChar.id) {
                 char.copy(isEliminated = !char.isEliminated)
             } else {
                 char
             }
         }
-        boardCharacters = updatedList
+        if (isPlayer1Turn) {
+            p1BoardCharacters = updatedList
+        } else {
+            p2BoardCharacters = updatedList
+        }
 
         // Check if only 1 card remains face-up!
         val remainingFaceUp = updatedList.filter { !it.isEliminated }
@@ -324,8 +332,8 @@ fun GuessWhoScreen(
     val currentBgColor = when {
         gamePhase == "SELECTION" && selectionStep == "P2" -> Color(0xFF5C0F1B) // Dark Red BG for Player 2 Selection
         gamePhase == "SELECTION" -> Color(0xFF0D1B36) // Dark Blue BG for Player 1 Selection
-        gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF1D4ED8) // Player 1 Turn Theme (Blue)
-        else -> Color(0xFFB91C1C) // Player 2 Turn Theme (Red)
+        gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF0D1B36) // Player 1 Dark Blue Theme
+        else -> Color(0xFF5C0F1B) // Player 2 Dark Red Theme
     }
 
     // ── STEP 1 INTRO SCREEN & STEP 3 PASS SCREEN OVERLAYS ──
@@ -584,15 +592,30 @@ fun GuessWhoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // White Help Message ABOVE single character card image (Hidden when card is clicked/blacked out)
-                    if (!cardsTappedThisTurn) {
-                        Text(
-                            text = "HELP: Tap image to hide or unhide candidate",
-                            fontSize = 12.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
+                    // White 3D Box Help Message ABOVE single character card image (Fixed height so image position never jumps)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (!cardsTappedThisTurn) {
+                            Box(
+                                modifier = Modifier
+                                    .shadow(6.dp, CircleShape)
+                                    .background(Color.White, CircleShape)
+                                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "HELP: Tap image to hide or unhide candidate",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF0F172A),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
 
                     // Single Big Character Card flanked by Left & Right 3D Arrow Buttons to Skip Candidates (Always visible)
@@ -1246,28 +1269,12 @@ fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Big Character Name Ribbon AT THE TOP (Above Image)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1E293B), RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = character.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White
-                )
-            }
-
-            // Main Big Avatar Image Container BELOW Name
+            // Main Big Avatar Image Container AT THE TOP
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                     .background(character.avatarBgColor.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -1313,6 +1320,22 @@ fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
                     }
                 }
             }
+
+            // Big Character Name Ribbon AT THE BOTTOM (Below Image)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = character.name,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -1354,31 +1377,12 @@ fun SingleBigDeductionCharacterCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Big Character Name Ribbon AT THE TOP (Above Image)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
-                        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-                    )
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = character.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    color = if (isHidden) Color(0xFF94A3B8) else Color.White
-                )
-            }
-
-            // Main Big Avatar Image Container BELOW Name
+            // Main Big Avatar Image Container AT THE TOP
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                     .background(
                         if (isHidden) Color(0xFF0F172A)
                         else character.avatarBgColor.copy(alpha = 0.2f)
@@ -1449,6 +1453,25 @@ fun SingleBigDeductionCharacterCard(
                         )
                     }
                 }
+            }
+
+            // Big Character Name Ribbon AT THE BOTTOM (Below Image)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
+                        RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                    )
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = character.name,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isHidden) Color(0xFF94A3B8) else Color.White
+                )
             }
         }
     }
@@ -1595,7 +1618,7 @@ fun GuessWhoCharacterCardItem(
     }
 }
 
-// ── TRAIT CATEGORY BUTTON COMPONENT (DARK ONLY WHEN RESOLVED - NO GREEN OUTLINE / NO TICK) ───────
+// ── TRAIT CATEGORY BUTTON COMPONENT (3D WHITE, NO OUTLINE, DARK WHEN RESOLVED) ───────
 @Composable
 fun TraitCategoryButton(
     label: String,
@@ -1607,14 +1630,9 @@ fun TraitCategoryButton(
     Box(
         modifier = modifier
             .height(48.dp)
-            .shadow(4.dp, RoundedCornerShape(16.dp))
+            .shadow(6.dp, RoundedCornerShape(16.dp))
             .background(
                 if (isResolved) Color(0xFF334155) else Color.White,
-                RoundedCornerShape(16.dp)
-            )
-            .border(
-                1.5.dp,
-                Color(0xFFCBD5E1),
                 RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick),
