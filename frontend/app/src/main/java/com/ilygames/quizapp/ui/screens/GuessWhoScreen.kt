@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
@@ -273,7 +274,7 @@ fun GuessWhoScreen(
         }
     }
 
-    // Question Filter Eliminator (With Trait Status Recording)
+    // Question Filter Eliminator (With Trait Status Recording & Manual Card Elimination)
     fun applyQuestionFilter(
         questionText: String,
         traitKey: String,
@@ -307,27 +308,8 @@ fun GuessWhoScreen(
             p2TestedTraits = updated
         }
 
-        boardCharacters = boardCharacters.map { char ->
-            val matchesFilter = matchingCondition(char)
-            if (isYes) {
-                char.copy(isEliminated = char.isEliminated || !matchesFilter)
-            } else {
-                char.copy(isEliminated = char.isEliminated || matchesFilter)
-            }
-        }
-
+        // Keep boardCharacters unchanged so player manually taps cards to eliminate/hide them!
         activeTraitModal = null
-
-        val remaining = boardCharacters.filter { !it.isEliminated }
-        if (remaining.size == 1) {
-            val lastChar = remaining.first()
-            if (lastChar.id == targetSecret.id) {
-                if (isPlayer1Turn) p1Wins++ else p2Wins++
-                winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Wins!"
-                winningPlayer = if (isPlayer1Turn) 1 else 2
-                showWinnerDialog = true
-            }
-        }
     }
 
     // Determine Background Color
@@ -1406,7 +1388,7 @@ fun GuessWhoCharacterCardItem(
     }
 }
 
-// ── TRAIT CATEGORY BUTTON COMPONENT (DARKENED WITH CHECKMARK BADGE WHEN RESOLVED) ───────
+// ── TRAIT CATEGORY BUTTON COMPONENT (DARK ONLY WHEN RESOLVED - NO GREEN OUTLINE / NO TICK) ───────
 @Composable
 fun TraitCategoryButton(
     label: String,
@@ -1417,16 +1399,16 @@ fun TraitCategoryButton(
 ) {
     Box(
         modifier = modifier
-            .height(50.dp)
-            .shadow(4.dp, RoundedCornerShape(14.dp))
+            .height(48.dp)
+            .shadow(4.dp, RoundedCornerShape(16.dp))
             .background(
-                if (isResolved) Color(0xFF475569) else Color.White,
-                RoundedCornerShape(14.dp)
+                if (isResolved) Color(0xFF334155) else Color.White,
+                RoundedCornerShape(16.dp)
             )
             .border(
                 1.5.dp,
-                if (isResolved) Color(0xFF10B981) else Color(0xFFCBD5E1),
-                RoundedCornerShape(14.dp)
+                Color(0xFFCBD5E1),
+                RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -1447,22 +1429,10 @@ fun TraitCategoryButton(
                 textAlign = TextAlign.Center
             )
         }
-
-        if (isResolved) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 4.dp, y = (-4).dp)
-                    .size(18.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "✔️", fontSize = 12.sp)
-            }
-        }
     }
 }
 
-// ── TRAIT OPTION CARD COMPONENT (WITH GREEN TICK AND RED CROSS BADGES) ─────
+// ── TRAIT OPTION CARD COMPONENT (SQUARE CARDS WITH SMALL WHITE ROUND X/TICK BADGE) ─────
 @Composable
 fun TraitOptionCard(
     label: String,
@@ -1477,16 +1447,16 @@ fun TraitOptionCard(
 
     Box(
         modifier = modifier
-            .height(84.dp)
-            .shadow(if (isCross) 2.dp else 6.dp, RoundedCornerShape(18.dp))
+            .aspectRatio(1f)
+            .shadow(if (isCross) 2.dp else 6.dp, RoundedCornerShape(20.dp))
             .background(
-                if (isCross) Color(0xFF64748B) else Color(0xFFF8FAFC),
-                RoundedCornerShape(18.dp)
+                if (isCross) Color(0xFF475569) else Color.White,
+                RoundedCornerShape(20.dp)
             )
             .border(
                 if (isTick) 2.5.dp else 1.5.dp,
                 if (isTick) Color(0xFF10B981) else Color(0xFFCBD5E1),
-                RoundedCornerShape(18.dp)
+                RoundedCornerShape(20.dp)
             )
             .clickable(enabled = !isCross, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -1494,12 +1464,12 @@ fun TraitOptionCard(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp)
+            modifier = Modifier.padding(6.dp)
         ) {
             if (colorSwatch != null) {
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
+                        .size(32.dp)
                         .shadow(4.dp, RoundedCornerShape(8.dp))
                         .background(
                             if (isCross) colorSwatch.copy(alpha = 0.4f) else colorSwatch,
@@ -1510,40 +1480,56 @@ fun TraitOptionCard(
             } else if (icon != null) {
                 Text(
                     text = icon,
-                    fontSize = 26.sp,
+                    fontSize = 24.sp,
                     modifier = Modifier.graphicsLayer { alpha = if (isCross) 0.5f else 1.0f }
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
-                fontSize = 11.sp,
+                fontSize = 10.5.sp,
                 fontWeight = FontWeight.Black,
                 color = if (isCross) Color.White.copy(alpha = 0.7f) else Color(0xFF0F172A),
                 textAlign = TextAlign.Center
             )
         }
 
-        // Top-Right Badge: Green Tick (✔️) or Red Cross (❌)
+        // Corner Small White Round Circle Badge with X or Tick Icon (Matching Image 2)
         if (isTick) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 6.dp, y = (-6).dp)
-                    .size(26.dp),
+                    .offset(x = 4.dp, y = (-4).dp)
+                    .size(24.dp)
+                    .shadow(4.dp, CircleShape)
+                    .background(Color.White, CircleShape)
+                    .border(1.dp, Color(0xFF10B981), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "✔️", fontSize = 18.sp)
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = "Correct",
+                    tint = Color(0xFF10B981),
+                    modifier = Modifier.size(16.dp)
+                )
             }
         } else if (isCross) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 6.dp, y = (-6).dp)
-                    .size(26.dp),
+                    .offset(x = 4.dp, y = (-4).dp)
+                    .size(24.dp)
+                    .shadow(4.dp, CircleShape)
+                    .background(Color.White, CircleShape)
+                    .border(1.dp, Color(0xFFEF4444), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "❌", fontSize = 18.sp)
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Incorrect",
+                    tint = Color(0xFFEF4444),
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
