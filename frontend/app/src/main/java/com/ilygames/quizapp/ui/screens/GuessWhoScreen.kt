@@ -138,6 +138,7 @@ fun GuessWhoScreen(
 
     // Character Carousel Selection State for Phase 1 & Phase 2
     var selectedCharacterIndex by remember { mutableIntStateOf(0) }
+    var isCharacterSelected by remember { mutableStateOf(false) }
     var activeBoardCharacterIndex by remember { mutableIntStateOf(0) }
 
     var p1SecretCharacter by remember { mutableStateOf<GuessWhoCharacter?>(null) }
@@ -209,6 +210,7 @@ fun GuessWhoScreen(
         actionTakenThisTurn = false
         cardsTappedThisTurn = false
         selectedCharacterIndex = 0
+        isCharacterSelected = false
         activeBoardCharacterIndex = 0
         p1SecretCharacter = null
         p2SecretCharacter = null
@@ -343,6 +345,7 @@ fun GuessWhoScreen(
             messageText = "Hide the screen\nfrom your friend\nand choose your\ncharacter",
             onOkClick = {
                 SoundManager.playClickSound()
+                isCharacterSelected = false
                 selectionStep = "P1"
             }
         )
@@ -355,6 +358,7 @@ fun GuessWhoScreen(
             messageText = "Pass the screen\nto your friend\nand don't look",
             onOkClick = {
                 SoundManager.playClickSound()
+                isCharacterSelected = false
                 selectionStep = "P2"
             }
         )
@@ -509,6 +513,7 @@ fun GuessWhoScreen(
                                     .clickable {
                                         SoundManager.playPopSound()
                                         selectedCharacterIndex = (selectedCharacterIndex - 1 + ALL_CHARACTERS.size) % ALL_CHARACTERS.size
+                                        isCharacterSelected = false
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -520,8 +525,15 @@ fun GuessWhoScreen(
                                 )
                             }
 
-                            // SINGLE BIG 3D CHARACTER CARD (White Border & Top Name Ribbon)
-                            SingleBig3DCharacterCard(character = currentChar)
+                            // SINGLE BIG 3D CHARACTER CARD (Green Border & Name Box when selected)
+                            SingleBig3DCharacterCard(
+                                character = currentChar,
+                                isSelected = isCharacterSelected,
+                                onClick = {
+                                    SoundManager.playPopSound()
+                                    isCharacterSelected = !isCharacterSelected
+                                }
+                            )
 
                             // 3D RIGHT ARROW BUTTON (▶)
                             Box(
@@ -536,6 +548,7 @@ fun GuessWhoScreen(
                                     .clickable {
                                         SoundManager.playPopSound()
                                         selectedCharacterIndex = (selectedCharacterIndex + 1) % ALL_CHARACTERS.size
+                                        isCharacterSelected = false
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -548,10 +561,12 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        // Rectangular Rounded-Corner Green 3D CONFIRM Button directly below image (Without white line)
+                        // Rectangular Rounded-Corner 3D CONFIRM Button directly below image (Grey unselected, Green selected)
                         Button(
                             onClick = {
+                                if (!isCharacterSelected) return@Button
                                 SoundManager.playClickSound()
+                                isCharacterSelected = false
                                 if (selectionStep == "P1") {
                                     p1SecretCharacter = currentChar
                                     selectedCharacterIndex = 0
@@ -562,19 +577,31 @@ fun GuessWhoScreen(
                                     selectionStep = "COUNTDOWN"
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            enabled = isCharacterSelected,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent
+                            ),
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(0.dp),
                             modifier = Modifier
                                 .fillMaxWidth(0.65f)
                                 .height(50.dp)
-                                .shadow(10.dp, RoundedCornerShape(14.dp))
+                                .shadow(if (isCharacterSelected) 10.dp else 2.dp, RoundedCornerShape(14.dp))
                                 .background(
-                                    Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                                    if (isCharacterSelected)
+                                        Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669)))
+                                    else
+                                        Brush.verticalGradient(listOf(Color(0xFF64748B), Color(0xFF475569))),
                                     RoundedCornerShape(14.dp)
                                 )
                         ) {
-                            Text("CONFIRM", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
+                            Text(
+                                "CONFIRM",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Black,
+                                color = if (isCharacterSelected) Color.White else Color(0xFFCBD5E1)
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -1239,7 +1266,11 @@ fun PassMessageScreen(
 
 // ── SINGLE BIG 3D CHARACTER CARD FOR PHASE 1 SELECTION ───────────────────
 @Composable
-fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
+fun SingleBig3DCharacterCard(
+    character: GuessWhoCharacter,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
+) {
     val context = LocalContext.current
     val rawName = character.name.lowercase()
     val imageResId = remember(character.name) {
@@ -1259,9 +1290,10 @@ fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
             .background(Color.White, RoundedCornerShape(24.dp))
             .border(
                 3.5.dp,
-                Color.White,
+                if (isSelected) Color(0xFF10B981) else Color.White,
                 RoundedCornerShape(24.dp)
-            ),
+            )
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -1325,7 +1357,10 @@ fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                    .background(
+                        if (isSelected) Color(0xFF10B981) else Color(0xFF1E293B),
+                        RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                    )
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
