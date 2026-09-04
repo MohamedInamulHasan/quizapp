@@ -578,159 +578,171 @@ fun GuessWhoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // Single Big Character Card flanked by Left & Right 3D Arrow Buttons to Skip Candidates
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // 3D LEFT ARROW BUTTON (◀)
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .shadow(10.dp, CircleShape)
-                                .background(
-                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
-                                    CircleShape
-                                )
-                                .border(2.dp, Color.White, CircleShape)
-                                .clickable {
-                                    SoundManager.playPopSound()
-                                    activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.ChevronLeft,
-                                contentDescription = "Previous Candidate",
-                                tint = Color(0xFF0F172A),
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-
-                        // SINGLE BIG 3D DEDUCTION CARD (Tap to Hide/Unhide with Black & White filter)
-                        SingleBigDeductionCharacterCard(
-                            character = currentDeductionChar,
-                            onClick = {
-                                toggleCardFlip(currentDeductionChar)
-                            }
-                        )
-
-                        // 3D RIGHT ARROW BUTTON (▶)
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .shadow(10.dp, CircleShape)
-                                .background(
-                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
-                                    CircleShape
-                                )
-                                .border(2.dp, Color.White, CircleShape)
-                                .clickable {
-                                    SoundManager.playPopSound()
-                                    activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.ChevronRight,
-                                contentDescription = "Next Candidate",
-                                tint = Color(0xFF0F172A),
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                    }
-
                     if (lastAskedQuestion != null && !cardsTappedThisTurn) {
-                        // ── QUESTION RESULT BANNER CARD BELOW IMAGE ──
+                        // ── HIDE MAIN CARD! SHOW ONLY QUESTION RESULT BANNER IN CENTER ──
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(0.92f)
-                                .shadow(8.dp, RoundedCornerShape(20.dp))
-                                .background(Color.White, RoundedCornerShape(20.dp))
-                                .padding(vertical = 10.dp, horizontal = 16.dp),
+                                .fillMaxWidth()
+                                .weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = lastAskedQuestion!!,
-                                    fontSize = 19.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0F172A),
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.92f)
+                                    .shadow(12.dp, RoundedCornerShape(24.dp))
+                                    .background(Color.White, RoundedCornerShape(24.dp))
+                                    .border(3.dp, Color(0xFF2563EB), RoundedCornerShape(24.dp))
+                                    .padding(vertical = 22.dp, horizontal = 20.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
-                                        fontSize = 22.sp,
+                                        text = lastAskedQuestion!!,
+                                        fontSize = 21.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
+                                        color = Color(0xFF0F172A),
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
+                                            fontSize = 30.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = "HELP: Tap candidate cards to eliminate/unhide, or pass turn.",
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF64748B),
+                                        textAlign = TextAlign.Center
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "HELP: Tap the character image to hide or unhide this candidate.",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF64748B),
-                                    textAlign = TextAlign.Center
-                                )
                             }
                         }
                     } else {
-                        // ── PASS CHANCE BUTTON TO SWITCH TURN (Pill shape with white outline) ──
-                        Box(
+                        // Single Big Character Card flanked by Left & Right 3D Arrow Buttons to Skip Candidates
+                        Row(
                             modifier = Modifier
-                                .fillMaxWidth(0.90f)
-                                .height(46.dp)
-                                .shadow(8.dp, CircleShape)
-                                .background(
-                                    Brush.verticalGradient(
-                                        if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
-                                        else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
-                                    ),
-                                    CircleShape
-                                )
-                                .border(2.dp, Color.White, CircleShape)
-                                .clickable {
-                                    SoundManager.playClickSound()
-                                    isPlayer1Turn = !isPlayer1Turn
-                                    actionTakenThisTurn = false
-                                    cardsTappedThisTurn = false
-                                    lastAskedQuestion = null
-                                    lastQuestionAnswer = null
-                                    activeBoardCharacterIndex = 0
-                                    Toast.makeText(
-                                        context,
-                                        if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                            // 3D LEFT ARROW BUTTON (◀)
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .shadow(10.dp, CircleShape)
+                                    .background(
+                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                        CircleShape
+                                    )
+                                    .border(2.dp, Color.White, CircleShape)
+                                    .clickable {
+                                        SoundManager.playPopSound()
+                                        activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White
+                                Icon(
+                                    Icons.Default.ChevronLeft,
+                                    contentDescription = "Previous Candidate",
+                                    tint = Color(0xFF0F172A),
+                                    modifier = Modifier.size(36.dp)
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(18.dp))
+                            }
+
+                            // SINGLE BIG 3D DEDUCTION CARD (Tap to Hide/Unhide with Black & White filter)
+                            SingleBigDeductionCharacterCard(
+                                character = currentDeductionChar,
+                                onClick = {
+                                    toggleCardFlip(currentDeductionChar)
+                                }
+                            )
+
+                            // 3D RIGHT ARROW BUTTON (▶)
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .shadow(10.dp, CircleShape)
+                                    .background(
+                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                        CircleShape
+                                    )
+                                    .border(2.dp, Color.White, CircleShape)
+                                    .clickable {
+                                        SoundManager.playPopSound()
+                                        activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.ChevronRight,
+                                    contentDescription = "Next Candidate",
+                                    tint = Color(0xFF0F172A),
+                                    modifier = Modifier.size(36.dp)
+                                )
                             }
                         }
                     }
 
-                    // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - All Same Size, Darkened when Resolved)
+                    // ── PASS CHANCE BUTTON TO SWITCH TURN (Pill shape with white outline) ──
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.90f)
+                            .height(46.dp)
+                            .shadow(8.dp, CircleShape)
+                            .background(
+                                Brush.verticalGradient(
+                                    if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
+                                    else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
+                                ),
+                                CircleShape
+                            )
+                            .border(2.dp, Color.White, CircleShape)
+                            .clickable {
+                                SoundManager.playClickSound()
+                                isPlayer1Turn = !isPlayer1Turn
+                                actionTakenThisTurn = false
+                                cardsTappedThisTurn = false
+                                lastAskedQuestion = null
+                                lastQuestionAnswer = null
+                                activeBoardCharacterIndex = 0
+                                Toast.makeText(
+                                    context,
+                                    if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(18.dp))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - ALL 7 CARDS EXACT SAME SIZE)
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        // Row 1: 4 Cards (GENDER, EYE COLOR, HAIR, HAIR COLOR) - Equal Weight (1f)
+                        // Row 1: 4 Cards (GENDER, EYE COLOR, HAIR, HAIR COLOR) - Equal Weight (1f) -> 25% width each
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -741,19 +753,25 @@ fun GuessWhoScreen(
                             TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", isResolved = isCategoryResolved(hairColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR_COLOR" }
                         }
 
-                        // Row 2: 3 Cards (SKIN TONE, ACCESSORIES, FACIAL HAIR) - Equal Weight (1f)
-                        Row(
+                        // Row 2: 3 Cards (SKIN TONE, ACCESSORIES, FACIAL HAIR) - Centered 75% width -> 25% width each (SAME SIZE!)
+                        Box(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            contentAlignment = Alignment.Center
                         ) {
-                            TraitCategoryButton(label = "SKIN TONE", icon = "🏽", isResolved = isCategoryResolved(skinToneKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
-                            TraitCategoryButton(label = "ACCESSORIES", icon = "👓", isResolved = isCategoryResolved(accessoryKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
-                            TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", isResolved = isCategoryResolved(facialHairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(0.75f),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                TraitCategoryButton(label = "SKIN TONE", icon = "🏽", isResolved = isCategoryResolved(skinToneKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
+                                TraitCategoryButton(label = "ACCESSORIES", icon = "👓", isResolved = isCategoryResolved(accessoryKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
+                                TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", isResolved = isCategoryResolved(facialHairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(6.dp))
                 }
+
             }
         }
 
@@ -826,15 +844,20 @@ fun GuessWhoScreen(
 
                             when (activeTraitModal) {
                                 "GENDER" -> {
-                                    Row(
+                                    Box(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        TraitOptionCard("MALE", icon = "👨", status = getOptionStatus("GENDER:MALE", genderKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Is the person male?", "GENDER:MALE", genderKeys) { it.gender == Gender.MALE }
-                                        }
-                                        TraitOptionCard("FEMALE", icon = "👩", status = getOptionStatus("GENDER:FEMALE", genderKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Is the person female?", "GENDER:FEMALE", genderKeys) { it.gender == Gender.FEMALE }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(0.65f),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            TraitOptionCard("MALE", icon = "👨", status = getOptionStatus("GENDER:MALE", genderKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person male?", "GENDER:MALE", genderKeys) { it.gender == Gender.MALE }
+                                            }
+                                            TraitOptionCard("FEMALE", icon = "👩", status = getOptionStatus("GENDER:FEMALE", genderKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person female?", "GENDER:FEMALE", genderKeys) { it.gender == Gender.FEMALE }
+                                            }
                                         }
                                     }
                                 }
@@ -868,18 +891,23 @@ fun GuessWhoScreen(
                                     }
                                 }
                                 "HAIR" -> {
-                                    Row(
+                                    Box(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        TraitOptionCard("SHORT", icon = "👨‍🦱", status = getOptionStatus("HAIR:SHORT", hairKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have short hair?", "HAIR:SHORT", hairKeys) { it.hairStyle == HairStyle.SHORT }
-                                        }
-                                        TraitOptionCard("LONG", icon = "👩‍🦰", status = getOptionStatus("HAIR:LONG", hairKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have long hair?", "HAIR:LONG", hairKeys) { it.hairStyle == HairStyle.LONG }
-                                        }
-                                        TraitOptionCard("BALD", icon = "👨‍🦲", status = getOptionStatus("HAIR:BALD", hairKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Is the person bald?", "HAIR:BALD", hairKeys) { it.hairStyle == HairStyle.BALD }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(0.85f),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            TraitOptionCard("SHORT", icon = "👨‍🦱", status = getOptionStatus("HAIR:SHORT", hairKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have short hair?", "HAIR:SHORT", hairKeys) { it.hairStyle == HairStyle.SHORT }
+                                            }
+                                            TraitOptionCard("LONG", icon = "👩‍🦰", status = getOptionStatus("HAIR:LONG", hairKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have long hair?", "HAIR:LONG", hairKeys) { it.hairStyle == HairStyle.LONG }
+                                            }
+                                            TraitOptionCard("BALD", icon = "👨‍🦲", status = getOptionStatus("HAIR:BALD", hairKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person bald?", "HAIR:BALD", hairKeys) { it.hairStyle == HairStyle.BALD }
+                                            }
                                         }
                                     }
                                 }
@@ -916,18 +944,23 @@ fun GuessWhoScreen(
                                     }
                                 }
                                 "SKIN_TONE" -> {
-                                    Row(
+                                    Box(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        TraitOptionCard("FAIR", colorSwatch = Color(0xFFFDE68A), status = getOptionStatus("SKIN_TONE:FAIR", skinToneKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have fair skin?", "SKIN_TONE:FAIR", skinToneKeys) { it.skinTone == SkinTone.FAIR }
-                                        }
-                                        TraitOptionCard("MEDIUM", colorSwatch = Color(0xFFD97706), status = getOptionStatus("SKIN_TONE:MEDIUM", skinToneKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have medium skin?", "SKIN_TONE:MEDIUM", skinToneKeys) { it.skinTone == SkinTone.MEDIUM }
-                                        }
-                                        TraitOptionCard("DARK", colorSwatch = Color(0xFF78350F), status = getOptionStatus("SKIN_TONE:DARK", skinToneKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have dark skin?", "SKIN_TONE:DARK", skinToneKeys) { it.skinTone == SkinTone.DARK }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(0.85f),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            TraitOptionCard("FAIR", colorSwatch = Color(0xFFFDE68A), status = getOptionStatus("SKIN_TONE:FAIR", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have fair skin?", "SKIN_TONE:FAIR", skinToneKeys) { it.skinTone == SkinTone.FAIR }
+                                            }
+                                            TraitOptionCard("MEDIUM", colorSwatch = Color(0xFFD97706), status = getOptionStatus("SKIN_TONE:MEDIUM", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have medium skin?", "SKIN_TONE:MEDIUM", skinToneKeys) { it.skinTone == SkinTone.MEDIUM }
+                                            }
+                                            TraitOptionCard("DARK", colorSwatch = Color(0xFF78350F), status = getOptionStatus("SKIN_TONE:DARK", skinToneKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have dark skin?", "SKIN_TONE:DARK", skinToneKeys) { it.skinTone == SkinTone.DARK }
+                                            }
                                         }
                                     }
                                 }
@@ -943,7 +976,7 @@ fun GuessWhoScreen(
                                             TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("ACCESSORY:NONE", accessoryKeys), modifier = Modifier.weight(1f)) {
                                                 applyQuestionFilter("Does the person have no accessories?", "ACCESSORY:NONE", accessoryKeys) { it.accessory == Accessory.NONE }
                                             }
-                                            TraitOptionCard("GLASSES", icon = "👓", status = getOptionStatus("ACCESSORY:GLASSES", accessoryKeys), modifier = Modifier.weight(1.1f)) {
+                                            TraitOptionCard("GLASSES", icon = "👓", status = getOptionStatus("ACCESSORY:GLASSES", accessoryKeys), modifier = Modifier.weight(1f)) {
                                                 applyQuestionFilter("Is the person wearing glasses?", "ACCESSORY:GLASSES", accessoryKeys) { it.accessory == Accessory.GLASSES }
                                             }
                                             TraitOptionCard("HAT", icon = "🧢", status = getOptionStatus("ACCESSORY:HAT", accessoryKeys), modifier = Modifier.weight(1f)) {
@@ -967,18 +1000,23 @@ fun GuessWhoScreen(
                                     }
                                 }
                                 "FACIAL_HAIR" -> {
-                                    Row(
+                                    Box(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("FACIAL_HAIR:NONE", facialHairKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have no facial hair?", "FACIAL_HAIR:NONE", facialHairKeys) { it.facialHair == FacialHair.NONE }
-                                        }
-                                        TraitOptionCard("MUSTACHE", icon = "👨‍🦰", status = getOptionStatus("FACIAL_HAIR:MUSTACHE", facialHairKeys), modifier = Modifier.weight(1.1f)) {
-                                            applyQuestionFilter("Does the person have a mustache?", "FACIAL_HAIR:MUSTACHE", facialHairKeys) { it.facialHair == FacialHair.MUSTACHE }
-                                        }
-                                        TraitOptionCard("BEARD", icon = "🧔", status = getOptionStatus("FACIAL_HAIR:BEARD", facialHairKeys), modifier = Modifier.weight(1f)) {
-                                            applyQuestionFilter("Does the person have a beard?", "FACIAL_HAIR:BEARD", facialHairKeys) { it.facialHair == FacialHair.BEARD }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(0.85f),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            TraitOptionCard("NONE", icon = "🚫", status = getOptionStatus("FACIAL_HAIR:NONE", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have no facial hair?", "FACIAL_HAIR:NONE", facialHairKeys) { it.facialHair == FacialHair.NONE }
+                                            }
+                                            TraitOptionCard("MUSTACHE", icon = "👨‍🦰", status = getOptionStatus("FACIAL_HAIR:MUSTACHE", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have a mustache?", "FACIAL_HAIR:MUSTACHE", facialHairKeys) { it.facialHair == FacialHair.MUSTACHE }
+                                            }
+                                            TraitOptionCard("BEARD", icon = "🧔", status = getOptionStatus("FACIAL_HAIR:BEARD", facialHairKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Does the person have a beard?", "FACIAL_HAIR:BEARD", facialHairKeys) { it.facialHair == FacialHair.BEARD }
+                                            }
                                         }
                                     }
                                 }
@@ -1612,7 +1650,7 @@ fun TraitCategoryButton(
     }
 }
 
-// ── TRAIT OPTION CARD COMPONENT (SQUARE CARDS WITH SMALL WHITE ROUND X/TICK BADGE) ─────
+// ── TRAIT OPTION CARD COMPONENT (3D SMALL SQUARE CARDS WITH INSIDE CORNER BADGE) ─────
 @Composable
 fun TraitOptionCard(
     label: String,
@@ -1628,15 +1666,16 @@ fun TraitOptionCard(
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .shadow(if (isCross) 2.dp else 6.dp, RoundedCornerShape(20.dp))
+            .shadow(if (isCross) 3.dp else 8.dp, RoundedCornerShape(18.dp))
             .background(
-                if (isCross) Color(0xFF475569) else Color.White,
-                RoundedCornerShape(20.dp)
+                if (isCross) Brush.verticalGradient(listOf(Color(0xFF475569), Color(0xFF334155)))
+                else Brush.verticalGradient(listOf(Color.White, Color(0xFFF1F5F9))),
+                RoundedCornerShape(18.dp)
             )
             .border(
                 if (isTick) 2.5.dp else 1.5.dp,
-                if (isTick) Color(0xFF10B981) else Color(0xFFCBD5E1),
-                RoundedCornerShape(20.dp)
+                if (isTick) Color(0xFF10B981) else if (isCross) Color(0xFF64748B) else Color(0xFFCBD5E1),
+                RoundedCornerShape(18.dp)
             )
             .clickable(enabled = !isCross, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -1644,12 +1683,12 @@ fun TraitOptionCard(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(6.dp)
+            modifier = Modifier.padding(4.dp)
         ) {
             if (colorSwatch != null) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(28.dp)
                         .shadow(4.dp, RoundedCornerShape(8.dp))
                         .background(
                             if (isCross) colorSwatch.copy(alpha = 0.4f) else colorSwatch,
@@ -1660,57 +1699,59 @@ fun TraitOptionCard(
             } else if (icon != null) {
                 Text(
                     text = icon,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     modifier = Modifier.graphicsLayer { alpha = if (isCross) 0.5f else 1.0f }
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
-                fontSize = 10.5.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 color = if (isCross) Color.White.copy(alpha = 0.7f) else Color(0xFF0F172A),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1
             )
         }
 
-        // Corner Small White Round Circle Badge with X or Tick Icon (Matching Image 2)
+        // Inside Corner Badge with Bold Tick or Wrong Icon (Placed safely inside card bounds!)
         if (isTick) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 4.dp, y = (-4).dp)
-                    .size(24.dp)
+                    .padding(top = 4.dp, end = 4.dp)
+                    .size(22.dp)
                     .shadow(4.dp, CircleShape)
                     .background(Color.White, CircleShape)
-                    .border(1.dp, Color(0xFF10B981), CircleShape),
+                    .border(1.5.dp, Color(0xFF10B981), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Check,
                     contentDescription = "Correct",
                     tint = Color(0xFF10B981),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(15.dp)
                 )
             }
         } else if (isCross) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 4.dp, y = (-4).dp)
-                    .size(24.dp)
+                    .padding(top = 4.dp, end = 4.dp)
+                    .size(22.dp)
                     .shadow(4.dp, CircleShape)
                     .background(Color.White, CircleShape)
-                    .border(1.dp, Color(0xFFEF4444), CircleShape),
+                    .border(1.5.dp, Color(0xFFEF4444), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = "Incorrect",
                     tint = Color(0xFFEF4444),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(15.dp)
                 )
             }
         }
     }
 }
+
