@@ -35,6 +35,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -150,6 +152,7 @@ fun GuessWhoScreen(
     // Question Filter State
     var lastAskedQuestion by remember { mutableStateOf<String?>(null) }
     var lastQuestionAnswer by remember { mutableStateOf<Boolean?>(null) }
+    var cardsTappedThisTurn by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
@@ -161,6 +164,7 @@ fun GuessWhoScreen(
         selectionStep = "P1_INTRO"
         isPlayer1Turn = true
         actionTakenThisTurn = false
+        cardsTappedThisTurn = false
         selectedCharacterIndex = 0
         p1SecretCharacter = null
         p2SecretCharacter = null
@@ -203,10 +207,11 @@ fun GuessWhoScreen(
         SoundManager.playRetrySound()
     }
 
-    // Toggle Card Flip (Tap card to flip face down/up)
+    // Toggle Card Flip (Tap card to flip face down/up in Black & White)
     fun toggleCardFlip(clickedChar: GuessWhoCharacter) {
         SoundManager.playPopSound()
         actionTakenThisTurn = true
+        cardsTappedThisTurn = true
 
         val updatedList = boardCharacters.map { char ->
             if (char.id == clickedChar.id) {
@@ -240,6 +245,7 @@ fun GuessWhoScreen(
 
         SoundManager.playPopSound()
         actionTakenThisTurn = true
+        cardsTappedThisTurn = false
 
         lastAskedQuestion = questionText
         lastQuestionAnswer = isYes
@@ -418,41 +424,18 @@ fun GuessWhoScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        // Centered Blue Box (PLAYER 1) or Red Box (PLAYER 2)
-                        Box(
-                            modifier = Modifier
-                                .shadow(6.dp, RoundedCornerShape(14.dp))
-                                .background(
-                                    Brush.verticalGradient(
-                                        if (selectionStep == "P1") listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
-                                        else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
-                                    ),
-                                    RoundedCornerShape(14.dp)
-                                )
-                                .border(2.dp, Color.White, RoundedCornerShape(14.dp))
-                                .padding(horizontal = 34.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (selectionStep == "P1") "PLAYER 1" else "PLAYER 2",
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Big text: "choose your character"
+                        // Big text: "select your character"
                         Text(
-                            text = "choose your character",
-                            fontSize = 24.sp,
+                            text = "select your character",
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )
 
-                        // Single Big 3D Character Card flanked by Left & Right 3D Arrows (Matching screenshot)
+                        // Single Big 3D Character Card flanked by Left & Right 3D Arrows (Centered in screen)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -510,7 +493,7 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        // Rectangular Rounded-Corner Green CONFIRM Button directly below image
+                        // Rectangular Rounded-Corner Green 3D CONFIRM Button directly below image (Without white line)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -535,7 +518,6 @@ fun GuessWhoScreen(
                                     Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
                                     RoundedCornerShape(14.dp)
                                 )
-                                .border(2.dp, Color.White, RoundedCornerShape(14.dp))
                         ) {
                             Text("CONFIRM", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
                         }
@@ -575,44 +557,86 @@ fun GuessWhoScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // ── PASS CHANCE BUTTON TO SWITCH TURN (Pill shape with white outline) ──
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.92f)
-                            .height(48.dp)
-                            .shadow(8.dp, CircleShape)
-                            .background(
-                                Brush.verticalGradient(
-                                    if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
-                                    else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
-                                ),
-                                CircleShape
-                            )
-                            .border(2.dp, Color.White, CircleShape)
-                            .clickable {
-                                SoundManager.playClickSound()
-                                isPlayer1Turn = !isPlayer1Turn
-                                actionTakenThisTurn = false
-                                Toast.makeText(
-                                    context,
-                                    if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                    if (lastAskedQuestion != null && !cardsTappedThisTurn) {
+                        // ── QUESTION RESULT BANNER CARD BELOW GRID (MATCHING ATTACHED IMAGE 2) ──
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.92f)
+                                .shadow(8.dp, RoundedCornerShape(20.dp))
+                                .background(Color.White, RoundedCornerShape(20.dp))
+                                .padding(vertical = 10.dp, horizontal = 16.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(20.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = lastAskedQuestion!!,
+                                    fontSize = 19.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF0F172A),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "HELP: Tap the cards to remove candidates that do not match the question's trait.",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF64748B),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    } else {
+                        // ── PASS CHANCE BUTTON TO SWITCH TURN (Pill shape with white outline) ──
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.90f)
+                                .height(46.dp)
+                                .shadow(8.dp, CircleShape)
+                                .background(
+                                    Brush.verticalGradient(
+                                        if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
+                                        else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
+                                    ),
+                                    CircleShape
+                                )
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    SoundManager.playClickSound()
+                                    isPlayer1Turn = !isPlayer1Turn
+                                    actionTakenThisTurn = false
+                                    cardsTappedThisTurn = false
+                                    lastAskedQuestion = null
+                                    lastQuestionAnswer = null
+                                    Toast.makeText(
+                                        context,
+                                        if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(18.dp))
+                            }
                         }
                     }
 
@@ -1057,7 +1081,7 @@ fun PassMessageScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            // Small Green 3D OK Button directly below text (Without white outer box)
+            // Small Green 3D OK Button directly below text (Without white outer box & without white line)
             Button(
                 onClick = onOkClick,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -1071,7 +1095,6 @@ fun PassMessageScreen(
                         Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
                         RoundedCornerShape(22.dp)
                     )
-                    .border(2.dp, Color.White, RoundedCornerShape(22.dp))
             ) {
                 Text("OK", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
             }
@@ -1184,29 +1207,24 @@ fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
     }
 }
 
-// ── CHARACTER CARD COMPONENT (SQUARE ASPECT RATIO 1:1 FOR PHASE 2) ───────
+// ── CHARACTER CARD COMPONENT (WITH BLACK & WHITE GRAYSCALE ELIMINATION FILTER) ───────
 @Composable
 fun GuessWhoCharacterCardItem(
     character: GuessWhoCharacter,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val flipRotation by animateFloatAsState(
-        targetValue = if (character.isEliminated) 180f else 0f,
-        animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
-        label = "CardFlipRotation"
-    )
+    val isHidden = character.isEliminated
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .graphicsLayer {
-                rotationY = flipRotation
-                cameraDistance = 12f * density
-            }
             .shadow(if (isSelected) 8.dp else 2.dp, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
+            .background(
+                if (isHidden) Color(0xFF1E293B) else Color.White,
+                RoundedCornerShape(12.dp)
+            )
             .border(
                 if (isSelected) 3.5.dp else 0.dp,
                 if (isSelected) Color(0xFF10B981) else Color.Transparent,
@@ -1215,102 +1233,117 @@ fun GuessWhoCharacterCardItem(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        if (flipRotation > 90f) {
-            // Flipped Card Back Side (Clean Flat Minimal Design)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Avatar Box / Custom Uploaded Image
+            val context = LocalContext.current
+            val rawName = character.name.lowercase()
+            val imageResId = remember(character.name) {
+                val nameVariant = if (rawName == "sara") "sora" else rawName
+                var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
+                if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
+                if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
+                if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
+                id
+            }
+
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { rotationY = 180f }
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                     .background(
-                        Color(0xFF334155),
-                        RoundedCornerShape(12.dp)
-                    )
-            )
-        } else {
-            // Front Face-Up Side
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                        if (isHidden) Color(0xFF0F172A)
+                        else character.avatarBgColor.copy(alpha = 0.2f)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                // Avatar Box / Custom Uploaded Image
-                val context = LocalContext.current
-                val rawName = character.name.lowercase()
-                val imageResId = remember(character.name) {
-                    val nameVariant = if (rawName == "sara") "sora" else rawName
-                    var id = context.resources.getIdentifier(rawName, "drawable", context.packageName)
-                    if (id == 0) id = context.resources.getIdentifier("avatar_$rawName", "drawable", context.packageName)
-                    if (id == 0) id = context.resources.getIdentifier(nameVariant, "drawable", context.packageName)
-                    if (id == 0) id = context.resources.getIdentifier("avatar_$nameVariant", "drawable", context.packageName)
-                    id
-                }
+                if (imageResId != 0) {
+                    Image(
+                        painter = painterResource(id = imageResId),
+                        contentDescription = character.name,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = if (isHidden) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { alpha = if (isHidden) 0.45f else 1.0f }
+                    )
+                } else {
+                    val hairColorVal = when (character.hairColor) {
+                        HairColor.BLACK -> Color(0xFF17181C)
+                        HairColor.BROWN -> Color(0xFF78350F)
+                        HairColor.BLONDE -> Color(0xFFF59E0B)
+                        HairColor.RED -> Color(0xFFDC2626)
+                        HairColor.GREY -> Color(0xFF9CA3AF)
+                    }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .background(character.avatarBgColor.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (imageResId != 0) {
-                        Image(
-                            painter = painterResource(id = imageResId),
-                            contentDescription = character.name,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        val hairColorVal = when (character.hairColor) {
-                            HairColor.BLACK -> Color(0xFF17181C)
-                            HairColor.BROWN -> Color(0xFF78350F)
-                            HairColor.BLONDE -> Color(0xFFF59E0B)
-                            HairColor.RED -> Color(0xFFDC2626)
-                            HairColor.GREY -> Color(0xFF9CA3AF)
-                        }
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .background(
-                                        when (character.skinTone) {
-                                            SkinTone.FAIR -> Color(0xFFFDE68A)
-                                            SkinTone.MEDIUM -> Color(0xFFD97706)
-                                            SkinTone.DARK -> Color(0xFF78350F)
-                                        },
-                                        CircleShape
-                                    )
-                                    .border(1.5.dp, hairColorVal, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = if (character.accessory == Accessory.GLASSES) "👓"
-                                    else if (character.accessory == Accessory.HAT) "🧢"
-                                    else if (character.facialHair != FacialHair.NONE) "🧔"
-                                    else "👤",
-                                    fontSize = 15.sp
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.graphicsLayer { alpha = if (isHidden) 0.45f else 1.0f }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .background(
+                                    if (isHidden) Color(0xFF64748B) else when (character.skinTone) {
+                                        SkinTone.FAIR -> Color(0xFFFDE68A)
+                                        SkinTone.MEDIUM -> Color(0xFFD97706)
+                                        SkinTone.DARK -> Color(0xFF78350F)
+                                    },
+                                    CircleShape
                                 )
-                            }
+                                .border(1.5.dp, if (isHidden) Color.DarkGray else hairColorVal, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (character.accessory == Accessory.GLASSES) "👓"
+                                else if (character.accessory == Accessory.HAT) "🧢"
+                                else if (character.facialHair != FacialHair.NONE) "🧔"
+                                else "👤",
+                                fontSize = 15.sp
+                            )
                         }
                     }
                 }
 
-                // Name Ribbon
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF1E293B), RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                        .padding(vertical = 2.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = character.name,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
+                // Dark cross overlay if hidden
+                if (isHidden) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.25f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Eliminated",
+                            tint = Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
+            }
+
+            // Name Ribbon
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
+                        RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+                    )
+                    .padding(vertical = 2.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = character.name,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isHidden) Color(0xFF94A3B8) else Color.White
+                )
             }
         }
     }
