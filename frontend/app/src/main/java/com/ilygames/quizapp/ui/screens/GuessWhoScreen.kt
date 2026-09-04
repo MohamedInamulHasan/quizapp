@@ -269,7 +269,7 @@ fun GuessWhoScreen(
 
     // Determine Background Color
     val currentBgColor = when {
-        gamePhase == "SELECTION" -> Color(0xFF0F172A) // Dark Slate Theme during Selection (no full-screen blue/red effect)
+        gamePhase == "SELECTION" -> Color(0xFF0D1424) // Deep Dark Slate Theme matching reference screenshot
         gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF1D4ED8) // Player 1 Turn Theme (Blue)
         else -> Color(0xFFB91C1C) // Player 2 Turn Theme (Red)
     }
@@ -286,7 +286,7 @@ fun GuessWhoScreen(
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── TOP HEADER BAR ──────────────────────────────────────────
+            // ── TOP HEADER BAR (Black Icons inside White 3D Circular Buttons) ─────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -295,56 +295,58 @@ fun GuessWhoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // 3D Back Button
+                // White 3D Back Button with BLACK Icon (Matching screenshot)
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(44.dp)
                         .shadow(6.dp, CircleShape)
-                        .background(
-                            Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
-                            CircleShape
-                        )
-                        .border(1.5.dp, Color.White, CircleShape)
+                        .background(Color.White, CircleShape)
                         .clickable {
                             SoundManager.playClickSound()
                             onBack()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF0F172A), modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.Black,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
 
-                // Title Banner with Current Turn Indicator
+                // Title Banner
                 Text(
                     text = if (gamePhase == "PLAYING") (if (isPlayer1Turn) "PLAYER 1 TURN" else "PLAYER 2 TURN") else "Guess Who?",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
 
-                // 3D Retry Button
+                // White 3D Retry Button with BLACK Icon (Matching screenshot)
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
+                        .size(44.dp)
                         .shadow(6.dp, CircleShape)
-                        .background(
-                            Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
-                            CircleShape
-                        )
-                        .border(1.5.dp, Color.White, CircleShape)
+                        .background(Color.White, CircleShape)
                         .clickable {
                             SoundManager.playRetrySound()
                             resetFullMatch()
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset Match", tint = Color(0xFF0F172A), modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Reset Match",
+                        tint = Color.Black,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // ── PHASE 1: SINGLE BIG 3D CARD CHARACTER SELECTION (Blue P1 -> Red P2 -> Countdown) ──
+            // ── PHASE 1: SINGLE BIG 3D CARD CHARACTER SELECTION (P1 -> P2 -> Countdown) ──
             if (gamePhase == "SELECTION") {
                 if (selectionStep == "COUNTDOWN") {
                     // Dark Overlay with Big White Number 1 2 3 Countdown
@@ -373,7 +375,7 @@ fun GuessWhoScreen(
                         }
                     }
                 } else {
-                    // P1 (Blue) or P2 (Red) Selection Step with Single Big 3D Card & Side Arrows
+                    // P1 (Blue) or P2 (Red) Selection Step matching exact screenshot layout
                     val currentChar = ALL_CHARACTERS[selectedCharacterIndex]
 
                     Column(
@@ -384,14 +386,14 @@ fun GuessWhoScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        // Full-width Outer Box with White Outline (Left to Right) above Character Image
+                        // Full-width Outer Box with White Outline (Spanning Left to Right)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .shadow(10.dp, RoundedCornerShape(18.dp))
-                                .background(Color(0xFF1E293B), RoundedCornerShape(18.dp))
-                                .border(2.dp, Color.White, RoundedCornerShape(18.dp))
-                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                                .shadow(10.dp, RoundedCornerShape(20.dp))
+                                .background(Color(0xFF1B2434), RoundedCornerShape(20.dp))
+                                .border(2.dp, Color.White, RoundedCornerShape(20.dp))
+                                .padding(vertical = 14.dp, horizontal = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
@@ -401,39 +403,39 @@ fun GuessWhoScreen(
                                 // Centered Blue Box (PLAYER 1) or Red Box (PLAYER 2)
                                 Box(
                                     modifier = Modifier
-                                        .shadow(6.dp, RoundedCornerShape(12.dp))
+                                        .shadow(6.dp, RoundedCornerShape(14.dp))
                                         .background(
                                             Brush.verticalGradient(
                                                 if (selectionStep == "P1") listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
                                                 else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
                                             ),
-                                            RoundedCornerShape(12.dp)
+                                            RoundedCornerShape(14.dp)
                                         )
-                                        .border(1.5.dp, Color.White, RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 32.dp, vertical = 8.dp),
+                                        .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+                                        .padding(horizontal = 34.dp, vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = if (selectionStep == "P1") "PLAYER 1" else "PLAYER 2",
-                                        fontSize = 18.sp,
+                                        fontSize = 19.sp,
                                         fontWeight = FontWeight.Black,
                                         color = Color.White
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
 
-                                // Below text: "select your character"
+                                // Bolder subtext: "select your character"
                                 Text(
                                     text = "select your character",
-                                    fontSize = 15.sp,
+                                    fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White.copy(alpha = 0.9f)
+                                    color = Color.White
                                 )
                             }
                         }
 
-                        // Single Big 3D Card flanked by Left & Right 3D Arrows
+                        // Single Big 3D Character Card flanked by Left & Right 3D Arrows (Matching screenshot)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -463,7 +465,7 @@ fun GuessWhoScreen(
                                 )
                             }
 
-                            // SINGLE BIG 3D CHARACTER CARD
+                            // SINGLE BIG 3D CHARACTER CARD (Gold Border & Dark Ribbon)
                             SingleBig3DCharacterCard(character = currentChar)
 
                             // 3D RIGHT ARROW BUTTON (▶)
@@ -491,24 +493,7 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        // Character Index Badge (e.g. "1 of 30")
-                        Box(
-                            modifier = Modifier
-                                .shadow(4.dp, RoundedCornerShape(12.dp))
-                                .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-                                .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 14.dp, vertical = 4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Character ${selectedCharacterIndex + 1} of ${ALL_CHARACTERS.size}",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-
-                        // 3D GREEN CONFIRM BUTTON BELOW
+                        // Compact Green CONFIRM Button directly below image (Matching screenshot)
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
@@ -523,17 +508,17 @@ fun GuessWhoScreen(
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            shape = RoundedCornerShape(20.dp),
+                            shape = RoundedCornerShape(22.dp),
                             contentPadding = PaddingValues(0.dp),
                             modifier = Modifier
-                                .fillMaxWidth(0.75f)
-                                .height(54.dp)
-                                .shadow(12.dp, RoundedCornerShape(20.dp))
+                                .fillMaxWidth(0.65f)
+                                .height(50.dp)
+                                .shadow(12.dp, RoundedCornerShape(22.dp))
                                 .background(
                                     Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
-                                    RoundedCornerShape(20.dp)
+                                    RoundedCornerShape(22.dp)
                                 )
-                                .border(2.dp, Color.White, RoundedCornerShape(20.dp))
+                                .border(2.dp, Color.White, RoundedCornerShape(22.dp))
                         ) {
                             Text("CONFIRM", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
                         }
