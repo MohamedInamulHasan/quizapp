@@ -161,6 +161,7 @@ fun GuessWhoScreen(
     var cardsTappedThisTurn by remember { mutableStateOf(false) }
     var hasAskedQuestionThisTurn by remember { mutableStateOf(false) }
     var showAskQuestionWarning by remember { mutableStateOf(false) }
+    var selectedGuessCharacterId by remember { mutableStateOf<String?>(null) }
 
     // Map of tested traits per player: key = "CATEGORY:OPTION" -> value = true (Yes) / false (No)
     var p1TestedTraits by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
@@ -213,6 +214,7 @@ fun GuessWhoScreen(
         cardsTappedThisTurn = false
         hasAskedQuestionThisTurn = false
         showAskQuestionWarning = false
+        selectedGuessCharacterId = null
         selectedCharacterIndex = 0
         isCharacterSelected = false
         activeBoardCharacterIndex = 0
@@ -317,6 +319,7 @@ fun GuessWhoScreen(
         cardsTappedThisTurn = false
         hasAskedQuestionThisTurn = true
         showAskQuestionWarning = false
+        selectedGuessCharacterId = null
 
         lastAskedQuestion = questionText
         lastQuestionAnswer = isYes
@@ -712,6 +715,7 @@ fun GuessWhoScreen(
                                 .border(2.dp, Color.White, CircleShape)
                                 .clickable {
                                     SoundManager.playPopSound()
+                                    selectedGuessCharacterId = null
                                     activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
                                 },
                             contentAlignment = Alignment.Center
@@ -724,11 +728,23 @@ fun GuessWhoScreen(
                             )
                         }
 
-                        // SINGLE BIG 3D DEDUCTION CARD (Tap to Hide/Unhide with Black & White filter)
+                        // SINGLE BIG 3D DEDUCTION CARD (Tap to Select for Winner Guess or Hide/Unhide)
                         SingleBigDeductionCharacterCard(
                             character = currentDeductionChar,
+                            isSelected = (selectedGuessCharacterId == currentDeductionChar.id),
                             onClick = {
-                                toggleCardFlip(currentDeductionChar)
+                                if (currentDeductionChar.isEliminated) {
+                                    toggleCardFlip(currentDeductionChar)
+                                    selectedGuessCharacterId = null
+                                } else {
+                                    if (selectedGuessCharacterId == currentDeductionChar.id) {
+                                        selectedGuessCharacterId = null
+                                    } else {
+                                        SoundManager.playPopSound()
+                                        selectedGuessCharacterId = currentDeductionChar.id
+                                        showAskQuestionWarning = false
+                                    }
+                                }
                             }
                         )
 
@@ -744,6 +760,7 @@ fun GuessWhoScreen(
                                 .border(2.dp, Color.White, CircleShape)
                                 .clickable {
                                     SoundManager.playPopSound()
+                                    selectedGuessCharacterId = null
                                     activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
                                 },
                             contentAlignment = Alignment.Center
@@ -758,9 +775,66 @@ fun GuessWhoScreen(
                     }
 
                     // BELOW CHARACTER CARD SECTION:
-                    // If a question was asked, show Question Result Popup Card BELOW character image (Hides 7 Main Category buttons)!
-                    // Otherwise, show the 7 Main Category buttons!
-                    if (lastAskedQuestion != null) {
+                    // If a candidate is chosen for winner guess: Everything clears (question box, 7 category buttons, pass button hidden)!
+                    // Show White 3D CONFIRM Button directly below the image!
+                    if (selectedGuessCharacterId == currentDeductionChar.id) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    SoundManager.playClickSound()
+                                    val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
+                                    val isCorrect = currentDeductionChar.id == targetSecret.id
+
+                                    if (isCorrect) {
+                                        SoundManager.playCorrectSound()
+                                        if (isPlayer1Turn) p1Wins++ else p2Wins++
+                                        winnerMessage = if (isPlayer1Turn) "🎉 Player 1 Guessed Correctly! It's ${targetSecret.name}!" else "🎉 Player 2 Guessed Correctly! It's ${targetSecret.name}!"
+                                        winningPlayer = if (isPlayer1Turn) 1 else 2
+                                    } else {
+                                        SoundManager.playWrongSound()
+                                        if (isPlayer1Turn) p2Wins++ else p1Wins++
+                                        winnerMessage = if (isPlayer1Turn) "❌ Wrong Guess! Player ${if (isPlayer1Turn) 2 else 1} Wins! It was ${targetSecret.name}."
+                                        winningPlayer = if (isPlayer1Turn) 2 else 1
+                                    }
+                                    showWinnerDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                shape = RoundedCornerShape(14.dp),
+                                contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f)
+                                    .height(50.dp)
+                                    .shadow(10.dp, RoundedCornerShape(14.dp))
+                                    .background(
+                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                        RoundedCornerShape(14.dp)
+                                    )
+                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+                            ) {
+                                Text(
+                                    "CONFIRM",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF0F172A)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            TextButton(
+                                onClick = {
+                                    selectedGuessCharacterId = null
+                                    toggleCardFlip(currentDeductionChar)
+                                }
+                            ) {
+                                Text("Hide Candidate", fontSize = 13.sp, color = Color.White.copy(alpha = 0.85f), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    } else if (lastAskedQuestion != null) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.92f)
@@ -830,7 +904,7 @@ fun GuessWhoScreen(
                             .height(46.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (cardsTappedThisTurn) {
+                        if (cardsTappedThisTurn && selectedGuessCharacterId == null) {
                             Button(
                                 onClick = {
                                     SoundManager.playClickSound()
@@ -839,6 +913,7 @@ fun GuessWhoScreen(
                                     cardsTappedThisTurn = false
                                     hasAskedQuestionThisTurn = false
                                     showAskQuestionWarning = false
+                                    selectedGuessCharacterId = null
                                     lastAskedQuestion = null
                                     lastQuestionAnswer = null
                                     activeBoardCharacterIndex = 0
@@ -1432,6 +1507,7 @@ fun SingleBig3DCharacterCard(
 @Composable
 fun SingleBigDeductionCharacterCard(
     character: GuessWhoCharacter,
+    isSelected: Boolean = false,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -1453,8 +1529,8 @@ fun SingleBigDeductionCharacterCard(
             .shadow(16.dp, RoundedCornerShape(24.dp))
             .background(if (isHidden) Color(0xFF1E293B) else Color.White, RoundedCornerShape(24.dp))
             .border(
-                1.5.dp,
-                if (isHidden) Color(0xFF64748B) else Color.White,
+                if (isSelected) 3.5.dp else 1.5.dp,
+                if (isSelected) Color(0xFF10B981) else if (isHidden) Color(0xFF64748B) else Color.White,
                 RoundedCornerShape(24.dp)
             )
             .clickable(onClick = onClick),
@@ -1535,12 +1611,13 @@ fun SingleBigDeductionCharacterCard(
                 }
             }
 
-            // Big Character Name Ribbon AT THE BOTTOM (Below Image with X symbol next to name if hidden)
+            // Big Character Name Ribbon AT THE BOTTOM (Below Image with X symbol next to name if hidden, Green when selected)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
+                        if (isSelected) Color(0xFF10B981)
+                        else if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
                         RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
                     )
                     .padding(vertical = 10.dp, horizontal = 8.dp),
@@ -1575,7 +1652,7 @@ fun SingleBigDeductionCharacterCard(
                         text = character.name,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
-                        color = if (isHidden) Color(0xFF94A3B8) else Color.White
+                        color = if (isSelected) Color.White else if (isHidden) Color(0xFF94A3B8) else Color.White
                     )
                 }
             }
