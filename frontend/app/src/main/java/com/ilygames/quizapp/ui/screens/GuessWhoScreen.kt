@@ -931,7 +931,6 @@ fun GuessWhoScreen(
                                         Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
                                         RoundedCornerShape(16.dp)
                                     )
-                                    .border(2.dp, Color.White, RoundedCornerShape(16.dp))
                             ) {
                                 Text("PASS", fontSize = 17.sp, fontWeight = FontWeight.Black, color = Color.White)
                             }
