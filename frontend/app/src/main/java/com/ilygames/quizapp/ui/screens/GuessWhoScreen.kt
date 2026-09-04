@@ -393,8 +393,8 @@ fun GuessWhoScreen(
                     text = when {
                         gamePhase == "SELECTION" && selectionStep == "P1" -> "PLAYER 1"
                         gamePhase == "SELECTION" && selectionStep == "P2" -> "PLAYER 2"
-                        gamePhase == "PLAYING" && isPlayer1Turn -> "PLAYER 1 TURN"
-                        gamePhase == "PLAYING" && !isPlayer1Turn -> "PLAYER 2 TURN"
+                        gamePhase == "PLAYING" && isPlayer1Turn -> "PLAYER 1"
+                        gamePhase == "PLAYING" && !isPlayer1Turn -> "PLAYER 2"
                         else -> "Guess Who?"
                     },
                     fontSize = 24.sp,
@@ -578,133 +578,150 @@ fun GuessWhoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    if (lastAskedQuestion != null && !cardsTappedThisTurn) {
-                        // ── HIDE MAIN CARD! SHOW ONLY QUESTION RESULT BANNER IN CENTER ──
+                    // White Help Message ABOVE single character card image (Hidden when card is clicked/blacked out)
+                    if (!cardsTappedThisTurn) {
+                        Text(
+                            text = "HELP: Tap image to hide or unhide candidate",
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // Single Big Character Card flanked by Left & Right 3D Arrow Buttons to Skip Candidates (Always visible)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // 3D LEFT ARROW BUTTON (◀)
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
+                                .size(52.dp)
+                                .shadow(10.dp, CircleShape)
+                                .background(
+                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                    CircleShape
+                                )
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    SoundManager.playPopSound()
+                                    activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
+                                },
                             contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.92f)
-                                    .shadow(12.dp, RoundedCornerShape(24.dp))
-                                    .background(Color.White, RoundedCornerShape(24.dp))
-                                    .border(3.dp, Color(0xFF2563EB), RoundedCornerShape(24.dp))
-                                    .padding(vertical = 22.dp, horizontal = 20.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Default.ChevronLeft,
+                                contentDescription = "Previous Candidate",
+                                tint = Color(0xFF0F172A),
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+
+                        // SINGLE BIG 3D DEDUCTION CARD (Tap to Hide/Unhide with Black & White filter)
+                        SingleBigDeductionCharacterCard(
+                            character = currentDeductionChar,
+                            onClick = {
+                                toggleCardFlip(currentDeductionChar)
+                            }
+                        )
+
+                        // 3D RIGHT ARROW BUTTON (▶)
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .shadow(10.dp, CircleShape)
+                                .background(
+                                    Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
+                                    CircleShape
+                                )
+                                .border(2.dp, Color.White, CircleShape)
+                                .clickable {
+                                    SoundManager.playPopSound()
+                                    activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = "Next Candidate",
+                                tint = Color(0xFF0F172A),
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                    }
+
+                    // BELOW CHARACTER CARD SECTION:
+                    // If a question was asked, show Question Result Popup Card BELOW character image (Hides 7 Main Category buttons)!
+                    // Otherwise, show the 7 Main Category buttons!
+                    if (lastAskedQuestion != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.92f)
+                                .shadow(10.dp, RoundedCornerShape(22.dp))
+                                .background(Color.White, RoundedCornerShape(22.dp))
+                                .border(3.dp, Color(0xFF2563EB), RoundedCornerShape(22.dp))
+                                .padding(vertical = 14.dp, horizontal = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = lastAskedQuestion!!,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF0F172A),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = lastAskedQuestion!!,
-                                        fontSize = 21.sp,
+                                        text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
+                                        fontSize = 26.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = Color(0xFF0F172A),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
-                                            fontSize = 30.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "HELP: Tap candidate cards to eliminate/unhide, or pass turn.",
-                                        fontSize = 11.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF64748B),
-                                        textAlign = TextAlign.Center
+                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
                                     )
                                 }
                             }
                         }
                     } else {
-                        // Single Big Character Card flanked by Left & Right 3D Arrow Buttons to Skip Candidates
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - ALL 7 CARDS EXACT SAME SIZE)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            // 3D LEFT ARROW BUTTON (◀)
-                            Box(
-                                modifier = Modifier
-                                    .size(52.dp)
-                                    .shadow(10.dp, CircleShape)
-                                    .background(
-                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
-                                        CircleShape
-                                    )
-                                    .border(2.dp, Color.White, CircleShape)
-                                    .clickable {
-                                        SoundManager.playPopSound()
-                                        activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
-                                    },
-                                contentAlignment = Alignment.Center
+                            // Row 1: 4 Cards (GENDER, EYE COLOR, HAIR, HAIR COLOR)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Icon(
-                                    Icons.Default.ChevronLeft,
-                                    contentDescription = "Previous Candidate",
-                                    tint = Color(0xFF0F172A),
-                                    modifier = Modifier.size(36.dp)
-                                )
+                                TraitCategoryButton(label = "GENDER", icon = "👫", isResolved = isCategoryResolved(genderKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
+                                TraitCategoryButton(label = "EYE COLOR", icon = "👁️", isResolved = isCategoryResolved(eyeColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "EYE_COLOR" }
+                                TraitCategoryButton(label = "HAIR", icon = "💇", isResolved = isCategoryResolved(hairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR" }
+                                TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", isResolved = isCategoryResolved(hairColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR_COLOR" }
                             }
 
-                            // SINGLE BIG 3D DEDUCTION CARD (Tap to Hide/Unhide with Black & White filter)
-                            SingleBigDeductionCharacterCard(
-                                character = currentDeductionChar,
-                                onClick = {
-                                    toggleCardFlip(currentDeductionChar)
-                                }
-                            )
-
-                            // 3D RIGHT ARROW BUTTON (▶)
+                            // Row 2: 3 Cards (SKIN TONE, ACCESSORIES, FACIAL HAIR) - Centered 75% width (SAME SIZE!)
                             Box(
-                                modifier = Modifier
-                                    .size(52.dp)
-                                    .shadow(10.dp, CircleShape)
-                                    .background(
-                                        Brush.verticalGradient(listOf(Color.White, Color(0xFFE2E8F0))),
-                                        CircleShape
-                                    )
-                                    .border(2.dp, Color.White, CircleShape)
-                                    .clickable {
-                                        SoundManager.playPopSound()
-                                        activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
-                                    },
+                                modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    Icons.Default.ChevronRight,
-                                    contentDescription = "Next Candidate",
-                                    tint = Color(0xFF0F172A),
-                                    modifier = Modifier.size(36.dp)
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(0.75f),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    TraitCategoryButton(label = "SKIN TONE", icon = "🏽", isResolved = isCategoryResolved(skinToneKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
+                                    TraitCategoryButton(label = "ACCESSORIES", icon = "👓", isResolved = isCategoryResolved(accessoryKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
+                                    TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", isResolved = isCategoryResolved(facialHairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
+                                }
                             }
                         }
                     }
 
-                    // ── PASS CHANCE BUTTON TO SWITCH TURN (Pill shape with white outline) ──
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.90f)
-                            .height(46.dp)
-                            .shadow(8.dp, CircleShape)
-                            .background(
-                                Brush.verticalGradient(
-                                    if (isPlayer1Turn) listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
-                                    else listOf(Color(0xFFDC2626), Color(0xFFB91C1C))
-                                ),
-                                CircleShape
-                            )
-                            .border(2.dp, Color.White, CircleShape)
-                            .clickable {
+                    // SMALL 3D PASS BUTTON (Only shown when candidate card is tapped/blacked out)
+                    if (cardsTappedThisTurn) {
+                        Button(
+                            onClick = {
                                 SoundManager.playClickSound()
                                 isPlayer1Turn = !isPlayer1Turn
                                 actionTakenThisTurn = false
@@ -718,58 +735,24 @@ fun GuessWhoScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier
+                                .width(130.dp)
+                                .height(42.dp)
+                                .shadow(8.dp, RoundedCornerShape(16.dp))
+                                .background(
+                                    Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .border(2.dp, Color.White, RoundedCornerShape(16.dp))
                         ) {
-                            Text(
-                                text = if (isPlayer1Turn) "PASS CHANCE TO PLAYER 2" else "PASS CHANCE TO PLAYER 1",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Pass Turn", tint = Color.White, modifier = Modifier.size(18.dp))
+                            Text("PASS", fontSize = 17.sp, fontWeight = FontWeight.Black, color = Color.White)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    // BOTTOM TRAIT FILTER BUTTONS ROW (4 Above, 3 Below - ALL 7 CARDS EXACT SAME SIZE)
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        // Row 1: 4 Cards (GENDER, EYE COLOR, HAIR, HAIR COLOR) - Equal Weight (1f) -> 25% width each
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            TraitCategoryButton(label = "GENDER", icon = "👫", isResolved = isCategoryResolved(genderKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "GENDER" }
-                            TraitCategoryButton(label = "EYE COLOR", icon = "👁️", isResolved = isCategoryResolved(eyeColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "EYE_COLOR" }
-                            TraitCategoryButton(label = "HAIR", icon = "💇", isResolved = isCategoryResolved(hairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR" }
-                            TraitCategoryButton(label = "HAIR COLOR", icon = "🎨", isResolved = isCategoryResolved(hairColorKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "HAIR_COLOR" }
-                        }
-
-                        // Row 2: 3 Cards (SKIN TONE, ACCESSORIES, FACIAL HAIR) - Centered 75% width -> 25% width each (SAME SIZE!)
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(0.75f),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                TraitCategoryButton(label = "SKIN TONE", icon = "🏽", isResolved = isCategoryResolved(skinToneKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "SKIN_TONE" }
-                                TraitCategoryButton(label = "ACCESSORIES", icon = "👓", isResolved = isCategoryResolved(accessoryKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "ACCESSORY" }
-                                TraitCategoryButton(label = "FACIAL HAIR", icon = "👨", isResolved = isCategoryResolved(facialHairKeys), modifier = Modifier.weight(1f)) { activeTraitModal = "FACIAL_HAIR" }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
 
             }
