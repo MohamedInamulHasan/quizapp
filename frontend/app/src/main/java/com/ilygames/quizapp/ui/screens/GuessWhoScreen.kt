@@ -129,7 +129,7 @@ fun GuessWhoScreen(
 
     // Game Phases & Selection Steps
     var gamePhase by remember { mutableStateOf("SELECTION") } // "SELECTION" or "PLAYING"
-    var selectionStep by remember { mutableStateOf("P1") } // "P1", "P2", "COUNTDOWN", "DONE"
+    var selectionStep by remember { mutableStateOf("P1_INTRO") } // "P1_INTRO", "P1", "P2_PASS", "P2", "COUNTDOWN", "DONE"
     var countdownText by remember { mutableStateOf("3") }
 
     // Character Carousel Selection State for Phase 1
@@ -158,7 +158,7 @@ fun GuessWhoScreen(
     // Auto-setup for new round
     fun setupNewRound() {
         gamePhase = "SELECTION"
-        selectionStep = "P1"
+        selectionStep = "P1_INTRO"
         isPlayer1Turn = true
         actionTakenThisTurn = false
         selectedCharacterIndex = 0
@@ -269,9 +269,34 @@ fun GuessWhoScreen(
 
     // Determine Background Color
     val currentBgColor = when {
-        gamePhase == "SELECTION" -> Color(0xFF0D1424) // Deep Dark Slate Theme matching reference screenshot
+        gamePhase == "SELECTION" -> Color(0xFF0D1424) // Deep Dark Slate Theme
         gamePhase == "PLAYING" && isPlayer1Turn -> Color(0xFF1D4ED8) // Player 1 Turn Theme (Blue)
         else -> Color(0xFFB91C1C) // Player 2 Turn Theme (Red)
+    }
+
+    // ── STEP 1 INTRO SCREEN & STEP 3 PASS SCREEN OVERLAYS ──
+    if (gamePhase == "SELECTION" && selectionStep == "P1_INTRO") {
+        PassMessageScreen(
+            bgColor = Color(0xFF0F2B5C), // Dark Blue Theme matching user request
+            messageText = "Hide the screen\nfrom your friend\nand choose your\ncharacter",
+            onOkClick = {
+                SoundManager.playClickSound()
+                selectionStep = "P1"
+            }
+        )
+        return
+    }
+
+    if (gamePhase == "SELECTION" && selectionStep == "P2_PASS") {
+        PassMessageScreen(
+            bgColor = Color(0xFFDC2626), // Red Theme matching user request
+            messageText = "Pass the screen\nto your friend\nand don't look",
+            onOkClick = {
+                SoundManager.playClickSound()
+                selectionStep = "P2"
+            }
+        )
+        return
     }
 
     Box(
@@ -295,7 +320,7 @@ fun GuessWhoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // White 3D Back Button with BLACK Icon (Matching screenshot)
+                // White 3D Back Button with BLACK Icon
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -323,7 +348,7 @@ fun GuessWhoScreen(
                     color = Color.White
                 )
 
-                // White 3D Retry Button with BLACK Icon (Matching screenshot)
+                // White 3D Retry Button with BLACK Icon
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -493,14 +518,14 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        // Compact Green CONFIRM Button directly below image (Matching screenshot)
+                        // Compact Green CONFIRM Button directly below image
                         Button(
                             onClick = {
                                 SoundManager.playClickSound()
                                 if (selectionStep == "P1") {
                                     p1SecretCharacter = currentChar
                                     selectedCharacterIndex = 0
-                                    selectionStep = "P2"
+                                    selectionStep = "P2_PASS"
                                 } else {
                                     p2SecretCharacter = currentChar
                                     selectedCharacterIndex = 0
@@ -1005,6 +1030,71 @@ fun GuessWhoScreen(
     }
 }
 
+// ── PASS MESSAGE SCREEN COMPONENT (MATCHING SCREENSHOTS 1 & 2) ─────────────
+@Composable
+fun PassMessageScreen(
+    bgColor: Color,
+    messageText: String,
+    onOkClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bgColor)
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Center Big White Message Text (Matching screenshots 1 & 2)
+            Text(
+                text = messageText,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                lineHeight = 42.sp,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            // Bottom White Card with Green OK Button (Matching screenshots 1 & 2)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.72f)
+                    .shadow(12.dp, RoundedCornerShape(28.dp))
+                    .background(Color.White, RoundedCornerShape(28.dp))
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = onOkClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .shadow(6.dp, RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                            RoundedCornerShape(16.dp)
+                        )
+                ) {
+                    Text("OK", fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
+                }
+            }
+        }
+    }
+}
+
 // ── SINGLE BIG 3D CHARACTER CARD FOR PHASE 1 SELECTION ───────────────────
 @Composable
 fun SingleBig3DCharacterCard(character: GuessWhoCharacter) {
@@ -1291,7 +1381,7 @@ fun TraitOptionCard(
             modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp)
         ) {
             if (colorSwatch != null) {
-                // 3D Color Swatch Box (Matching reference screenshot)
+                // 3D Color Swatch Box
                 Box(
                     modifier = Modifier
                         .size(36.dp)
