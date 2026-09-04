@@ -159,6 +159,8 @@ fun GuessWhoScreen(
     var lastAskedQuestion by remember { mutableStateOf<String?>(null) }
     var lastQuestionAnswer by remember { mutableStateOf<Boolean?>(null) }
     var cardsTappedThisTurn by remember { mutableStateOf(false) }
+    var hasAskedQuestionThisTurn by remember { mutableStateOf(false) }
+    var showAskQuestionWarning by remember { mutableStateOf(false) }
 
     // Map of tested traits per player: key = "CATEGORY:OPTION" -> value = true (Yes) / false (No)
     var p1TestedTraits by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
@@ -209,6 +211,8 @@ fun GuessWhoScreen(
         isPlayer1Turn = true
         actionTakenThisTurn = false
         cardsTappedThisTurn = false
+        hasAskedQuestionThisTurn = false
+        showAskQuestionWarning = false
         selectedCharacterIndex = 0
         isCharacterSelected = false
         activeBoardCharacterIndex = 0
@@ -258,6 +262,12 @@ fun GuessWhoScreen(
 
     // Toggle Card Flip (Tap card to flip face down/up in Black & White)
     fun toggleCardFlip(clickedChar: GuessWhoCharacter) {
+        if (!hasAskedQuestionThisTurn) {
+            SoundManager.playPopSound()
+            showAskQuestionWarning = true
+            return
+        }
+        showAskQuestionWarning = false
         SoundManager.playPopSound()
         actionTakenThisTurn = true
         cardsTappedThisTurn = true
@@ -305,6 +315,8 @@ fun GuessWhoScreen(
         SoundManager.playPopSound()
         actionTakenThisTurn = true
         cardsTappedThisTurn = false
+        hasAskedQuestionThisTurn = true
+        showAskQuestionWarning = false
 
         lastAskedQuestion = questionText
         lastQuestionAnswer = isYes
@@ -619,14 +631,40 @@ fun GuessWhoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // White 3D Box Help Message ABOVE single character card image (Fixed height so image position never jumps)
+                    // White 3D Box Help Message or Blue/Red Warning Pill ABOVE single character card image (Fixed height 54.dp so image position never jumps)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(40.dp),
+                            .height(54.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (!cardsTappedThisTurn) {
+                        if (showAskQuestionWarning) {
+                            // Rounded Pill Warning Popup matching screenshot (Blue for Player 1, Red for Player 2)
+                            Box(
+                                modifier = Modifier
+                                    .shadow(8.dp, RoundedCornerShape(30.dp))
+                                    .background(
+                                        if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
+                                        RoundedCornerShape(30.dp)
+                                    )
+                                    .border(
+                                        3.dp,
+                                        if (isPlayer1Turn) Color(0xFF60A5FA) else Color(0xFFFCA5A5),
+                                        RoundedCornerShape(30.dp)
+                                    )
+                                    .padding(horizontal = 20.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Press a button below\nto ask a question!",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                        } else if (!cardsTappedThisTurn) {
                             Box(
                                 modifier = Modifier
                                     .shadow(6.dp, CircleShape)
@@ -774,37 +812,46 @@ fun GuessWhoScreen(
                         }
                     }
 
-                    // SMALL 3D PASS BUTTON (Only shown when candidate card is tapped/blacked out)
-                    if (cardsTappedThisTurn) {
-                        Button(
-                            onClick = {
-                                SoundManager.playClickSound()
-                                isPlayer1Turn = !isPlayer1Turn
-                                actionTakenThisTurn = false
-                                cardsTappedThisTurn = false
-                                lastAskedQuestion = null
-                                lastQuestionAnswer = null
-                                activeBoardCharacterIndex = 0
-                                Toast.makeText(
-                                    context,
-                                    if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            shape = RoundedCornerShape(16.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            modifier = Modifier
-                                .width(130.dp)
-                                .height(42.dp)
-                                .shadow(8.dp, RoundedCornerShape(16.dp))
-                                .background(
-                                    Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
-                                    RoundedCornerShape(16.dp)
-                                )
-                                .border(2.dp, Color.White, RoundedCornerShape(16.dp))
-                        ) {
-                            Text("PASS", fontSize = 17.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    // SMALL 3D PASS BUTTON CONTAINER (Fixed height 46.dp so image position NEVER shifts when PASS appears/disappears)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (cardsTappedThisTurn) {
+                            Button(
+                                onClick = {
+                                    SoundManager.playClickSound()
+                                    isPlayer1Turn = !isPlayer1Turn
+                                    actionTakenThisTurn = false
+                                    cardsTappedThisTurn = false
+                                    hasAskedQuestionThisTurn = false
+                                    showAskQuestionWarning = false
+                                    lastAskedQuestion = null
+                                    lastQuestionAnswer = null
+                                    activeBoardCharacterIndex = 0
+                                    Toast.makeText(
+                                        context,
+                                        if (isPlayer1Turn) "🎮 Player 1's Turn!" else "🎮 Player 2's Turn!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier
+                                    .width(130.dp)
+                                    .height(42.dp)
+                                    .shadow(8.dp, RoundedCornerShape(16.dp))
+                                    .background(
+                                        Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .border(2.dp, Color.White, RoundedCornerShape(16.dp))
+                            ) {
+                                Text("PASS", fontSize = 17.sp, fontWeight = FontWeight.Black, color = Color.White)
+                            }
                         }
                     }
 
@@ -1472,25 +1519,17 @@ fun SingleBigDeductionCharacterCard(
                     }
                 }
 
-                // Dark cross overlay if eliminated
+                // Subtle dark overlay if eliminated
                 if (isHidden) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.35f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Eliminated",
-                            tint = Color.White.copy(alpha = 0.85f),
-                            modifier = Modifier.size(64.dp)
-                        )
-                    }
+                            .background(Color.Black.copy(alpha = 0.35f))
+                    )
                 }
             }
 
-            // Big Character Name Ribbon AT THE BOTTOM (Below Image)
+            // Big Character Name Ribbon AT THE BOTTOM (Below Image with X symbol next to name if hidden)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1498,15 +1537,42 @@ fun SingleBigDeductionCharacterCard(
                         if (isHidden) Color(0xFF0F172A) else Color(0xFF1E293B),
                         RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
                     )
-                    .padding(vertical = 10.dp),
+                    .padding(vertical = 10.dp, horizontal = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = character.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
-                    color = if (isHidden) Color(0xFF94A3B8) else Color.White
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (isHidden) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .shadow(4.dp, CircleShape)
+                                .background(
+                                    Brush.verticalGradient(listOf(Color(0xFFEF4444), Color(0xFFDC2626))),
+                                    CircleShape
+                                )
+                                .border(1.5.dp, Color.White, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Hidden",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
+                    Text(
+                        text = character.name,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (isHidden) Color(0xFF94A3B8) else Color.White
+                    )
+                }
             }
         }
     }
