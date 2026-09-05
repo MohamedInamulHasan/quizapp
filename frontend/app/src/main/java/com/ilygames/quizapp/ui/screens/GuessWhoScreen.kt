@@ -702,31 +702,44 @@ fun GuessWhoScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         val isVisible = showAskQuestionWarning || (showHelpCard && lastAskedQuestion != null)
-                        key(warningAnimTrigger) {
-                            AnimatedVisibility(
-                                visible = isVisible,
-                                enter = scaleIn(initialScale = 0.5f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
-                                exit = scaleOut(targetScale = 0.5f) + fadeOut()
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .shadow(8.dp, RoundedCornerShape(16.dp))
-                                        .background(
-                                            if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
-                                            RoundedCornerShape(16.dp)
-                                        )
-                                        .border(2.dp, Color.White, RoundedCornerShape(16.dp))
-                                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = if (showAskQuestionWarning) "Press a button below to ask a question!" else "HELP: Tap image to hide or unhide candidate",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color.White,
-                                        textAlign = TextAlign.Center
+                        val warningScaleAnim = remember { Animatable(1f) }
+                        LaunchedEffect(warningAnimTrigger) {
+                            if (warningAnimTrigger > 0) {
+                                warningScaleAnim.snapTo(0.5f)
+                                warningScaleAnim.animateTo(
+                                    targetValue = 1f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMedium
                                     )
-                                }
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = scaleIn(initialScale = 0.5f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
+                            exit = scaleOut(targetScale = 0.5f) + fadeOut()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .scale(warningScaleAnim.value)
+                                    .shadow(8.dp, RoundedCornerShape(16.dp))
+                                    .background(
+                                        if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .border(2.dp, Color.White, RoundedCornerShape(16.dp))
+                                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (showAskQuestionWarning) "Press a button below to ask a question!" else "HELP: Tap image to hide or unhide candidate",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
                     }
