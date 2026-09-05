@@ -536,7 +536,7 @@ fun DotsAndBoxesScreen(
             val p2Won = p2BoxCount > p1BoxCount
 
             LaunchedEffect(Unit) {
-                SoundManager.playCorrectSound()
+                SoundManager.playSuccessChime()
             }
 
             var isCardVisible by remember { mutableStateOf(false) }

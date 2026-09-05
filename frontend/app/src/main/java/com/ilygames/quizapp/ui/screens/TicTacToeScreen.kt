@@ -550,7 +550,7 @@ fun TicTacToeScreen(
             val p2WonMatch = p2Wins > p1Wins
 
             LaunchedEffect(Unit) {
-                SoundManager.playCorrectSound()
+                SoundManager.playSuccessChime()
             }
 
             var isCardVisible by remember { mutableStateOf(false) }

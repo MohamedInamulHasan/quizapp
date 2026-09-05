@@ -595,7 +595,7 @@ fun ExcitingVictoryCardModal(
     val textColor = if (isDark) Color.White else Color(0xFF0F172A)
 
     LaunchedEffect(Unit) {
-        SoundManager.playCorrectSound()
+        SoundManager.playSuccessChime()
     }
 
     var isCardVisible by remember { mutableStateOf(false) }

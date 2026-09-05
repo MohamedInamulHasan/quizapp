@@ -509,7 +509,7 @@ fun ConnectFourScreen(
             val p2Won = p2Wins > p1Wins
 
             LaunchedEffect(Unit) {
-                SoundManager.playCorrectSound()
+                SoundManager.playSuccessChime()
             }
 
             var isCardVisible by remember { mutableStateOf(false) }

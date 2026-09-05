@@ -1240,7 +1240,7 @@ fun GuessWhoScreen(
             val p2Won = winningPlayer == 2
 
             LaunchedEffect(Unit) {
-                SoundManager.playCorrectSound()
+                SoundManager.playSuccessChime()
             }
 
             var isCardVisible by remember { mutableStateOf(false) }
@@ -1381,6 +1381,20 @@ fun PassMessageScreen(
     messageText: String,
     onOkClick: () -> Unit
 ) {
+    var visibleTextCount by remember(messageText) { mutableIntStateOf(0) }
+
+    LaunchedEffect(messageText) {
+        visibleTextCount = 0
+        for (i in 1..messageText.length) {
+            visibleTextCount = i
+            delay(30)
+        }
+    }
+
+    val animatedText = remember(visibleTextCount, messageText) {
+        messageText.take(visibleTextCount)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1398,9 +1412,9 @@ fun PassMessageScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Center Big White Message Text (Matching screenshots 1 & 2)
+            // Center Big White Message Text with Letter Loading Animation
             Text(
-                text = messageText,
+                text = animatedText,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White,
