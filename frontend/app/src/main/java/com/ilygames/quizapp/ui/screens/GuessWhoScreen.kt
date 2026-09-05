@@ -240,9 +240,9 @@ fun GuessWhoScreen(
         SoundManager.playRetrySound()
     }
 
-    LaunchedEffect(showAskQuestionWarning, showHelpCard, lastAskedQuestion) {
-        if (showAskQuestionWarning || (showHelpCard && lastAskedQuestion != null) || lastAskedQuestion != null) {
-            SoundManager.playWhooshSound()
+    LaunchedEffect(lastAskedQuestion) {
+        if (lastAskedQuestion != null) {
+            SoundManager.playClickSound()
         }
     }
 
@@ -307,6 +307,7 @@ fun GuessWhoScreen(
             return
         }
         showAskQuestionWarning = false
+        SoundManager.playClickSound()
         actionTakenThisTurn = true
         cardsTappedThisTurn = true
 
@@ -593,7 +594,7 @@ fun GuessWhoScreen(
                                 character = currentChar,
                                 isSelected = isCharacterSelected,
                                 onClick = {
-                                    SoundManager.playPopSound()
+                                    SoundManager.playClickSound()
                                     isCharacterSelected = !isCharacterSelected
                                 }
                             )
@@ -767,7 +768,7 @@ fun GuessWhoScreen(
                                         remainingFaceUp.first().id == currentDeductionChar.id
 
                                 if (isLastFaceUpCard) {
-                                    SoundManager.playPopSound()
+                                    SoundManager.playClickSound()
                                     if (selectedGuessCharacterId == currentDeductionChar.id) {
                                         selectedGuessCharacterId = null
                                     } else {
