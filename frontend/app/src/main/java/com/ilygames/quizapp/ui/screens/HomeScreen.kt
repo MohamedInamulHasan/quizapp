@@ -993,6 +993,8 @@ fun compressImageUriToBytes(context: Context, uri: android.net.Uri, maxSizePx: I
                                 onNavigateToDotsAndBoxes()
                             }
                         )
+                    }
+
                     // 2 Player Games Grid Row 3: Guess Who?
                     Row(
                         modifier = Modifier.fillMaxWidth(),
