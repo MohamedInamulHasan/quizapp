@@ -716,11 +716,7 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = scaleIn(initialScale = 0.5f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
-                            exit = scaleOut(targetScale = 0.5f) + fadeOut()
-                        ) {
+                        if (isVisible) {
                             Box(
                                 modifier = Modifier
                                     .scale(warningScaleAnim.value)
@@ -885,36 +881,30 @@ fun GuessWhoScreen(
                             }
                         }
                     } else if (lastAskedQuestion != null) {
-                        AnimatedVisibility(
-                            visible = lastAskedQuestion != null,
-                            enter = scaleIn(initialScale = 0.5f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
-                            exit = scaleOut(targetScale = 0.5f) + fadeOut()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.92f)
+                                .shadow(10.dp, RoundedCornerShape(22.dp))
+                                .background(Color.White, RoundedCornerShape(22.dp))
+                                .padding(vertical = 14.dp, horizontal = 16.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.92f)
-                                    .shadow(10.dp, RoundedCornerShape(22.dp))
-                                    .background(Color.White, RoundedCornerShape(22.dp))
-                                    .padding(vertical = 14.dp, horizontal = 16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = lastAskedQuestion!!,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF0F172A),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = lastAskedQuestion!!,
-                                        fontSize = 20.sp,
+                                        text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
+                                        fontSize = 26.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = Color(0xFF0F172A),
-                                        textAlign = TextAlign.Center
+                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
                                     )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
-                                            fontSize = 26.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
-                                        )
-                                    }
                                 }
                             }
                         }
