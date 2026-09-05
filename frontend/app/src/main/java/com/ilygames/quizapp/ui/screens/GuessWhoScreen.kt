@@ -1381,19 +1381,17 @@ fun PassMessageScreen(
     messageText: String,
     onOkClick: () -> Unit
 ) {
-    var visibleTextCount by remember(messageText) { mutableIntStateOf(0) }
+    var isVisible by remember(messageText) { mutableStateOf(false) }
 
     LaunchedEffect(messageText) {
-        visibleTextCount = 0
-        for (i in 1..messageText.length) {
-            visibleTextCount = i
-            delay(30)
-        }
+        isVisible = true
     }
 
-    val animatedText = remember(visibleTextCount, messageText) {
-        messageText.take(visibleTextCount)
-    }
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (isVisible) 1.0f else 0.0f,
+        animationSpec = tween(durationMillis = 400),
+        label = "PassMessageFadeIn"
+    )
 
     Box(
         modifier = Modifier
@@ -1406,15 +1404,14 @@ fun PassMessageScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                .graphicsLayer { alpha = contentAlpha },
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Center Big White Message Text with Letter Loading Animation
+            // Center Big White Message Text
             Text(
-                text = animatedText,
+                text = messageText,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 color = Color.White,
@@ -1422,6 +1419,8 @@ fun PassMessageScreen(
                 lineHeight = 42.sp,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
+
+            Spacer(modifier = Modifier.height(36.dp))
 
             // Small Green 3D OK Button directly below text (With bouncy 3D pop effect)
             Box(
@@ -1438,8 +1437,6 @@ fun PassMessageScreen(
             ) {
                 Text("OK", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
             }
-            
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
