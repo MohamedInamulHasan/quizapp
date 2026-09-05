@@ -865,8 +865,21 @@ fun GuessWhoScreen(
                             }
                         }
                     } else if (lastAskedQuestion != null) {
+                        val questionBannerScale = remember { Animatable(0.3f) }
+                        LaunchedEffect(lastAskedQuestion) {
+                            questionBannerScale.snapTo(0.3f)
+                            questionBannerScale.animateTo(
+                                targetValue = 1f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            )
+                        }
+
                         Box(
                             modifier = Modifier
+                                .scale(questionBannerScale.value)
                                 .fillMaxWidth(0.92f)
                                 .shadow(10.dp, RoundedCornerShape(22.dp))
                                 .background(Color.White, RoundedCornerShape(22.dp))
