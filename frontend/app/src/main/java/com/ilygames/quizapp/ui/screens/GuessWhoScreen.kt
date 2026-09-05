@@ -207,7 +207,7 @@ fun GuessWhoScreen(
     val hairKeys = remember { listOf("HAIR:SHORT", "HAIR:LONG", "HAIR:BALD") }
     val hairColorKeys = remember { listOf("HAIR_COLOR:BLACK", "HAIR_COLOR:BROWN", "HAIR_COLOR:BLONDE", "HAIR_COLOR:GRAY", "HAIR_COLOR:RED") }
     val skinToneKeys = remember { listOf("SKIN_TONE:FAIR", "SKIN_TONE:MEDIUM", "SKIN_TONE:DARK") }
-    val accessoryKeys = remember { listOf("ACCESSORY:NONE", "ACCESSORY:GLASSES", "ACCESSORY:HAT", "ACCESSORY:EARRINGS", "ACCESSORY:JEWELS") }
+    val accessoryKeys = remember { listOf("ACCESSORY:NONE", "ACCESSORY:GLASSES", "ACCESSORY:HAT", "ACCESSORY:JEWELS") }
     val facialHairKeys = remember { listOf("FACIAL_HAIR:NONE", "FACIAL_HAIR:MUSTACHE", "FACIAL_HAIR:BEARD") }
 
     fun getOptionStatus(optionKey: String, categoryKeys: List<String>): TraitStatus {
@@ -1193,24 +1193,16 @@ fun GuessWhoScreen(
                                             TraitOptionCard("GLASSES", icon = "👓", status = getOptionStatus("ACCESSORY:GLASSES", accessoryKeys), modifier = Modifier.weight(1f)) {
                                                 applyQuestionFilter("Is the person wearing glasses?", "ACCESSORY:GLASSES", accessoryKeys) { it.accessory == Accessory.GLASSES }
                                             }
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
                                             TraitOptionCard("HAT", icon = "🧢", status = getOptionStatus("ACCESSORY:HAT", accessoryKeys), modifier = Modifier.weight(1f)) {
                                                 applyQuestionFilter("Is the person wearing a hat?", "ACCESSORY:HAT", accessoryKeys) { it.accessory == Accessory.HAT }
                                             }
-                                        }
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(0.66f),
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                TraitOptionCard("EARRINGS", icon = "💎", status = getOptionStatus("ACCESSORY:EARRINGS", accessoryKeys), modifier = Modifier.weight(1f)) {
-                                                    applyQuestionFilter("Is the person wearing earrings?", "ACCESSORY:EARRINGS", accessoryKeys) { it.accessory == Accessory.EARRINGS || it.accessory == Accessory.JEWELS }
-                                                }
-                                                TraitOptionCard("JEWELS", icon = "💍", status = getOptionStatus("ACCESSORY:JEWELS", accessoryKeys), modifier = Modifier.weight(1f)) {
-                                                    applyQuestionFilter("Is the person wearing jewels?", "ACCESSORY:JEWELS", accessoryKeys) { it.accessory == Accessory.JEWELS || it.accessory == Accessory.EARRINGS }
-                                                }
+                                            TraitOptionCard("JEWELS", icon = "💍", status = getOptionStatus("ACCESSORY:JEWELS", accessoryKeys), modifier = Modifier.weight(1f)) {
+                                                applyQuestionFilter("Is the person wearing jewels?", "ACCESSORY:JEWELS", accessoryKeys) { it.accessory == Accessory.JEWELS }
                                             }
                                         }
                                     }
