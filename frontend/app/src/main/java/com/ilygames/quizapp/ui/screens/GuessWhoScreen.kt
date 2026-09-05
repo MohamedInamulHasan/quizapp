@@ -277,16 +277,12 @@ fun GuessWhoScreen(
     LaunchedEffect(selectionStep) {
         if (selectionStep == "COUNTDOWN") {
             countdownText = "3"
-            SoundManager.playPopSound()
             delay(450)
             countdownText = "2"
-            SoundManager.playPopSound()
             delay(450)
             countdownText = "1"
-            SoundManager.playPopSound()
             delay(450)
             countdownText = "START!"
-            SoundManager.playCorrectSound()
             delay(400)
             selectionStep = "DONE"
             gamePhase = "PLAYING"
@@ -306,13 +302,11 @@ fun GuessWhoScreen(
     // Toggle Card Flip (Tap card to flip face down/up in Black & White)
     fun toggleCardFlip(clickedChar: GuessWhoCharacter) {
         if (!hasAskedQuestionThisTurn) {
-            SoundManager.playPopSound()
             showAskQuestionWarning = true
             warningAnimTrigger++
             return
         }
         showAskQuestionWarning = false
-        SoundManager.playPopSound()
         actionTakenThisTurn = true
         cardsTappedThisTurn = true
 
@@ -581,7 +575,6 @@ fun GuessWhoScreen(
                                     )
                                     .border(2.dp, Color.White, CircleShape)
                                     .clickable {
-                                        SoundManager.playPopSound()
                                         selectedCharacterIndex = (selectedCharacterIndex - 1 + ALL_CHARACTERS.size) % ALL_CHARACTERS.size
                                         isCharacterSelected = false
                                     },
@@ -616,7 +609,6 @@ fun GuessWhoScreen(
                                     )
                                     .border(2.dp, Color.White, CircleShape)
                                     .clickable {
-                                        SoundManager.playPopSound()
                                         selectedCharacterIndex = (selectedCharacterIndex + 1) % ALL_CHARACTERS.size
                                         isCharacterSelected = false
                                     },
@@ -751,7 +743,6 @@ fun GuessWhoScreen(
                                 )
                                 .border(2.dp, Color.White, CircleShape)
                                 .clickable {
-                                    SoundManager.playPopSound()
                                     activeBoardCharacterIndex = (activeBoardCharacterIndex - 1 + boardCharacters.size) % boardCharacters.size
                                 },
                             contentAlignment = Alignment.Center
@@ -799,7 +790,6 @@ fun GuessWhoScreen(
                                 )
                                 .border(2.dp, Color.White, CircleShape)
                                 .clickable {
-                                    SoundManager.playPopSound()
                                     selectedGuessCharacterId = null
                                     activeBoardCharacterIndex = (activeBoardCharacterIndex + 1) % boardCharacters.size
                                 },
