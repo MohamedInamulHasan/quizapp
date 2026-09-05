@@ -119,7 +119,7 @@ val ALL_CHARACTERS = listOf(
 
     GuessWhoCharacter("6", "Rose", Gender.FEMALE, EyeColor.BLUE, HairColor.BLACK, HairStyle.LONG, SkinTone.FAIR, Accessory.HAT, FacialHair.NONE, Color(0xFF6366F1)),
     GuessWhoCharacter("7", "Jeff", Gender.MALE, EyeColor.BLACK, HairColor.BLONDE, HairStyle.SHORT, SkinTone.FAIR, Accessory.GLASSES, FacialHair.BEARD, Color(0xFF14B8A6)),
-    GuessWhoCharacter("8", "Lia", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFF43F5E)),
+    GuessWhoCharacter("8", "Lia", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.FAIR, Accessory.JEWELS, FacialHair.NONE, Color(0xFFF43F5E)),
     GuessWhoCharacter("9", "Rob", Gender.MALE, EyeColor.BLACK, HairColor.BLACK, HairStyle.SHORT, SkinTone.MEDIUM, Accessory.HAT, FacialHair.BEARD, Color(0xFF06B6D4)),
     GuessWhoCharacter("10", "Aria", Gender.FEMALE, EyeColor.BROWN, HairColor.GREY, HairStyle.LONG, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFFA855F7)),
 
@@ -130,10 +130,10 @@ val ALL_CHARACTERS = listOf(
     GuessWhoCharacter("15", "Jose", Gender.MALE, EyeColor.GREEN, HairColor.BLACK, HairStyle.BALD, SkinTone.DARK, Accessory.NONE, FacialHair.BEARD, Color(0xFF10B981)),
 
     GuessWhoCharacter("16", "Theo", Gender.MALE, EyeColor.BLUE, HairColor.BLONDE, HairStyle.SHORT, SkinTone.FAIR, Accessory.NONE, FacialHair.NONE, Color(0xFF6366F1)),
-    GuessWhoCharacter("17", "Annie", Gender.FEMALE, EyeColor.BROWN, HairColor.RED, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFEC4899)),
+    GuessWhoCharacter("17", "Annie", Gender.FEMALE, EyeColor.BROWN, HairColor.RED, HairStyle.LONG, SkinTone.FAIR, Accessory.JEWELS, FacialHair.NONE, Color(0xFFEC4899)),
     GuessWhoCharacter("18", "Paul", Gender.MALE, EyeColor.BROWN, HairColor.RED, HairStyle.SHORT, SkinTone.MEDIUM, Accessory.NONE, FacialHair.BEARD, Color(0xFFF43F5E)),
-    GuessWhoCharacter("19", "Olivia", Gender.FEMALE, EyeColor.BROWN, HairColor.BLACK, HairStyle.LONG, SkinTone.DARK, Accessory.EARRINGS, FacialHair.NONE, Color(0xFF06B6D4)),
-    GuessWhoCharacter("20", "Chloe", Gender.FEMALE, EyeColor.GREEN, HairColor.BROWN, HairStyle.LONG, SkinTone.FAIR, Accessory.EARRINGS, FacialHair.NONE, Color(0xFFA855F7)),
+    GuessWhoCharacter("19", "Olivia", Gender.FEMALE, EyeColor.BROWN, HairColor.BLACK, HairStyle.LONG, SkinTone.DARK, Accessory.JEWELS, FacialHair.NONE, Color(0xFF06B6D4)),
+    GuessWhoCharacter("20", "Chloe", Gender.FEMALE, EyeColor.GREEN, HairColor.BROWN, HairStyle.LONG, SkinTone.FAIR, Accessory.JEWELS, FacialHair.NONE, Color(0xFFA855F7)),
 
     GuessWhoCharacter("21", "Nora", Gender.FEMALE, EyeColor.BLACK, HairColor.BROWN, HairStyle.LONG, SkinTone.DARK, Accessory.GLASSES, FacialHair.NONE, Color(0xFFEF4444)),
     GuessWhoCharacter("22", "James", Gender.MALE, EyeColor.BROWN, HairColor.BROWN, HairStyle.SHORT, SkinTone.FAIR, Accessory.GLASSES, FacialHair.NONE, Color(0xFF3B82F6)),
