@@ -182,11 +182,6 @@ fun DotsAndBoxesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .graphicsLayer {
-                scaleX = entranceScale.value
-                scaleY = entranceScale.value
-                alpha = entranceAlpha.value
-            }
     ) {
         Column(
             modifier = Modifier
@@ -374,6 +369,11 @@ fun DotsAndBoxesScreen(
                 // 6x6 DOTS CANVAS BOARD (5x5 BOXES GRID)
                 Box(
                     modifier = Modifier
+                        .graphicsLayer {
+                            scaleX = entranceScale.value
+                            scaleY = entranceScale.value
+                            alpha = entranceAlpha.value
+                        }
                         .fillMaxWidth()
                         .aspectRatio(1f)
                         .padding(horizontal = 16.dp)

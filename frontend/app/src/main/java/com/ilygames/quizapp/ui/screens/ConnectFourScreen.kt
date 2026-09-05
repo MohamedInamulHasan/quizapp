@@ -227,11 +227,6 @@ fun ConnectFourScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .graphicsLayer {
-                scaleX = entranceScale.value
-                scaleY = entranceScale.value
-                alpha = entranceAlpha.value
-            }
     ) {
         Column(
             modifier = Modifier
@@ -440,6 +435,11 @@ fun ConnectFourScreen(
                 ) {
                     Box(
                         modifier = Modifier
+                            .graphicsLayer {
+                                scaleX = entranceScale.value
+                                scaleY = entranceScale.value
+                                alpha = entranceAlpha.value
+                            }
                             .fillMaxWidth()
                             .shadow(16.dp, RoundedCornerShape(20.dp))
                             .background(
