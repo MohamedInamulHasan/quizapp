@@ -58,7 +58,38 @@ private object SoundManager {
     fun playWrongSound() {}
     fun playRetrySound() {}
 }
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import kotlinx.coroutines.delay
+
+// ── Bouncy Clickable Modifier for 3D Pop/Press Scale Animation Effect ──────
+@Composable
+fun Modifier.bouncyClickable(
+    enabled: Boolean = true,
+    onClick: () -> Unit
+): Modifier {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.93f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "BouncyClickScale"
+    )
+    return this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            enabled = enabled,
+            onClick = onClick
+        )
+}
 
 // ── CHARACTER DATA MODEL ─────────────────────────────────────────────────
 enum class Gender { MALE, FEMALE }
@@ -168,6 +199,7 @@ fun GuessWhoScreen(
     var cardsTappedThisTurn by remember { mutableStateOf(false) }
     var hasAskedQuestionThisTurn by remember { mutableStateOf(false) }
     var showAskQuestionWarning by remember { mutableStateOf(false) }
+    var warningAnimTrigger by remember { mutableIntStateOf(0) }
     var showHelpCard by remember { mutableStateOf(false) }
     var selectedGuessCharacterId by remember { mutableStateOf<String?>(null) }
 
@@ -275,6 +307,7 @@ fun GuessWhoScreen(
         if (!hasAskedQuestionThisTurn) {
             SoundManager.playPopSound()
             showAskQuestionWarning = true
+            warningAnimTrigger++
             return
         }
         showAskQuestionWarning = false
@@ -362,7 +395,7 @@ fun GuessWhoScreen(
     if (gamePhase == "SELECTION" && selectionStep == "P1_INTRO") {
         PassMessageScreen(
             bgColor = Color(0xFF0D1B36), // Dark Blue Theme
-            messageText = "Hide the screen\nfrom your friend\nand choose your\ncharacter",
+            messageText = "Hide the screen\nfrom your friend\nand Choose Your\nCharacter",
             onOkClick = {
                 SoundManager.playClickSound()
                 isCharacterSelected = false
@@ -660,52 +693,39 @@ fun GuessWhoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // Rectangular Rounded-Corner Help/Warning Card right above image (Fixed height 46.dp, Blue for P1, Red for P2, White Text)
+                    // Rectangular Rounded-Corner Help/Warning Card right above image (Fixed height 54.dp, Bouncy Pop-Up Effect, Bigger Size & Text)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp),
-                        contentAlignment = Alignment.BottomCenter
+                            .height(54.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        if (showAskQuestionWarning) {
-                            Box(
-                                modifier = Modifier
-                                    .shadow(6.dp, RoundedCornerShape(14.dp))
-                                    .background(
-                                        if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
-                                        RoundedCornerShape(14.dp)
-                                    )
-                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
-                                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
+                        val isVisible = showAskQuestionWarning || (showHelpCard && lastAskedQuestion != null)
+                        key(warningAnimTrigger) {
+                            AnimatedVisibility(
+                                visible = isVisible,
+                                enter = scaleIn(initialScale = 0.5f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
+                                exit = scaleOut(targetScale = 0.5f) + fadeOut()
                             ) {
-                                Text(
-                                    text = "Press a button below to ask a question!",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        } else if (showHelpCard && lastAskedQuestion != null) {
-                            Box(
-                                modifier = Modifier
-                                    .shadow(6.dp, RoundedCornerShape(14.dp))
-                                    .background(
-                                        if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
-                                        RoundedCornerShape(14.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .shadow(8.dp, RoundedCornerShape(16.dp))
+                                        .background(
+                                            if (isPlayer1Turn) Color(0xFF1D4ED8) else Color(0xFFB91C1C),
+                                            RoundedCornerShape(16.dp)
+                                        )
+                                        .border(2.dp, Color.White, RoundedCornerShape(16.dp))
+                                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (showAskQuestionWarning) "Press a button below to ask a question!" else "HELP: Tap image to hide or unhide candidate",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = Color.White,
+                                        textAlign = TextAlign.Center
                                     )
-                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
-                                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "HELP: Tap image to hide or unhide candidate",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White,
-                                    textAlign = TextAlign.Center
-                                )
+                                }
                             }
                         }
                     }
@@ -851,30 +871,36 @@ fun GuessWhoScreen(
                             }
                         }
                     } else if (lastAskedQuestion != null) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.92f)
-                                .shadow(10.dp, RoundedCornerShape(22.dp))
-                                .background(Color.White, RoundedCornerShape(22.dp))
-                                .padding(vertical = 14.dp, horizontal = 16.dp),
-                            contentAlignment = Alignment.Center
+                        AnimatedVisibility(
+                            visible = lastAskedQuestion != null,
+                            enter = scaleIn(initialScale = 0.5f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
+                            exit = scaleOut(targetScale = 0.5f) + fadeOut()
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = lastAskedQuestion!!,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0F172A),
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.92f)
+                                    .shadow(10.dp, RoundedCornerShape(22.dp))
+                                    .background(Color.White, RoundedCornerShape(22.dp))
+                                    .padding(vertical = 14.dp, horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
-                                        fontSize = 26.sp,
+                                        text = lastAskedQuestion!!,
+                                        fontSize = 20.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
+                                        color = Color(0xFF0F172A),
+                                        textAlign = TextAlign.Center
                                     )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = if (lastQuestionAnswer == true) "👤 Yes!" else "❌ No!",
+                                            fontSize = 26.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = if (lastQuestionAnswer == true) Color(0xFF10B981) else Color(0xFFEF4444)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1389,12 +1415,8 @@ fun PassMessageScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            // Small Green 3D OK Button directly below text (Without white outer box & without white line)
-            Button(
-                onClick = onOkClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                shape = RoundedCornerShape(22.dp),
-                contentPadding = PaddingValues(0.dp),
+            // Small Green 3D OK Button directly below text (With bouncy 3D pop effect)
+            Box(
                 modifier = Modifier
                     .width(180.dp)
                     .height(50.dp)
@@ -1403,6 +1425,8 @@ fun PassMessageScreen(
                         Brush.verticalGradient(listOf(Color(0xFF10B981), Color(0xFF059669))),
                         RoundedCornerShape(22.dp)
                     )
+                    .bouncyClickable(onClick = onOkClick),
+                contentAlignment = Alignment.Center
             ) {
                 Text("OK", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
             }
@@ -1441,7 +1465,7 @@ fun SingleBig3DCharacterCard(
                 if (isSelected) Color(0xFF10B981) else Color.White,
                 RoundedCornerShape(24.dp)
             )
-            .clickable(onClick = onClick),
+            .bouncyClickable(onClick = onClick),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -1522,7 +1546,7 @@ fun SingleBig3DCharacterCard(
             ) {
                 Text(
                     text = character.name,
-                    fontSize = 22.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
@@ -1561,7 +1585,7 @@ fun SingleBigDeductionCharacterCard(
                 if (isSelected) Color(0xFF10B981) else if (isHidden) Color(0xFF64748B) else Color.White,
                 RoundedCornerShape(24.dp)
             )
-            .clickable(onClick = onClick),
+            .bouncyClickable(onClick = onClick),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -1665,7 +1689,7 @@ fun SingleBigDeductionCharacterCard(
             ) {
                 Text(
                     text = character.name,
-                    fontSize = 22.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
                     color = if (isSelected) Color.White else if (isHidden) Color(0xFF94A3B8) else Color.White
                 )
@@ -1826,13 +1850,13 @@ fun TraitCategoryButton(
 ) {
     Box(
         modifier = modifier
-            .height(48.dp)
+            .height(52.dp)
             .shadow(6.dp, RoundedCornerShape(16.dp))
             .background(
                 if (isResolved) Color(0xFF334155) else Color.White,
                 RoundedCornerShape(16.dp)
             )
-            .clickable(onClick = onClick),
+            .bouncyClickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -1840,11 +1864,11 @@ fun TraitCategoryButton(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
         ) {
-            Text(text = icon, fontSize = 13.sp)
+            Text(text = icon, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(1.dp))
             Text(
                 text = label,
-                fontSize = 8.5.sp,
+                fontSize = 10.5.sp,
                 fontWeight = FontWeight.Black,
                 color = if (isResolved) Color.White else Color(0xFF0F172A),
                 maxLines = 1,
@@ -1882,7 +1906,7 @@ fun TraitOptionCard(
                 if (isTick) Color(0xFF10B981) else if (isCross) Color(0xFF64748B) else Color(0xFFCBD5E1),
                 RoundedCornerShape(16.dp)
             )
-            .clickable(enabled = !isResolved, onClick = onClick),
+            .bouncyClickable(enabled = !isResolved, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Column(

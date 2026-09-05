@@ -425,37 +425,37 @@ fun DotsAndBoxesScreen(
                             }
                         }
 
-                        // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY WHITE DOTS
+                        // 4. Draw 6x6 REAL 3D SPHERICAL GLOSSY BLACK DOTS
                         for (r in 0..5) {
                             for (c in 0..5) {
                                 val center = Offset(c * stepX, r * stepY)
 
-                                // Drop shadow behind white dot
+                                // Drop shadow behind dot
                                 drawCircle(
-                                    color = Color.Black.copy(alpha = 0.35f),
+                                    color = Color.Black.copy(alpha = 0.45f),
                                     center = Offset(center.x + 2.dp.toPx(), center.y + 3.dp.toPx()),
                                     radius = dotRadius
                                 )
 
-                                // Base 3D Soft White/Gray Rim
+                                // Base 3D Soft Dark Rim
                                 drawCircle(
-                                    color = Color(0xFFCBD5E1),
+                                    color = Color(0xFF1E293B),
                                     center = center,
                                     radius = dotRadius
                                 )
 
-                                // Glossy Inner Pure White Sphere
+                                // Glossy Inner Pure Black Sphere
                                 drawCircle(
-                                    color = Color.White,
+                                    color = Color.Black,
                                     center = center,
                                     radius = dotRadius * 0.85f
                                 )
 
                                 // Top-Left 3D Shine Highlight
                                 drawCircle(
-                                    color = Color.White,
+                                    color = Color.White.copy(alpha = 0.35f),
                                     center = Offset(center.x - dotRadius * 0.35f, center.y - dotRadius * 0.35f),
-                                    radius = dotRadius * 0.35f
+                                    radius = dotRadius * 0.3f
                                 )
                             }
                         }

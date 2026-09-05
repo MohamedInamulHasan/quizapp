@@ -386,145 +386,154 @@ fun TicTacToeScreen(
                 }
             }
 
-            // ── CENTER 3x3 TIC TAC TOE GRID WITH PURE WHITE FULL-LENGTH STRIKE LINE ──
-            Box(
+            // ── CENTERED GAME BOARD CONTAINER ──
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .padding(horizontal = 24.dp),
-                contentAlignment = Alignment.Center
+                    .weight(1f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val width = size.width
-                    val height = size.height
-                    val colWidth = width / 3f
-                    val rowHeight = height / 3f
-                    val strokeWidth = 8.dp.toPx()
+                // 3x3 TIC TAC TOE GRID WITH PURE WHITE FULL-LENGTH STRIKE LINE
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .padding(horizontal = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val width = size.width
+                        val height = size.height
+                        val colWidth = width / 3f
+                        val rowHeight = height / 3f
+                        val strokeWidth = 8.dp.toPx()
 
-                    val lineProgress = gridLineAnim.value
+                        val lineProgress = gridLineAnim.value
 
-                    // Vertical White Cross Lines (Animated Entrance)
-                    drawLine(
-                        color = Color.White,
-                        start = Offset(colWidth, 0f),
-                        end = Offset(colWidth, height * lineProgress),
-                        strokeWidth = strokeWidth,
-                        cap = StrokeCap.Round
-                    )
-                    drawLine(
-                        color = Color.White,
-                        start = Offset(colWidth * 2, 0f),
-                        end = Offset(colWidth * 2, height * lineProgress),
-                        strokeWidth = strokeWidth,
-                        cap = StrokeCap.Round
-                    )
-
-                    // Horizontal White Cross Lines (Animated Entrance)
-                    drawLine(
-                        color = Color.White,
-                        start = Offset(0f, rowHeight),
-                        end = Offset(width * lineProgress, rowHeight),
-                        strokeWidth = strokeWidth,
-                        cap = StrokeCap.Round
-                    )
-                    drawLine(
-                        color = Color.White,
-                        start = Offset(0f, rowHeight * 2),
-                        end = Offset(width * lineProgress, rowHeight * 2),
-                        strokeWidth = strokeWidth,
-                        cap = StrokeCap.Round
-                    )
-
-                    // PURE WHITE SOLID COMPACT STRIKE OUT LINE
-                    if (winningPattern != null && strikeAnimProgress > 0f) {
-                        val pattern = winningPattern!!
-                        val isRow = pattern == listOf(0, 1, 2) || pattern == listOf(3, 4, 5) || pattern == listOf(6, 7, 8)
-                        val isCol = pattern == listOf(0, 3, 6) || pattern == listOf(1, 4, 7) || pattern == listOf(2, 5, 8)
-                        val isDiag1 = pattern == listOf(0, 4, 8)
-                        val isDiag2 = pattern == listOf(2, 4, 6)
-
-                        val (fullStartX, fullStartY, fullEndX, fullEndY) = when {
-                            isRow -> {
-                                val rowIdx = pattern[0] / 3
-                                val y = (rowIdx + 0.5f) * rowHeight
-                                listOf(colWidth * 0.15f, y, colWidth * 2.85f, y)
-                            }
-                            isCol -> {
-                                val colIdx = pattern[0] % 3
-                                val x = (colIdx + 0.5f) * colWidth
-                                listOf(x, rowHeight * 0.15f, x, rowHeight * 2.85f)
-                            }
-                            isDiag1 -> listOf(colWidth * 0.15f, rowHeight * 0.15f, colWidth * 2.85f, rowHeight * 2.85f)
-                            isDiag2 -> listOf(colWidth * 2.85f, rowHeight * 0.15f, colWidth * 0.15f, rowHeight * 2.85f)
-                            else -> listOf(colWidth * 0.15f, rowHeight * 0.15f, colWidth * 2.85f, rowHeight * 2.85f)
-                        }
-
-                        val curEndX = fullStartX + (fullEndX - fullStartX) * strikeAnimProgress
-                        val curEndY = fullStartY + (fullEndY - fullStartY) * strikeAnimProgress
-
-                        // Compact Solid White Strike Line
+                        // Vertical White Cross Lines (Animated Entrance)
                         drawLine(
                             color = Color.White,
-                            start = Offset(fullStartX, fullStartY),
-                            end = Offset(curEndX, curEndY),
-                            strokeWidth = 8.dp.toPx(),
+                            start = Offset(colWidth, 0f),
+                            end = Offset(colWidth, height * lineProgress),
+                            strokeWidth = strokeWidth,
                             cap = StrokeCap.Round
                         )
+                        drawLine(
+                            color = Color.White,
+                            start = Offset(colWidth * 2, 0f),
+                            end = Offset(colWidth * 2, height * lineProgress),
+                            strokeWidth = strokeWidth,
+                            cap = StrokeCap.Round
+                        )
+
+                        // Horizontal White Cross Lines (Animated Entrance)
+                        drawLine(
+                            color = Color.White,
+                            start = Offset(0f, rowHeight),
+                            end = Offset(width * lineProgress, rowHeight),
+                            strokeWidth = strokeWidth,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = Color.White,
+                            start = Offset(0f, rowHeight * 2),
+                            end = Offset(width * lineProgress, rowHeight * 2),
+                            strokeWidth = strokeWidth,
+                            cap = StrokeCap.Round
+                        )
+
+                        // PURE WHITE SOLID COMPACT STRIKE OUT LINE
+                        if (winningPattern != null && strikeAnimProgress > 0f) {
+                            val pattern = winningPattern!!
+                            val isRow = pattern == listOf(0, 1, 2) || pattern == listOf(3, 4, 5) || pattern == listOf(6, 7, 8)
+                            val isCol = pattern == listOf(0, 3, 6) || pattern == listOf(1, 4, 7) || pattern == listOf(2, 5, 8)
+                            val isDiag1 = pattern == listOf(0, 4, 8)
+                            val isDiag2 = pattern == listOf(2, 4, 6)
+
+                            val (fullStartX, fullStartY, fullEndX, fullEndY) = when {
+                                isRow -> {
+                                    val rowIdx = pattern[0] / 3
+                                    val y = (rowIdx + 0.5f) * rowHeight
+                                    listOf(colWidth * 0.15f, y, colWidth * 2.85f, y)
+                                }
+                                isCol -> {
+                                    val colIdx = pattern[0] % 3
+                                    val x = (colIdx + 0.5f) * colWidth
+                                    listOf(x, rowHeight * 0.15f, x, rowHeight * 2.85f)
+                                }
+                                isDiag1 -> listOf(colWidth * 0.15f, rowHeight * 0.15f, colWidth * 2.85f, rowHeight * 2.85f)
+                                isDiag2 -> listOf(colWidth * 2.85f, rowHeight * 0.15f, colWidth * 0.15f, rowHeight * 2.85f)
+                                else -> listOf(colWidth * 0.15f, rowHeight * 0.15f, colWidth * 2.85f, rowHeight * 2.85f)
+                            }
+
+                            val curEndX = fullStartX + (fullEndX - fullStartX) * strikeAnimProgress
+                            val curEndY = fullStartY + (fullEndY - fullStartY) * strikeAnimProgress
+
+                            // Compact Solid White Strike Line
+                            drawLine(
+                                color = Color.White,
+                                start = Offset(fullStartX, fullStartY),
+                                end = Offset(curEndX, curEndY),
+                                strokeWidth = 8.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                        }
                     }
-                }
 
-                // Interactive 3x3 Grid Buttons
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    for (row in 0..2) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            for (col in 0..2) {
-                                val idx = row * 3 + col
-                                val mark = board[idx]
+                    // Interactive 3x3 Grid Buttons
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        for (row in 0..2) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                for (col in 0..2) {
+                                    val idx = row * 3 + col
+                                    val mark = board[idx]
 
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .clickable { onCellClick(idx) },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (mark.isNotEmpty()) {
-                                        var isMarked by remember { mutableStateOf(false) }
-                                        LaunchedEffect(mark) { isMarked = true }
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight()
+                                            .clickable { onCellClick(idx) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (mark.isNotEmpty()) {
+                                            var isMarked by remember { mutableStateOf(false) }
+                                            LaunchedEffect(mark) { isMarked = true }
 
-                                        val markScale by animateFloatAsState(
-                                            targetValue = if (isMarked) 1.0f else 0.0f,
-                                            animationSpec = spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessMedium
-                                            ),
-                                            label = "MarkPopAnimation"
-                                        )
-
-                                        if (mark == "X") {
-                                            Text(
-                                                text = "X",
-                                                fontSize = 64.sp,
-                                                fontWeight = FontWeight.Black,
-                                                color = Color(0xFFEF4444),
-                                                modifier = Modifier.scale(markScale)
+                                            val markScale by animateFloatAsState(
+                                                targetValue = if (isMarked) 1.0f else 0.0f,
+                                                animationSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    stiffness = Spring.StiffnessMedium
+                                                ),
+                                                label = "MarkPopAnimation"
                                             )
-                                        } else if (mark == "O") {
-                                            Text(
-                                                text = "O",
-                                                fontSize = 64.sp,
-                                                fontWeight = FontWeight.Black,
-                                                color = Color(0xFF255FF4),
-                                                modifier = Modifier.scale(markScale)
-                                            )
+
+                                            if (mark == "X") {
+                                                Text(
+                                                    text = "X",
+                                                    fontSize = 64.sp,
+                                                    fontWeight = FontWeight.Black,
+                                                    color = Color(0xFFEF4444),
+                                                    modifier = Modifier.scale(markScale)
+                                                )
+                                            } else if (mark == "O") {
+                                                Text(
+                                                    text = "O",
+                                                    fontSize = 64.sp,
+                                                    fontWeight = FontWeight.Black,
+                                                    color = Color(0xFF255FF4),
+                                                    modifier = Modifier.scale(markScale)
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -533,8 +542,6 @@ fun TicTacToeScreen(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         // ── 10-ROUND MATCH GRAND CHAMPION VICTORY MODAL ──────────────────
