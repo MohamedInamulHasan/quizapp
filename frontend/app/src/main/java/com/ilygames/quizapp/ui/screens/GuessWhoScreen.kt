@@ -399,13 +399,23 @@ fun GuessWhoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // 3D Black Back Button with WHITE Icon (No outline effect)
+                // 3D Metallic Glassmorphism Back Button (Matching Memory Match Page)
                 Box(
                     modifier = Modifier
                         .size(44.dp)
                         .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))),
+                            Brush.verticalGradient(listOf(Color(0xFF2C3E55), Color(0xFF1A2636))),
+                            CircleShape
+                        )
+                        .border(
+                            1.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = 0.5f),
+                                    Color.Black.copy(alpha = 0.6f)
+                                )
+                            ),
                             CircleShape
                         )
                         .clickable {
@@ -418,7 +428,7 @@ fun GuessWhoScreen(
                         Icons.Default.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
@@ -436,13 +446,23 @@ fun GuessWhoScreen(
                     color = Color.White
                 )
 
-                // 3D Black Retry Button with WHITE Icon (No outline effect)
+                // 3D Metallic Glassmorphism Retry Button (Matching Memory Match Page)
                 Box(
                     modifier = Modifier
                         .size(44.dp)
                         .shadow(8.dp, CircleShape)
                         .background(
-                            Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))),
+                            Brush.verticalGradient(listOf(Color(0xFF2C3E55), Color(0xFF1A2636))),
+                            CircleShape
+                        )
+                        .border(
+                            1.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = 0.5f),
+                                    Color.Black.copy(alpha = 0.6f)
+                                )
+                            ),
                             CircleShape
                         )
                         .clickable {
@@ -455,7 +475,7 @@ fun GuessWhoScreen(
                         Icons.Default.Refresh,
                         contentDescription = "Reset Match",
                         tint = Color.White,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -729,7 +749,21 @@ fun GuessWhoScreen(
                             isSelected = (selectedGuessCharacterId == currentDeductionChar.id),
                             onClick = {
                                 showHelpCard = false
-                                toggleCardFlip(currentDeductionChar)
+                                val remainingFaceUp = boardCharacters.filter { !it.isEliminated }
+                                val isLastFaceUpCard = !currentDeductionChar.isEliminated &&
+                                        remainingFaceUp.size == 1 &&
+                                        remainingFaceUp.first().id == currentDeductionChar.id
+
+                                if (isLastFaceUpCard) {
+                                    SoundManager.playPopSound()
+                                    if (selectedGuessCharacterId == currentDeductionChar.id) {
+                                        selectedGuessCharacterId = null
+                                    } else {
+                                        selectedGuessCharacterId = currentDeductionChar.id
+                                    }
+                                } else {
+                                    toggleCardFlip(currentDeductionChar)
+                                }
                             }
                         )
 
@@ -1632,38 +1666,12 @@ fun SingleBigDeductionCharacterCard(
                     .padding(vertical = 10.dp, horizontal = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    if (isHidden) {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .shadow(4.dp, CircleShape)
-                                .background(
-                                    Brush.verticalGradient(listOf(Color(0xFF64748B), Color(0xFF475569))),
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Hidden",
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                    }
-
-                    Text(
-                        text = character.name,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black,
-                        color = if (isSelected) Color.White else if (isHidden) Color(0xFF94A3B8) else Color.White
-                    )
-                }
+                Text(
+                    text = character.name,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (isSelected) Color.White else if (isHidden) Color(0xFF94A3B8) else Color.White
+                )
             }
         }
     }
