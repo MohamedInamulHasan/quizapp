@@ -37,6 +37,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun DotsAndBoxesScreen(
@@ -63,8 +64,26 @@ fun DotsAndBoxesScreen(
     var showWinnerDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
+    val entranceScale = remember { Animatable(0.85f) }
+    val entranceAlpha = remember { Animatable(0f) }
+
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
+        launch {
+            entranceScale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+        launch {
+            entranceAlpha.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 350)
+            )
+        }
     }
 
     // Check if drawing a line completed any boxes
@@ -163,6 +182,11 @@ fun DotsAndBoxesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .graphicsLayer {
+                scaleX = entranceScale.value
+                scaleY = entranceScale.value
+                alpha = entranceAlpha.value
+            }
     ) {
         Column(
             modifier = Modifier

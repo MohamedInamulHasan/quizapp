@@ -57,8 +57,26 @@ fun ConnectFourScreen(
     var showMatchVictoryDialog by remember { mutableStateOf(false) }
     var rewardEarned by remember { mutableStateOf(false) }
 
+    val entranceScale = remember { Animatable(0.85f) }
+    val entranceAlpha = remember { Animatable(0f) }
+
     LaunchedEffect(Unit) {
         SoundManager.playRetrySound()
+        launch {
+            entranceScale.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        }
+        launch {
+            entranceAlpha.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 350)
+            )
+        }
     }
 
     LaunchedEffect(currentRound, showMatchVictoryDialog) {
@@ -209,6 +227,11 @@ fun ConnectFourScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .graphicsLayer {
+                scaleX = entranceScale.value
+                scaleY = entranceScale.value
+                alpha = entranceAlpha.value
+            }
     ) {
         Column(
             modifier = Modifier
