@@ -50,6 +50,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import kotlinx.coroutines.delay
+
 // Sound effects disabled for Guess Who
 private object SoundManager {
     fun playClickSound() {}
@@ -58,9 +62,6 @@ private object SoundManager {
     fun playWrongSound() {}
     fun playRetrySound() {}
 }
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import kotlinx.coroutines.delay
 
 // ── Bouncy Clickable Modifier for 3D Pop/Press Scale Animation Effect ──────
 @Composable
