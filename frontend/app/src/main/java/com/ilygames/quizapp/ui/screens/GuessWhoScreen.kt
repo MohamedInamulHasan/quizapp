@@ -346,7 +346,7 @@ fun GuessWhoScreen(
         val targetSecret = if (isPlayer1Turn) p2SecretCharacter!! else p1SecretCharacter!!
         val isYes = matchingCondition(targetSecret)
 
-        SoundManager.playPopSound()
+        SoundManager.playClickSound()
         actionTakenThisTurn = true
         cardsTappedThisTurn = false
         hasAskedQuestionThisTurn = true
