@@ -54,14 +54,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import kotlinx.coroutines.delay
 
-// Sound effects disabled for Guess Who
-private object SoundManager {
-    fun playClickSound() {}
-    fun playPopSound() {}
-    fun playCorrectSound() {}
-    fun playWrongSound() {}
-    fun playRetrySound() {}
-}
+import com.ilygames.quizapp.utils.SoundManager
 
 // ── Bouncy Clickable Modifier for 3D Pop/Press Scale Animation Effect ──────
 @Composable
@@ -243,7 +236,14 @@ fun GuessWhoScreen(
     }
 
     LaunchedEffect(Unit) {
+        SoundManager.init(context)
         SoundManager.playRetrySound()
+    }
+
+    LaunchedEffect(showAskQuestionWarning, showHelpCard, lastAskedQuestion) {
+        if (showAskQuestionWarning || (showHelpCard && lastAskedQuestion != null) || lastAskedQuestion != null) {
+            SoundManager.playWhooshSound()
+        }
     }
 
     // Auto-setup for new round
@@ -631,29 +631,8 @@ fun GuessWhoScreen(
                             }
                         }
 
-                        // Rectangular Rounded-Corner 3D CONFIRM Button directly below image (Grey when unselected, White when selected)
-                        Button(
-                            onClick = {
-                                if (!isCharacterSelected) return@Button
-                                SoundManager.playClickSound()
-                                isCharacterSelected = false
-                                if (selectionStep == "P1") {
-                                    p1SecretCharacter = currentChar
-                                    selectedCharacterIndex = 0
-                                    selectionStep = "P2_PASS"
-                                } else {
-                                    p2SecretCharacter = currentChar
-                                    selectedCharacterIndex = 0
-                                    selectionStep = "COUNTDOWN"
-                                }
-                            },
-                            enabled = isCharacterSelected,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent
-                            ),
-                            shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(0.dp),
+                        // Rectangular Rounded-Corner 3D CONFIRM Button directly below image (Grey when unselected, White when selected, Bouncy Pop-Up Effect & Tap Sound)
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.65f)
                                 .height(50.dp)
@@ -670,6 +649,21 @@ fun GuessWhoScreen(
                                     if (isCharacterSelected) Color.White else Color.Transparent,
                                     RoundedCornerShape(14.dp)
                                 )
+                                .bouncyClickable(enabled = isCharacterSelected) {
+                                    if (!isCharacterSelected) return@bouncyClickable
+                                    SoundManager.playClickSound()
+                                    isCharacterSelected = false
+                                    if (selectionStep == "P1") {
+                                        p1SecretCharacter = currentChar
+                                        selectedCharacterIndex = 0
+                                        selectionStep = "P2_PASS"
+                                    } else {
+                                        p2SecretCharacter = currentChar
+                                        selectedCharacterIndex = 0
+                                        selectionStep = "COUNTDOWN"
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 "CONFIRM",
