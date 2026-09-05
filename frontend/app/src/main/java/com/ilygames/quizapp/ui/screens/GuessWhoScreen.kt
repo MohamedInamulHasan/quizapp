@@ -50,7 +50,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ilygames.quizapp.ui.theme.ThemeState
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
-import com.ilygames.quizapp.utils.SoundManager
+// Sound effects disabled for Guess Who
+private object SoundManager {
+    fun playClickSound() {}
+    fun playPopSound() {}
+    fun playCorrectSound() {}
+    fun playWrongSound() {}
+    fun playRetrySound() {}
+}
 import kotlinx.coroutines.delay
 
 // ── CHARACTER DATA MODEL ─────────────────────────────────────────────────
@@ -492,23 +499,13 @@ fun GuessWhoScreen(
                             .background(Color.Black.copy(alpha = 0.75f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "GET READY!",
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White.copy(alpha = 0.85f),
-                                letterSpacing = 2.sp
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = countdownText,
-                                fontSize = if (countdownText.length > 2) 48.sp else 110.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = countdownText,
+                            fontSize = if (countdownText.length > 2) 48.sp else 110.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 } else {
                     // P1 (Blue) or P2 (Red) Selection Step matching exact screenshot layout
