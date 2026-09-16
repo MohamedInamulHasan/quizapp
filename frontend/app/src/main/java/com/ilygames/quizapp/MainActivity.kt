@@ -34,7 +34,7 @@ private object NoIndication : Indication {
 }
 
 private object NoIndicationInstance : IndicationInstance {
-    override fun ContentDrawScope.draw() {
+    override fun ContentDrawScope.drawIndication() {
         drawContent()
     }
 }

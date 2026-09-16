@@ -25,6 +25,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.ilygames.quizapp.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
