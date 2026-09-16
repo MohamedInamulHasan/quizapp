@@ -22,6 +22,8 @@ import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import com.ilygames.quizapp.utils.SoundManager
 
+import androidx.compose.foundation.LocalIndication
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,11 +32,13 @@ class MainActivity : ComponentActivity() {
         com.ilygames.quizapp.ui.theme.ThemeState.init(this)
         setContent {
             QuizAppTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigation()
+                CompositionLocalProvider(LocalIndication provides null) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppNavigation()
+                    }
                 }
             }
         }

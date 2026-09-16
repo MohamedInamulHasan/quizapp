@@ -21,7 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.utils.SoundManager
-import kotlinx.coroutines.delay
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.ilygames.quizapp.R
 
 @Composable
 fun SplashScreen(
@@ -73,12 +76,13 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // 3D SOFT-CLAY SQUARE CARD WITH 3D ROYAL BLUE "Q"
+            // NEW VIBRANT GLOSSY Q LOGO
             Box(
                 modifier = Modifier
-                    .size(105.dp)
-                    .shadow(12.dp, RoundedCornerShape(28.dp))
-                    .background(cardBg, RoundedCornerShape(28.dp))
+                    .size(115.dp)
+                    .shadow(16.dp, RoundedCornerShape(30.dp))
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(cardBg)
                     .border(
                         2.dp,
                         Brush.linearGradient(
@@ -87,19 +91,15 @@ fun SplashScreen(
                                 Color.Black.copy(alpha = if (isDark) 0.6f else 0.1f)
                             )
                         ),
-                        RoundedCornerShape(28.dp)
+                        RoundedCornerShape(30.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Q",
-                    fontSize = 62.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    style = androidx.compose.ui.text.TextStyle(
-                        brush = Brush.verticalGradient(
-                            listOf(Color(0xFF386DF5), Color(0xFF255FF4), Color(0xFF0B46DA))
-                        )
-                    )
+                Image(
+                    painter = painterResource(id = R.drawable.app_logo),
+                    contentDescription = "Quizzy Q Logo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
 
