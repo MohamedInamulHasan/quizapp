@@ -21,8 +21,23 @@ import com.ilygames.quizapp.ui.theme.QuizAppTheme
 import com.ilygames.quizapp.ui.viewmodel.AuthViewModel
 import com.ilygames.quizapp.ui.viewmodel.QuizViewModel
 import com.ilygames.quizapp.utils.SoundManager
-
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.IndicationInstance
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+
+private object NoIndication : Indication {
+    @Composable
+    override fun rememberUpdatedInstance(interactionSource: androidx.compose.foundation.interaction.InteractionSource): IndicationInstance {
+        return NoIndicationInstance
+    }
+}
+
+private object NoIndicationInstance : IndicationInstance {
+    override fun ContentDrawScope.draw() {
+        drawContent()
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +47,7 @@ class MainActivity : ComponentActivity() {
         com.ilygames.quizapp.ui.theme.ThemeState.init(this)
         setContent {
             QuizAppTheme {
-                CompositionLocalProvider(LocalIndication provides null) {
+                CompositionLocalProvider(LocalIndication provides NoIndication) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
