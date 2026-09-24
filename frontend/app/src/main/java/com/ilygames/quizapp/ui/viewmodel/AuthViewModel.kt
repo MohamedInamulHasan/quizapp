@@ -48,6 +48,34 @@ class AuthViewModel : ViewModel() {
         _authState.value = AuthState.Idle
     }
 
+    private fun getFallbackGuestUser(context: Context? = null): User {
+        val sharedPrefs = context?.getSharedPreferences("quiz_prefs", Context.MODE_PRIVATE)
+        var savedId = sharedPrefs?.getString("saved_guest_id", null)
+        var savedName = sharedPrefs?.getString("saved_guest_name", null)
+
+        if (savedId.isNullOrBlank() || savedName.isNullOrBlank()) {
+            val randomTag = (1000..9999).random()
+            savedId = "guest_$randomTag"
+            savedName = "Gamer_$randomTag"
+            sharedPrefs?.edit()
+                ?.putString("saved_guest_id", savedId)
+                ?.putString("saved_guest_name", savedName)
+                ?.apply()
+        }
+
+        return User(
+            id = savedId,
+            name = savedName,
+            email = null,
+            coins = 100,
+            totalScore = 0,
+            todayScore = 0,
+            highScore = 0,
+            isAdmin = false,
+            profileImageUrl = "https://api.dicebear.com/7.x/bottts/png?seed=$savedId"
+        )
+    }
+
     // Auto login check on app startup (Auto-creates Among Us style instant guest if first time!)
     fun tryAutoLogin(context: Context? = null) {
         if (context == null) {
@@ -57,7 +85,7 @@ class AuthViewModel : ViewModel() {
         val savedToken = getToken(context)
         if (!savedToken.isNullOrBlank()) {
             _token.value = savedToken
-            fetchProfileWithToken(savedToken)
+            fetchProfileWithToken(savedToken, context)
         } else {
             // First time opening app: Auto-create instant Among Us style gamer guest profile!
             guestLogin(context)
@@ -77,30 +105,19 @@ class AuthViewModel : ViewModel() {
                     saveToken(context, authResponse.token)
                     _authState.value = AuthState.Success(authResponse.user)
                 } else {
-                    // Offline / Fallback Guest User
-                    val randomTag = (100..999).random()
-                    val fallbackUser = User(
-                        id = "guest_$randomTag",
-                        name = "ShadowNinja_$randomTag",
-                        coins = 100,
-                        profileImageUrl = "https://api.dicebear.com/7.x/bottts/png?seed=fallback_$randomTag"
-                    )
-                    _token.value = "guest_token_$randomTag"
+                    val fallbackUser = getFallbackGuestUser(context)
+                    val fallbackToken = "guest_token_${fallbackUser.id}"
+                    _token.value = fallbackToken
                     _user.value = fallbackUser
-                    saveToken(context, "guest_token_$randomTag")
+                    saveToken(context, fallbackToken)
                     _authState.value = AuthState.Success(fallbackUser)
                 }
             } catch (e: Exception) {
-                val randomTag = (100..999).random()
-                val fallbackUser = User(
-                    id = "guest_$randomTag",
-                    name = "CosmicStar_$randomTag",
-                    coins = 100,
-                    profileImageUrl = "https://api.dicebear.com/7.x/bottts/png?seed=fallback_$randomTag"
-                )
-                _token.value = "guest_token_$randomTag"
+                val fallbackUser = getFallbackGuestUser(context)
+                val fallbackToken = "guest_token_${fallbackUser.id}"
+                _token.value = fallbackToken
                 _user.value = fallbackUser
-                saveToken(context, "guest_token_$randomTag")
+                saveToken(context, fallbackToken)
                 _authState.value = AuthState.Success(fallbackUser)
             }
         }
@@ -110,11 +127,11 @@ class AuthViewModel : ViewModel() {
     fun refreshProfile(context: Context? = null) {
         val activeToken = _token.value ?: (context?.let { getToken(it) })
         if (!activeToken.isNullOrBlank()) {
-            fetchProfileWithToken(activeToken)
+            fetchProfileWithToken(activeToken, context)
         }
     }
 
-    private fun fetchProfileWithToken(tokenStr: String) {
+    private fun fetchProfileWithToken(tokenStr: String, context: Context? = null) {
         viewModelScope.launch {
             try {
                 val response = ApiClient.apiService.getProfile(tokenStr)
@@ -123,14 +140,16 @@ class AuthViewModel : ViewModel() {
                     _user.value = u
                     _authState.value = AuthState.Success(u)
                 } else {
-                    _user.value = defaultAdminUser
+                    val fallback = if (tokenStr.startsWith("admin_")) defaultAdminUser else getFallbackGuestUser(context)
+                    _user.value = fallback
                     _token.value = tokenStr
-                    _authState.value = AuthState.Success(defaultAdminUser)
+                    _authState.value = AuthState.Success(fallback)
                 }
             } catch (e: Exception) {
-                _user.value = defaultAdminUser
+                val fallback = if (tokenStr.startsWith("admin_")) defaultAdminUser else getFallbackGuestUser(context)
+                _user.value = fallback
                 _token.value = tokenStr
-                _authState.value = AuthState.Success(defaultAdminUser)
+                _authState.value = AuthState.Success(fallback)
             }
         }
     }
